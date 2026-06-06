@@ -84,7 +84,7 @@ function handleSubmission(data) {
  * 以後は「プロジェクトの設定」→「スクリプト プロパティ」から直接編集可能。
  */
 function setupMailTemplate() {
-  const subject = '【第5回川口花火大会】協賛お申し込み受付のご確認（受付番号：{{receipt_no}}）';
+  const subject = '【第5回川口花火大会】協賛お申し込み受付のご連絡（受付番号：{{receipt_no}}）';
 
   const body = [
     '{{company_name}}',
@@ -147,7 +147,17 @@ function setupHeaders() {
 
   sheet.appendRow(HEADERS);
   sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
+  sheet.getRange(2, 9,  sheet.getMaxRows() - 1).setNumberFormat('@');
+  sheet.getRange(2, 11, sheet.getMaxRows() - 1).setNumberFormat('@');
+  applyColumnWidths(sheet);
   SpreadsheetApp.getUi().alert('ヘッダー行を作成しました。');
+}
+
+// ─── 列幅設定 ──────────────────────────────────────────────────────────────────
+
+function applyColumnWidths(sheet) {
+  const widths = [160,150,200,180,150,150,120,120,90,220,120,220,60,100,100,100,100,100,100];
+  widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
 }
 
 // ─── シート書き込み ────────────────────────────────────────────────────────────
@@ -167,6 +177,13 @@ function appendRow(data, sheetName) {
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(HEADERS);
       sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
+
+      // 郵便番号（9列目）・電話番号（11列目）列全体をテキスト形式に設定
+      sheet.getRange(2, 9,  sheet.getMaxRows() - 1).setNumberFormat('@');
+      sheet.getRange(2, 11, sheet.getMaxRows() - 1).setNumberFormat('@');
+
+      // 列幅は初回のみ設定（毎回 resize すると遅いため）
+      applyColumnWidths(sheet);
     }
 
     // 受付番号: クライアントから送られた値を優先し、なければサーバーで生成
@@ -191,34 +208,10 @@ function appendRow(data, sheetName) {
       '', '', '', '', '', '',   // 管理用6列（手動入力）
     ]);
 
-    // 全列を内容に合わせて自動リサイズ（ヘッダー含む）し、余白＋最小幅を適用
-    sheet.autoResizeColumns(1, HEADERS.length);
-    const MIN_WIDTHS = {
-      1:  160,  // 受付番号
-      2:  150,  // 受付日時
-      3:  200,  // 個人名・会社名・団体名
-      4:  180,  // フリガナ
-      5:  150,  // 役職・代表者名
-      6:  150,  // フリガナ
-      7:  120,  // 担当者名
-      8:  120,  // フリガナ
-      9:   90,  // 郵便番号
-      10: 220,  // 住所
-      11: 120,  // 電話番号
-      12: 220,  // メールアドレス
-      13:  60,  // 区分
-      14: 100,  // 請求書送付
-      15: 100,  // 入金日
-      16: 100,  // 確認者
-      17: 100,  // 確認日
-      18: 100,  // 受付済み
-      19: 100,  // お礼状送付
-    };
-    for (let i = 1; i <= HEADERS.length; i++) {
-      const current = sheet.getColumnWidth(i);
-      const min     = MIN_WIDTHS[i] || 100;
-      sheet.setColumnWidth(i, Math.max(current + 20, min));
-    }
+    // 郵便番号・電話番号：format を先に設定してから値を上書き（先頭0を保持）
+    const newRow = sheet.getLastRow();
+    sheet.getRange(newRow, 9).setNumberFormat('@').setValue(data.zipcode || '');
+    sheet.getRange(newRow, 11).setNumberFormat('@').setValue(data.phone  || '');
 
     return receptNo;
   } finally {
@@ -253,7 +246,7 @@ function sendConfirmationEmail(data, receptNo) {
   const body_tpl    = props.getProperty('MAIL_BODY');
 
   // プロパティ未設定の場合はフォールバック文面を使用
-  let subject = subject_tpl || '【第5回川口花火大会】協賛お申し込み受付のご確認';
+  let subject = subject_tpl || '【第5回川口花火大会】協賛お申し込み受付のご連絡';
   let body    = body_tpl    || '{{company_name}}\n{{rep_name}} 様\n\nお申し込みを受け付けました。\nご確認のほどよろしくお願い申し上げます。\n\n川口花火大会実行委員会 事務局';
 
   // ── {{変数名}} を実データに置換 ──
