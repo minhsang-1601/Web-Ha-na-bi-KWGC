@@ -20,6 +20,27 @@
         ただいまの期間は、協賛申込みの受付時間外となっております。
     </div>
 
+    <!-- Confirmation screen — shown after 確認 button, before actual submission -->
+    <div id="confirm-screen" style="display:none;">
+        <h3 style="font-size:1.05em; border-bottom:2px solid #826ea0; padding-bottom:6px; color:#4a3b68; margin-top:0;">
+            入力内容のご確認
+        </h3>
+        <p style="font-size:0.9em; color:#666; margin-bottom:18px;">
+            以下の内容でよろしければ「送信する」を押してください。
+        </p>
+        <table id="confirm-table" style="width:100%; border-collapse:collapse; font-size:0.92em;"></table>
+        <div style="display:flex; gap:12px; margin-top:24px;">
+            <button id="btn-back" type="button"
+                style="flex:1; background:#f0eaf8; color:#4a3b68; border:1px solid #c9b8e0; border-radius:4px; padding:10px; font-size:1em; cursor:pointer;">
+                ← 修正する
+            </button>
+            <button id="btn-submit" type="button"
+                style="flex:2; background:#007BFF; color:#fff; border:none; border-radius:4px; padding:10px; font-size:1em; cursor:pointer; font-weight:bold;">
+                送信する
+            </button>
+        </div>
+    </div>
+
     <!-- Hidden iframe receives the Apps Script response, avoiding page reload -->
     <iframe id="hidden-target" name="hidden-target" style="display:none;"></iframe>
 
@@ -143,9 +164,9 @@
                  It is cleared when the checkbox is checked, allowing the form to submit. -->
         </div>
 
-        <!-- Submit button -->
+        <!-- Confirm button — shows the confirmation screen before actual submission -->
         <div class="form-group">
-            <button type="submit">申し込む</button>
+            <button type="submit">入力内容を確認する</button>
         </div>
 
     </form>
@@ -306,26 +327,69 @@
     // Run the period check as soon as the DOM is ready.
     window.addEventListener('DOMContentLoaded', checkRegistrationPeriod);
 
-    // ─── Form submission → Google Sheets ───────────────────────────────────────
+    // ─── Form submission → 確認画面 → Google Sheets ────────────────────────────
 
-    // Apps Script URL is loaded from config.json (appsScriptUrl field).
+    const form          = document.getElementById('registration-form');
+    const confirmScreen = document.getElementById('confirm-screen');
+    const confirmTable  = document.getElementById('confirm-table');
 
-    document.getElementById('registration-form').addEventListener('submit', async (e) => {
+    // Label map for display in the confirmation screen
+    const FIELD_LABELS = {
+        company_name:     '個人名・会社名・団体名',
+        company_furigana: '個人名・会社名（フリガナ）',
+        rep_name:         '役職・代表者名',
+        rep_furigana:     '役職・代表者名（フリガナ）',
+        staff_name:       '担当者名',
+        staff_furigana:   '担当者名（フリガナ）',
+        zipcode:          '郵便番号',
+        address:          '住所',
+        phone:            '電話番号',
+        email:            'メールアドレス',
+        category:         '区分',
+    };
+
+    // ── Step 1: 確認ボタン → 確認画面を表示 ──
+    form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const form        = e.target;
-        const submitBtn   = form.querySelector('button[type="submit"]');
-
-        // Disabled checkboxes bypass browser validation — enforce manually.
         if (!document.getElementById('checkbox-927').checked) {
-            alert('「誓約事項に同意する」にチェックを入れてから送信してください。');
+            alert('「誓約事項に同意する」にチェックを入れてから確認へ進んでください。');
             return;
         }
 
+        // Build confirmation table from form values
+        const formData = new FormData(form);
+        confirmTable.innerHTML = '';
+        Object.entries(FIELD_LABELS).forEach(([name, label]) => {
+            let value = formData.get(name) || '―';
+            if (name === 'category') value += ' プラン';
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td style="padding:8px 10px; border-bottom:1px solid #eee; color:#666; white-space:nowrap; width:44%; vertical-align:top;">${label}</td>
+                <td style="padding:8px 10px; border-bottom:1px solid #eee; font-weight:bold; word-break:break-all;">${value}</td>
+            `;
+            confirmTable.appendChild(tr);
+        });
+
+        form.style.display          = 'none';
+        confirmScreen.style.display = 'block';
+    });
+
+    // ── 修正ボタン → フォームに戻る ──
+    document.getElementById('btn-back').addEventListener('click', () => {
+        confirmScreen.style.display = 'none';
+        form.style.display          = 'block';
+    });
+
+    // ── 送信ボタン → Google Sheets へ送信 ──
+    document.getElementById('btn-submit').addEventListener('click', async () => {
+        const submitBtn = document.getElementById('btn-submit');
+        const backBtn   = document.getElementById('btn-back');
         submitBtn.disabled    = true;
         submitBtn.textContent = '送信中...';
+        backBtn.disabled      = true;
 
-        // Generate 受付番号 on client (same format as Apps Script: KWGC + MMddHHmmssSSS)
+        // Generate 受付番号 (KWGC + MMddHHmmssSSS)
         const now = new Date();
         const pad = (n, len = 2) => String(n).padStart(len, '0');
         const receptNo = 'KWGC'
@@ -336,20 +400,16 @@
             + pad(now.getSeconds())
             + pad(now.getMilliseconds(), 3);
 
-        // Collect form data, append sheetName and receptNo
         const formData = new FormData(form);
         const params   = new URLSearchParams(formData);
         params.set('sheetName', targetSheetName);
         params.set('receipt_no', receptNo);
 
-        const url = appsScriptUrl + '?' + params.toString();
-
-        // GET request — confirmed working unlike POST which returns 401 cross-origin
         try {
-            await fetch(url, { method: 'GET', mode: 'no-cors' });
-        } catch (_) { /* no-cors response is opaque, ignore */ }
+            await fetch(appsScriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
+        } catch (_) { /* opaque response — ignore */ }
 
-        form.style.display = 'none';
+        confirmScreen.style.display = 'none';
         const thanks = document.createElement('div');
         thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
         thanks.innerHTML = `
@@ -359,7 +419,7 @@
             </span>
             <em style="font-size:0.78em; color:#999; display:block; margin-top:10px; text-align:center;">受付連絡メールを送信しました。</em>
         `;
-        form.parentNode.insertBefore(thanks, form.nextSibling);
+        confirmScreen.parentNode.insertBefore(thanks, confirmScreen.nextSibling);
     });
 </script>
 
