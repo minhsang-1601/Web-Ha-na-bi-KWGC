@@ -25,6 +25,7 @@ const OFFICE_EMAIL = 'gioitre.kamifukuoka2023@gmail.com';
 // ─── ヘッダー定義 ──────────────────────────────────────────────────────────────
 
 const HEADERS = [
+  '受付番号',
   '受付日時',
   '個人名・会社名・団体名',
   '個人名・会社名（フリガナ）',
@@ -67,8 +68,8 @@ function doPost(e) {
  */
 function handleSubmission(data) {
   try {
-    appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
-    if (data.email) sendConfirmationEmail(data);
+    const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
+    if (data.email) sendConfirmationEmail(data, receptNo);
     return jsonResponse({ result: 'success' });
   } catch (err) {
     return jsonResponse({ result: 'error', message: err.message });
@@ -83,7 +84,7 @@ function handleSubmission(data) {
  * 以後は「プロジェクトの設定」→「スクリプト プロパティ」から直接編集可能。
  */
 function setupMailTemplate() {
-  const subject = '【第5回川口花火大会】協賛お申し込み受付のご確認';
+  const subject = '【第5回川口花火大会】協賛お申し込み受付のご確認（受付番号：{{receipt_no}}）';
 
   const body = [
     '{{company_name}}',
@@ -103,6 +104,7 @@ function setupMailTemplate() {
     '　ご担当者名　　　：{{staff_name}}',
     '　区分　　　　　　：{{category}} プラン',
     '　お申し込み日時　：{{date}}',
+    '　受付番号　　　　：{{receipt_no}}',
     '─────────────────────────────',
     '',
     '今後の流れにつきましては、改めて担当者よりご連絡を差し上げます。',
@@ -151,29 +153,76 @@ function setupHeaders() {
 // ─── シート書き込み ────────────────────────────────────────────────────────────
 
 function appendRow(data, sheetName) {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(sheetName);
-  if (!sheet) throw new Error(`シート "${sheetName}" が見つかりません。`);
+  // LockService で同時アクセスを防ぐ（最大10秒待機）
+  const lock = LockService.getScriptLock();
+  lock.waitLock(10000);
 
-  if (sheet.getLastRow() === 0) {
-    sheet.appendRow(HEADERS);
-    sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
+  try {
+    const ss = SpreadsheetApp.getActiveSpreadsheet();
+
+    // シートが存在しない場合は自動作成する
+    let sheet = ss.getSheetByName(sheetName);
+    if (!sheet) sheet = ss.insertSheet(sheetName);
+
+    if (sheet.getLastRow() === 0) {
+      sheet.appendRow(HEADERS);
+      sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
+    }
+
+    // 受付番号: KWGC + MMddHHmmssSSS
+    const now       = new Date();
+    const receptNo  = 'KWGC' + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
+
+    sheet.appendRow([
+      receptNo,
+      now,
+      data.company_name     || '',
+      data.company_furigana || '',
+      data.rep_name         || '',
+      data.rep_furigana     || '',
+      data.staff_name       || '',
+      data.staff_furigana   || '',
+      data.zipcode          || '',
+      data.address          || '',
+      data.phone            || '',
+      data.email            || '',
+      data.category         || '',
+      '', '', '', '', '', '',   // 管理用6列（手動入力）
+    ]);
+
+    // 全列を内容に合わせて自動リサイズ（ヘッダー含む）し、余白＋最小幅を適用
+    sheet.autoResizeColumns(1, HEADERS.length);
+    const MIN_WIDTHS = {
+      1:  160,  // 受付番号
+      2:  150,  // 受付日時
+      3:  200,  // 個人名・会社名・団体名
+      4:  180,  // フリガナ
+      5:  150,  // 役職・代表者名
+      6:  150,  // フリガナ
+      7:  120,  // 担当者名
+      8:  120,  // フリガナ
+      9:   90,  // 郵便番号
+      10: 220,  // 住所
+      11: 120,  // 電話番号
+      12: 220,  // メールアドレス
+      13:  60,  // 区分
+      14: 100,  // 請求書送付
+      15: 100,  // 入金日
+      16: 100,  // 確認者
+      17: 100,  // 確認日
+      18: 100,  // 受付済み
+      19: 100,  // お礼状送付
+    };
+    for (let i = 1; i <= HEADERS.length; i++) {
+      const current = sheet.getColumnWidth(i);
+      const min     = MIN_WIDTHS[i] || 100;
+      sheet.setColumnWidth(i, Math.max(current + 20, min));
+    }
+
+    return receptNo;
+  } finally {
+    lock.releaseLock();
   }
-
-  sheet.appendRow([
-    new Date(),
-    data.company_name     || '',
-    data.company_furigana || '',
-    data.rep_name         || '',
-    data.rep_furigana     || '',
-    data.staff_name       || '',
-    data.staff_furigana   || '',
-    data.zipcode          || '',
-    data.address          || '',
-    data.phone            || '',
-    data.email            || '',
-    data.category         || '',
-    '', '', '', '', '', '',   // 管理用6列（手動入力）
-  ]);
 }
 
 // ─── 自動返信メール ─────────────────────────────────────────────────────────────
@@ -183,7 +232,7 @@ function appendRow(data, sheetName) {
  * テンプレート取得失敗時はシンプルなフォールバック文面を使用する。
  * @param {Object} data - フォームデータ
  */
-function sendConfirmationEmail(data) {
+function sendConfirmationEmail(data, receptNo) {
   const now  = new Date();
   const date = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
 
@@ -194,6 +243,7 @@ function sendConfirmationEmail(data) {
     staff_name:   data.staff_name   || '',
     category:     data.category     || '',
     date:         date,
+    receipt_no:   receptNo          || '',
   };
 
   // ── Script Properties からテンプレートを取得 ──
