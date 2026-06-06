@@ -20,8 +20,11 @@
         ただいまの期間は、協賛申込みの受付時間外となっております。
     </div>
 
+    <!-- Hidden iframe receives the Apps Script response, avoiding page reload -->
+    <iframe id="hidden-target" name="hidden-target" style="display:none;"></iframe>
+
     <!-- Main registration form — visibility controlled by checkRegistrationPeriod() -->
-    <form id="registration-form" action="#" method="POST">
+    <form id="registration-form" method="POST" target="hidden-target" enctype="application/x-www-form-urlencoded">
 
         <!-- Sponsor name (individual / company / organization) -->
         <div class="form-group">
@@ -133,9 +136,11 @@
         <!-- Agreement checkbox — disabled until the terms box is scrolled to the bottom -->
         <div class="form-group checkbox-group">
             <label id="agreement-label" class="disabled-label">
-                <input type="checkbox" name="agreement" id="checkbox-927" required disabled>
+                <input type="checkbox" name="agreement" id="checkbox-927" disabled>
                 誓約事項に同意する
             </label>
+            <!-- Hidden input that carries the required constraint with a Japanese message.
+                 It is cleared when the checkbox is checked, allowing the form to submit. -->
         </div>
 
         <!-- Submit button -->
@@ -147,6 +152,43 @@
 </div>
 
 <script>
+    // ─── Japanese validation messages ──────────────────────────────────────────
+
+    const validationMessages = {
+        company_name:      'こちらは入力必須項目です。',
+        company_furigana:  'こちらは入力必須項目です。',
+        rep_name:          'こちらは入力必須項目です。',
+        rep_furigana:      'こちらは入力必須項目です。',
+        staff_name:        'こちらは入力必須項目です。',
+        staff_furigana:    'こちらは入力必須項目です。',
+        zipcode:           '郵便番号を7桁の数字で入力してください。',
+        address:           'こちらは入力必須項目です。',
+        phone:             '電話番号を10〜11桁の数字で入力してください。',
+        email:             '正しいメールアドレスを入力してください。',
+        category:          '区分を選択してください。',
+    };
+
+    Object.entries(validationMessages).forEach(([name, message]) => {
+        const el = document.querySelector(`[name="${name}"]`);
+        if (!el) return;
+        // Set on load so the message shows from the first attempt.
+        el.setCustomValidity(message);
+        // Clear custom error first, then re-check native validity.
+        const revalidate = () => {
+            el.setCustomValidity('');
+            el.setCustomValidity(el.validity.valid ? '' : message);
+        };
+        el.addEventListener('input', revalidate);
+        el.addEventListener('change', revalidate);
+    });
+
+    // Radio group: validate on change of any option in the group.
+    document.querySelectorAll('[name="category"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            document.querySelectorAll('[name="category"]').forEach(r => r.setCustomValidity(''));
+        });
+    });
+
     // ─── Input sanitizers ───────────────────────────────────────────────────────
 
     // Strip any non-digit characters from the postal code field on every keystroke.
@@ -174,6 +216,7 @@
             agreementLabel.classList.remove('disabled-label');
         }
     });
+
 
     // ─── Furigana validation for company / organization name ───────────────────
 
@@ -210,12 +253,16 @@
         return `${yyyy}/${mm}/${dd}`;
     }
 
+    // Both values are loaded from config.json and used by the submit handler.
+    let targetSheetName  = '協賛申込み';
+    let appsScriptUrl    = '';
+
     /**
      * Fetch registration window config from config.json and show or hide the form
      * depending on whether the current time falls within [startDate, endDate].
      *
      * config.json shape:
-     *   { "startDate": "YYYY-MM-DDTHH:MM:SS", "endDate": "YYYY-MM-DDTHH:MM:SS" }
+     *   { "startDate": "YYYY-MM-DDTHH:MM:SS", "endDate": "YYYY-MM-DDTHH:MM:SS", "sheetName": "..." }
      */
     async function checkRegistrationPeriod() {
         const form          = document.getElementById('registration-form');
@@ -229,6 +276,10 @@
         try {
             const response = await fetch('config.json');
             const config   = await response.json();
+
+            // Store values from config so the submit handler can use them.
+            if (config.sheetName)    targetSheetName = config.sheetName;
+            if (config.deploymentId)  appsScriptUrl  = `https://script.google.com/macros/s/${config.deploymentId}/exec`;
 
             const startDate = new Date(config.startDate);
             const endDate   = new Date(config.endDate);
@@ -254,6 +305,44 @@
 
     // Run the period check as soon as the DOM is ready.
     window.addEventListener('DOMContentLoaded', checkRegistrationPeriod);
+
+    // ─── Form submission → Google Sheets ───────────────────────────────────────
+
+    // Apps Script URL is loaded from config.json (appsScriptUrl field).
+
+    document.getElementById('registration-form').addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const form        = e.target;
+        const submitBtn   = form.querySelector('button[type="submit"]');
+
+        // Disabled checkboxes bypass browser validation — enforce manually.
+        if (!document.getElementById('checkbox-927').checked) {
+            alert('「誓約事項に同意する」にチェックを入れてから送信してください。');
+            return;
+        }
+
+        submitBtn.disabled    = true;
+        submitBtn.textContent = '送信中...';
+
+        // Collect form data and append sheetName
+        const formData = new FormData(form);
+        const params   = new URLSearchParams(formData);
+        params.set('sheetName', targetSheetName);
+
+        const url = appsScriptUrl + '?' + params.toString();
+
+        // GET request — confirmed working unlike POST which returns 401 cross-origin
+        try {
+            await fetch(url, { method: 'GET', mode: 'no-cors' });
+        } catch (_) { /* no-cors response is opaque, ignore */ }
+
+        form.style.display = 'none';
+        const thanks = document.createElement('div');
+        thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
+        thanks.innerHTML = 'お申し込みありがとうございます。<br>内容を受け付けました。';
+        form.parentNode.insertBefore(thanks, form.nextSibling);
+    });
 </script>
 
 </body>
