@@ -11,80 +11,118 @@
 
 <div class="form-container">
     <h2>【第5回川口花火大会】協賛申込みフォーム</h2>
-    <p>第5回川口花火大会HPから協賛申込みがあります。以下の内容を入力してください。</p>
+    <p>第5回川口花火大会HPから協賛申込みがあります。<br>以下の内容を入力してください。</p>
+     <!-- Ô hiển thị thời gian sẽ tự động điền bằng JS -->
+    <div id="period-display" class="registration-period">
+        Loading...
+    </div>
     
-    <form action="#" method="POST">
+    <!-- Thêm id="registration-form" vào đây để điều khiển ẩn/hiện -->
+    <form id="registration-form" action="#" method="POST">
+        <!-- ... Giữ nguyên toàn bộ các ô nhập liệu bên trong form của bạn ... -->
+    </form>
+    
+    <!-- Thêm một div thông báo khi hết hạn hoặc chưa đến hạn -->
+   <div id="form-closed-message" style="display:none; text-align:center; padding:30px; color:#d9534f; font-weight:bold;">
+    ただいまの期間は、協賛申込みの受付時間外となっております。
+</div>
+
+  <form action="#" method="POST">
         <!-- Tên cá nhân/công ty -->
         <div class="form-group">
             <label>個人名・会社名・団体名</label>
-            <input type="text" name="company_name" value="医療法人社団紡世会 かわぐちレディースクリニック" required>
+            <input type="text" name="company_name" placeholder="医療法人社団紡世会 かわぐちレディースクリニック" required>
         </div>
 
-        <!-- Furigana Tên cá nhân/công ty -->
-        <div class="form-group">
-            <label class="furigana">個人名・会社名・団体名（フリガナ）</label>
-            <input type="text" name="company_furigana" value="イ）ホウセイカイ カワグチレディースクリニック">
-        </div>
-
+      <!-- Furigana Tên cá nhân/công ty -->
+<div class="form-group">
+    <label class="furigana">個人名・会社名・団体名（フリガナ）</label>
+    <input type="text" id="company_furigana" name="company_furigana" placeholder="イ）ホウセイカイ カワグチレディースクリニック" pattern="^[ァ-ヶー　\s）]+$" title="全角カタカナ、スペース、および全角閉じカッコのみで入力してください。" required>
+</div>
         <!-- Chức vụ / Tên đại diện -->
         <div class="form-group">
             <label>役職・代表者名</label>
-            <input type="text" name="rep_name" value="理事長 檜垣博" required>
+            <input type="text" name="rep_name" placeholder="理事長 檜垣博" required>
         </div>
 
         <!-- Furigana Chức vụ / Tên đại diện -->
         <div class="form-group">
             <label class="furigana">役職・代表者名（フリガナ）</label>
-            <input type="text" name="rep_furigana" value="リジチョウ ヒガキヒロシ">
+            <input type="text" id="rep_furigana" name="rep_furigana" placeholder="リジチョウ ヒガキヒロシ" pattern="^[ァ-ヶー\s　]+$" title="全角カタカナで入力してください。" required>
         </div>
 
         <!-- Tên người phụ trách -->
         <div class="form-group">
             <label>担当者名</label>
-            <input type="text" name="staff_name" value="佐藤 未来" required>
+            <input type="text" name="staff_name" placeholder="佐藤 未来" required>
         </div>
 
         <!-- Furigana Tên người phụ trách -->
         <div class="form-group">
             <label class="furigana">担当者名（フリガナ）</label>
-            <input type="text" name="staff_furigana" value="サトウ ミキ">
+            <input type="text" id="staff_furigana" name="staff_furigana" placeholder="サトウ ミキ" pattern="^[ァ-ヶー\s　]+$" title="全角カタカナで入力してください。" required>
         </div>
 
         <!-- Mã bưu điện -->
         <div class="form-group">
             <label>郵便番号</label>
-            <input type="text" name="zipcode" value="333-0846" required>
+            <input type="text" id="zipcode" name="zipcode" placeholder="3330846" maxlength="7" pattern="\d{7}" required>
         </div>
 
         <!-- Địa chỉ -->
         <div class="form-group">
             <label>住所</label>
-            <input type="text" name="address" value="埼玉県川口市南前川2-4-20" required>
+            <input type="text" name="address" placeholder="埼玉県川口市南前川2-4-20" required>
         </div>
 
         <!-- Số điện thoại -->
         <div class="form-group">
             <label>電話番号</label>
-            <input type="text" name="phone" value="0484232627" required>
+            <input type="text" id="phone" name="phone" placeholder="0484232627" maxlength="11" pattern="\d{10,11}" required>
+            <span class="form-note"><i>「-」</i>なしでご入力ください。</span>
         </div>
 
         <!-- Email -->
         <div class="form-group">
             <label>メールアドレス</label>
-            <input type="email" name="email" value="soumu@kawaguchiladys-clinic.net" required>
+            <input type="email" name="email" placeholder="soumu@kawaguchiladys-clinic.net" required>
         </div>
 
         <!-- Phân loại tài trợ -->
         <div class="form-group">
             <label>区分</label>
-            <input type="text" name="category" value="C (30万) / List A, B, C">
+            <div class="radio-group-container">
+                <label class="radio-label">
+                    <input type="radio" name="category" value="A" required> A (100万)
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="category" value="B"> B (70万)
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="category" value="C"> C (30万)
+                </label>
+            </div>
         </div>
 
-        <!-- Xác nhận điều khoản -->
+        <!-- BOX ghi các điều khoản (誓約事項) -->
+        <div class="form-group">
+            <label>誓約事項</label>
+            <div id="terms-box" class="terms-box">
+                <p><strong>【協賛に伴う誓約事項】</strong></p>
+                <p>1. 申込者は、川口花火大会の開催趣旨に賛同し <a href="kiyaku.pdf" target="_blank" class="pdf-link">規約(PDF)</a> を遵守することを誓約します。</p>
+                <p>2. 提供された協賛金は、大会の運営および安全対策 của 費用として正当に使用されます。</p>
+                <p>3. 荒天や不測 の事態により大会が中止となった場合でも、原則として協賛金の返金は行われませんのでご了承ください。</p>
+                <p>4. 暴力団員、暴力団関係企業・団体、その他反社会的勢力に該当しないことを表明し、将来にわたっても該当しないことを誓約します。</p>
+                <p>5. 協賛のキャンセルや変更を希望する場合は、大会事務局が指定する期日までに書面にて連絡を行うものとします。</p>
+                <p style="text-align: center; color: #d9534f; font-weight: bold; margin-top: 15px;">--- 以上、内容を最後までご確認いただくとチェックが可能になります ---</p>
+            </div>
+        </div>
+
+        <!-- Xác nhận điều khoản (Mặc định bị disabled để chặn bấm) -->
         <div class="form-group checkbox-group">
-            <label>
-                <input type="checkbox" name="agreement" id="checkbox-927" required checked> 
-                誓約事項の確認
+            <label id="agreement-label" class="disabled-label">
+                <input type="checkbox" name="agreement" id="checkbox-927" required disabled> 
+                誓約事項に同意する
             </label>
         </div>
 
@@ -94,6 +132,101 @@
         </div>
     </form>
 </div>
+
+<!-- Các đoạn mã JavaScript xử lý logic -->
+<script>
+    // 1. Chặn ký tự lạ cho ô số
+    document.getElementById('zipcode').addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    document.getElementById('phone').addEventListener('input', (e) => {
+        e.target.value = e.target.value.replace(/\D/g, '');
+    });
+
+    // 2. Logic bắt buộc cuộn hết điều khoản mới cho phép tích chọn checkbox
+    const termsBox = document.getElementById('terms-box');
+    const checkbox = document.getElementById('checkbox-927');
+    const agreementLabel = document.getElementById('agreement-label');
+
+    termsBox.addEventListener('scroll', () => {
+        if (termsBox.scrollTop + termsBox.clientHeight >= termsBox.scrollHeight - 2) {
+            checkbox.removeAttribute('disabled'); 
+            agreementLabel.classList.remove('disabled-label'); 
+        }
+    });
+
+        // Xử lý riêng cho ô Tên công ty/Cá nhân (Chấp nhận cả khoảng trắng Hankaku và Zenkaku)
+    document.getElementById('company_furigana').addEventListener('blur', (e) => {
+        let value = e.target.value;
+        if (value === '') return;
+
+        // Tự động sửa lỗi gõ nhầm: Chuyển ngoặc đóng nhỏ ) -> ngoặc đóng lớn ）
+        value = value.replace(/\)/g, '）'); 
+        e.target.value = value;
+
+        // Biểu thức chính quy mới: Cho phép Katakana, dấu kéo dài, khoảng trắng lớn (　), khoảng trắng nhỏ (\s), và ngoặc đóng to (）)
+        const isValid = /^[ァ-ヶー　\s）]+$/.test(value);
+
+        if (!isValid) {
+            alert('フリガナは全角カタカナ、スペース、および全角閉じカッコ「）」のみで入力してください。');
+            e.target.value = ''; // Chỉ xóa sạch nếu chứa chữ Kanji, chữ cái Latinh hoặc ngoặc mở （
+        }
+    });
+
+   // Hàm format hiển thị từ dạng YYYY-MM-DD sang YYYY/MM/DD để hiển thị lên giao diện
+    function formatDateDisplay(dateStr) {
+        const date = new Date(dateStr);
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}/${mm}/${dd}`;
+    }
+
+    // Hàm gọi file JSON bên ngoài và kiểm tra thời gian hợp lệ
+        async function checkRegistrationPeriod() {
+    const form = document.getElementById('registration-form');
+    const closedMessage = document.getElementById('form-closed-message');
+    const periodDisplay = document.getElementById('period-display');
+
+    // default state chống flash UI
+    form.style.display = 'none';
+    closedMessage.style.display = 'none';
+
+    try {
+        const response = await fetch('config.json');
+        const config = await response.json();
+
+        const startDate = new Date(config.startDate);
+        const endDate = new Date(config.endDate);
+        const now = new Date();
+
+        periodDisplay.innerText =
+            `申し込み時間：${formatDateDisplay(config.startDate)} ~ ${formatDateDisplay(config.endDate)}`;
+
+        const isOpen = now >= startDate && now <= endDate;
+
+        if (isOpen) {
+            form.style.display = 'block';
+            closedMessage.style.display = 'none';
+        } else {
+            form.style.display = 'none';
+            closedMessage.style.display = 'block';
+        }
+
+    } catch (error) {
+        console.error(error);
+        periodDisplay.innerText = '申し込み時間：設定エラー';
+        form.style.display = 'none';
+        closedMessage.style.display = 'block';
+    }
+}
+
+    // Tự động chạy hàm kiểm tra ngay khi trang web được tải xong
+    window.addEventListener('DOMContentLoaded', checkRegistrationPeriod);
+
+
+</script>
 
 </body>
 </html>

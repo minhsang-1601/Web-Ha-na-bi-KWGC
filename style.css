@@ -1,17 +1,45 @@
 body {
     font-family: Arial, sans-serif;
     line-height: 1.6;
-    margin: 20px;
-    background-color: #f9f9f9;
+    margin: 0;
+    padding: 40px 20px; /* Tạo khoảng cách trên dưới cho container nổi bật */
+    
+    /* Màu nền tím khói kết hợp xanh đêm dạng pastel rất nhẹ nhàng */
+    background-color: #f3effa;
+    background-image: 
+        /* Hạt sáng pháo hoa siêu mờ, dịu mắt ẩn hiện phía sau */
+        radial-gradient(circle, rgba(160, 130, 200, 0.08) 1.5px, transparent 1.5px),
+        radial-gradient(circle, rgba(230, 150, 180, 0.06) 2px, transparent 2px),
+        /* Lớp chuyển màu mượt mà giữa tím nhạt và xám xanh nhẹ */
+        linear-gradient(135deg, #f3effa 0%, #e8eaf6 50%, #f5f0f6 100%);
+        
+    /* Kích thước lặp lại của hiệu ứng hạt mờ */
+    background-size: 50px 50px, 70px 70px, 100% 100%;
+    background-position: 0 0, 25px 35px, 0 0;
+    
     color: #333;
 }
 
+/* 申し込み期間のスタイリング */
+.registration-period {
+    background-color: #f0eaf8; /* フォームの淡い紫色に合わせた非常に薄い紫背景 */
+    border-left: 4px solid #826ea0; /* アクセントとなる紫色の左線 */
+    padding: 10px 15px;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+    font-weight: bold;
+    color: #4a3b68; /* 読みやすい少し濃いめの紫色の文字 */
+    border-radius: 0 4px 4px 0;
+}
+
+/* Khung form trang nhã, nổi bật vừa phải trên nền tím đêm nhẹ */
 .form-container {
     max-width: 600px;
-    background: #fff;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    background: #ffffff; 
+    padding: 30px; /* Tăng padding một chút cho thoáng và sang trọng */
+    border-radius: 10px;
+    /* Đổ bóng nhẹ nhàng, thanh lịch */
+    box-shadow: 0 4px 20px rgba(130, 110, 160, 0.12); 
     margin: 0 auto;
 }
 
@@ -62,4 +90,68 @@ button {
 
 button:hover {
     background-color: #0056b3;
+}
+
+/* Định dạng dòng chú ý dưới ô số điện thoại: chữ nhỏ hơn và mờ */
+.form-note {
+    display: block;
+    font-size: 0.78em; 
+    color: #8c8c8c;    
+    margin-top: 4px;
+}
+
+/* Định dạng in nghiêng và làm nổi bật ký tự gạch ngang */
+.form-note i {
+    font-style: italic;
+    font-weight: bold;
+    color: #555;       
+    padding-right: 2px;
+}
+
+/* Định dạng hộp chứa nội dung điều khoản */
+.terms-box {
+    width: 100%;
+    height: 150px; 
+    overflow-y: scroll;
+    border: 1px solid #ccc;
+    background-color: #fcfcfc;
+    padding: 10px;
+    border-radius: 4px;
+    box-sizing: border-box;
+    font-size: 0.9em;
+    color: #444;
+}
+
+/* Kiểu hiển thị khi checkbox đang bị khóa (chưa cuộn hết văn bản) */
+.disabled-label {
+    color: #999;
+    cursor: not-allowed;
+}
+
+/* Đổi lại con trỏ chuột bình thường khi đã được mở khóa */
+.checkbox-group label:not(.disabled-label) {
+    color: #333;
+    cursor: pointer;
+}
+
+/* Container chứa các lựa chọn radio */
+.radio-group-container {
+    display: flex;
+    gap: 20px;          
+    margin-top: 5px;
+}
+
+/* Định dạng từng nhãn lựa chọn */
+.radio-label {
+    display: inline-flex;
+    align-items: center;
+    font-weight: normal; 
+    cursor: pointer;
+    font-size: 0.95em;
+}
+
+/* Tạo khoảng cách nhỏ giữa nút tròn và chữ */
+.radio-label input[type="radio"] {
+    margin-right: 6px;
+    cursor: pointer;
 }
