@@ -169,9 +169,10 @@ function appendRow(data, sheetName) {
       sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
     }
 
-    // 受付番号: KWGC + MMddHHmmssSSS
-    const now       = new Date();
-    const receptNo  = 'KWGC' + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
+    // 受付番号: クライアントから送られた値を優先し、なければサーバーで生成
+    const now      = new Date();
+    const receptNo = data.receipt_no ||
+                     'KWGC' + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
 
     sheet.appendRow([
       receptNo,
