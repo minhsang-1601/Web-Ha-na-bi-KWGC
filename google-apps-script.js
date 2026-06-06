@@ -17,15 +17,15 @@
 
 // ─── 設定 ──────────────────────────────────────────────────────────────────────
 
-const DEFAULT_SHEET_NAME  = '協賛申込み';
-
+// フォールバック値 — config.json の sheetName1 / sheetName2 で上書きされる
+const DEFAULT_SHEET_NAME  = '協賛申込み一覧';
+const DEFAULT_SHEET_NAME2 = '手作業';
 
 // 区分ごとの協賛金額（税込）
 const CATEGORY_PRICE = { A: 1000000, B: 500000, C: 300000, D: 200000, E: 100000 };
 
 // 角印画像のGoogle Drive ファイルID
 const HANKO_FILE_ID = '1Q5kBbhKKuIRSaNiSXfBbvTnO0W1niFyZ';
-const TETSUGYO_SHEET_NAME = '手作業';
 
 // 手作業シートのヘッダー定義
 const TETSUGYO_HEADERS = [
@@ -92,8 +92,8 @@ function doPost(e) {
  */
 function handleSubmission(data) {
   try {
-    const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
-    appendToTetsugyoSheet(receptNo);
+    const receptNo = appendRow(data, data.sheetName  || DEFAULT_SHEET_NAME);
+    appendToTetsugyoSheet(receptNo, data.sheetName2 || DEFAULT_SHEET_NAME2);
     if (data.email) {
       // PDFを生成してメールに添付
       const invoicePdf = generateInvoicePdf(data, receptNo);
@@ -196,10 +196,10 @@ function applyColumnWidths(sheet) {
  * 手作業シートに受付番号を追記し、各列にXLOOKUP数式を挿入する。
  * @param {string} receptNo - 受付番号
  */
-function appendToTetsugyoSheet(receptNo) {
+function appendToTetsugyoSheet(receptNo, sheetName2) {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  let sheet   = ss.getSheetByName(TETSUGYO_SHEET_NAME);
-  if (!sheet) sheet = ss.insertSheet(TETSUGYO_SHEET_NAME);
+  let sheet   = ss.getSheetByName(sheetName2);
+  if (!sheet) sheet = ss.insertSheet(sheetName2);
 
   // ヘッダー行の初期化（初回のみ）
   if (sheet.getLastRow() === 0) {
@@ -225,7 +225,7 @@ function appendToTetsugyoSheet(receptNo) {
   // B〜G列: XLOOKUPで協賛申込みシートから自動参照
   Object.entries(TETSUGYO_LOOKUP_COLS).forEach(([col, srcCol]) => {
     const formula =
-      `=IFERROR(XLOOKUP($A${newRow};'協賛申込み'!$A:$A;'協賛申込み'!$${srcCol}:$${srcCol});"見つかりません")`;
+      `=IFERROR(XLOOKUP($A${newRow};'${DEFAULT_SHEET_NAME}'!$A:$A;'${DEFAULT_SHEET_NAME}'!$${srcCol}:$${srcCol});"見つかりません")`;
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 

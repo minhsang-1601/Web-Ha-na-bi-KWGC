@@ -274,8 +274,9 @@
         return `${yyyy}/${mm}/${dd}`;
     }
 
-    // Both values are loaded from config.json and used by the submit handler.
+    // Values loaded from config.json and used by the submit handler.
     let targetSheetName  = '協賛申込み';
+    let targetSheetName2 = '手作業';
     let appsScriptUrl    = '';
 
     /**
@@ -299,8 +300,9 @@
             const config   = await response.json();
 
             // Store values from config so the submit handler can use them.
-            if (config.sheetName)    targetSheetName = config.sheetName;
-            if (config.deploymentId)  appsScriptUrl  = `https://script.google.com/macros/s/${config.deploymentId}/exec`;
+            if (config.sheetName1)   targetSheetName  = config.sheetName1;
+            if (config.sheetName2)   targetSheetName2 = config.sheetName2;
+            if (config.deploymentId) appsScriptUrl    = `https://script.google.com/macros/s/${config.deploymentId}/exec`;
 
             const startDate = new Date(config.startDate);
             const endDate   = new Date(config.endDate);
@@ -402,7 +404,8 @@
 
         const formData = new FormData(form);
         const params   = new URLSearchParams(formData);
-        params.set('sheetName', targetSheetName);
+        params.set('sheetName',  targetSheetName);
+        params.set('sheetName2', targetSheetName2);
         params.set('receipt_no', receptNo);
 
         try {

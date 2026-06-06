@@ -1,7 +1,8 @@
 {
   "startDate": "2025-01-01T00:00:00",
   "endDate": "2026-10-01T23:59:59",
-  "sheetName": "協賛申込み",
-  "deploymentId": "AKfycbylDI4g5KW6Osh6XZ4T4FpFjJnrqcbTYrhRROpNaSKu8_Yg8EfFvoFUUSLeikmkrKWr",
+  "sheetName1": "協賛申込み一覧",
+  "sheetName2": "手作業",
+  "deploymentId": "AKfycbzxMkyb3W0SvPsOIJtZwybl4WtDNELPKJJ4ogqAfrgsXYaAb3wK0Z0VpFbqnRay3P1s",
   "hankoFileId": "1Q5kBbhKKuIRSaNiSXfBbvTnO0W1niFyZ"
 }
