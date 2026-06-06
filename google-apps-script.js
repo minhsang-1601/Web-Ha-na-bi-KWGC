@@ -68,7 +68,9 @@ function doPost(e) {
  */
 function handleSubmission(data) {
   try {
+    // シート書き込みとメール送信を分離 — lock はシート書き込みのみに絞る
     const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
+    // メールはロック解放後に送信（ロック保持時間を最小化）
     if (data.email) sendConfirmationEmail(data, receptNo);
     return jsonResponse({ result: 'success' });
   } catch (err) {
@@ -191,9 +193,16 @@ function appendRow(data, sheetName) {
     const receptNo = data.receipt_no ||
                      'KWGC' + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
 
-    sheet.appendRow([
+    // 追記行番号を確定し、フォーマットを先に設定してから一括書き込み
+    const newRow = sheet.getLastRow() + 1;
+    sheet.getRange(newRow, 9).setNumberFormat('@');   // 郵便番号
+    sheet.getRange(newRow, 11).setNumberFormat('@');  // 電話番号
+
+    // setValues で1回のAPI呼び出しにまとめる（appendRow より高速）
+    const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([[
       receptNo,
-      now,
+      dateStr,
       data.company_name     || '',
       data.company_furigana || '',
       data.rep_name         || '',
@@ -206,12 +215,10 @@ function appendRow(data, sheetName) {
       data.email            || '',
       data.category         || '',
       '', '', '', '', '', '',   // 管理用6列（手動入力）
-    ]);
+    ]]);
 
-    // 郵便番号・電話番号：format を先に設定してから値を上書き（先頭0を保持）
-    const newRow = sheet.getLastRow();
-    sheet.getRange(newRow, 9).setNumberFormat('@').setValue(data.zipcode || '');
-    sheet.getRange(newRow, 11).setNumberFormat('@').setValue(data.phone  || '');
+    // 書き込みを確定してからロックを解放
+    SpreadsheetApp.flush();
 
     return receptNo;
   } finally {
