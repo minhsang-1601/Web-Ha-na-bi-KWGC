@@ -18,6 +18,13 @@
 // ─── 設定 ──────────────────────────────────────────────────────────────────────
 
 const DEFAULT_SHEET_NAME  = '協賛申込み';
+
+
+// 区分ごとの協賛金額（税込）
+const CATEGORY_PRICE = { A: 1000000, B: 500000, C: 300000, D: 200000, E: 100000 };
+
+// 角印画像のGoogle Drive ファイルID
+const HANKO_FILE_ID = '1Q5kBbhKKuIRSaNiSXfBbvTnO0W1niFyZ';
 const TETSUGYO_SHEET_NAME = '手作業';
 
 // 手作業シートのヘッダー定義
@@ -87,7 +94,11 @@ function handleSubmission(data) {
   try {
     const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
     appendToTetsugyoSheet(receptNo);
-    if (data.email) sendConfirmationEmail(data, receptNo);
+    if (data.email) {
+      // PDFを生成してメールに添付
+      const invoicePdf = generateInvoicePdf(data, receptNo);
+      sendConfirmationEmail(data, receptNo, invoicePdf);
+    }
     return jsonResponse({ result: 'success' });
   } catch (err) {
     return jsonResponse({ result: 'error', message: err.message });
@@ -102,7 +113,7 @@ function handleSubmission(data) {
  * 以後は「プロジェクトの設定」→「スクリプト プロパティ」から直接編集可能。
  */
 function setupMailTemplate() {
-  const subject = '【第5回川口花火大会】協賛お申し込み受付のご連絡（受付番号：{{receipt_no}}）';
+  const subject = '【第5回川口花火大会】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）';
 
   const body = [
     '{{company_name}}',
@@ -125,9 +136,9 @@ function setupMailTemplate() {
     '　受付番号　　　　：{{receipt_no}}',
     '─────────────────────────────',
     '',
-    '今後の流れにつきましては、改めて担当者よりご連絡を差し上げます。',
-    'ご請求書の送付をもって正式なお手続きとなりますので、',
-    '今しばらくお待ちくださいますようお願い申し上げます。',
+    '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
+    'ご確認のうえ、お振込期限までにお手続きくださいますよう',
+    'お願い申し上げます。',
     '',
     'ご不明な点がございましたら、お気軽に下記事務局までお問い合わせください。',
     '引き続き、どうぞよろしくお願い申し上げます。',
@@ -146,6 +157,7 @@ function setupMailTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     MAIL_SUBJECT: subject,
     MAIL_BODY:    body,
+    PAYMENT_DUE:  '9月11日（金）',  // ← 変更する場合はここを編集して再実行
   });
 
   SpreadsheetApp.getUi().alert(
@@ -291,7 +303,7 @@ function appendRow(data, sheetName) {
  * テンプレート取得失敗時はシンプルなフォールバック文面を使用する。
  * @param {Object} data - フォームデータ
  */
-function sendConfirmationEmail(data, receptNo) {
+function sendConfirmationEmail(data, receptNo, invoicePdf) {
   const now  = new Date();
   const date = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
 
@@ -321,12 +333,86 @@ function sendConfirmationEmail(data, receptNo) {
     body    = body.replace(placeholder, value);
   });
 
-  MailApp.sendEmail({
+  const mailOptions = {
     to:      data.email,
     subject: subject,
     body:    body,
     replyTo: OFFICE_EMAIL,
+  };
+
+  // PDFが生成済みの場合は添付する
+  if (invoicePdf) {
+    mailOptions.attachments = [
+      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
+    ];
+  }
+
+  MailApp.sendEmail(mailOptions);
+}
+
+/**
+ * Google Doc テンプレートのコピーを作成し、プレースホルダーを置換してPDF出力する。
+ * 一時ファイルは処理後に自動削除される。
+ * @param {Object} data
+ * @param {string} receptNo
+ * @returns {Blob} PDF Blob
+ */
+function generateInvoicePdf(data, receptNo) {
+  const now      = new Date();
+  const reiwa    = now.getFullYear() - 2018;
+  const issueDate = `令和${reiwa}年${now.getMonth() + 1}月${now.getDate()}日`;
+
+  const category   = (data.category || '').trim().toUpperCase();
+  const totalPrice = CATEGORY_PRICE[category] || 0;
+  const subtotal   = Math.round(totalPrice / 1.1);
+  const tax        = totalPrice - subtotal;
+  const fmt        = (n) => n > 0 ? `¥${n.toLocaleString()}` : '';
+
+  const marks     = { A: '', B: '', C: '', D: '', E: '' };
+  if (marks[category] !== undefined) marks[category] = '1';
+
+  // お振込期限はテンプレートに固定記載のため不要
+
+  const amountLine = (cat) => cat === category ? fmt(totalPrice) : '';
+
+  // Apps Script プロジェクト内の InvoiceTemplate.html を読み込む
+  let html = HtmlService.createHtmlOutputFromFile('InvoiceTemplate').getContent();
+
+  // 角印画像: Google Drive の直接URLを使用（DriveのPDFレンダラーがアクセス可能）
+  const hankoUrl = `https://drive.google.com/uc?id=${HANKO_FILE_ID}`;
+  html = html.replace('src="hanko.png"', `src="${hankoUrl}"`);
+
+  const replacements = {
+    '{{company_name}}': data.company_name || '',
+    '{{issue_date}}':   issueDate,
+    '{{receipt_no}}':   receptNo,
+    '{{total}}':        fmt(totalPrice),
+    '{{subtotal}}':     fmt(subtotal),
+    '{{tax}}':          fmt(tax),
+    '{{mark_a}}':       marks['A'],
+    '{{mark_b}}':       marks['B'],
+    '{{mark_c}}':       marks['C'],
+    '{{mark_d}}':       marks['D'],
+    '{{mark_e}}':       marks['E'],
+    '{{amount_a}}':     amountLine('A'),
+    '{{amount_b}}':     amountLine('B'),
+    '{{amount_c}}':     amountLine('C'),
+    '{{amount_d}}':     amountLine('D'),
+    '{{amount_e}}':     amountLine('E'),
+  };
+
+  Object.entries(replacements).forEach(([key, val]) => {
+    html = html.split(key).join(val);
   });
+
+  // HTML → Drive に一時保存 → PDF 変換 → 削除
+  const tmpFile = DriveApp.createFile(
+    Utilities.newBlob(html, MimeType.HTML, `_tmp_${receptNo}.html`)
+  );
+  const pdf = tmpFile.getAs(MimeType.PDF);
+  tmpFile.setTrashed(true);
+
+  return pdf;
 }
 
 // ─── ユーティリティ ────────────────────────────────────────────────────────────
