@@ -160,3 +160,62 @@ button {
 button:hover {
     background-color: #0056b3;
 }
+
+/* ─── Responsive ────────────────────────────────────────────────────────────── */
+
+/* Tablet (≤ 640px) */
+@media (max-width: 640px) {
+    body {
+        padding: 20px 12px;
+    }
+
+    .form-container {
+        padding: 20px 16px;
+        border-radius: 8px;
+    }
+
+    h2 {
+        font-size: 1.05em;
+    }
+}
+
+/* Mobile (≤ 400px) */
+@media (max-width: 400px) {
+    body {
+        padding: 12px 8px;
+    }
+
+    .form-container {
+        padding: 16px 12px;
+        border-radius: 6px;
+    }
+
+    h2 {
+        font-size: 1em;
+    }
+
+    input[type="text"],
+    input[type="email"] {
+        font-size: 1em; /* Prevent iOS auto-zoom (must be ≥ 16px equivalent) */
+        padding: 10px 8px;
+    }
+
+    button {
+        padding: 13px 15px;
+        font-size: 1em;
+    }
+
+    /* Stack radio buttons vertically on very small screens */
+    .radio-group-container {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .terms-box {
+        height: 180px; /* Taller on mobile for easier reading */
+    }
+
+    .registration-period {
+        font-size: 0.85em;
+    }
+}
