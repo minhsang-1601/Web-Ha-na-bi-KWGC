@@ -17,7 +17,31 @@
 
 // ─── 設定 ──────────────────────────────────────────────────────────────────────
 
-const DEFAULT_SHEET_NAME = '協賛申込み';
+const DEFAULT_SHEET_NAME  = '協賛申込み';
+const TETSUGYO_SHEET_NAME = '手作業';
+
+// 手作業シートのヘッダー定義
+const TETSUGYO_HEADERS = [
+  '受付番号',         // A — 自動入力
+  '区分',             // B — XLOOKUP
+  '電話番号',         // C — XLOOKUP
+  '個人名・会社名・団体名', // D — XLOOKUP
+  '住所',             // E — XLOOKUP
+  '役職・代表者名',   // F — XLOOKUP
+  'メールアドレス',   // G — XLOOKUP
+  '会社HP URL',       // H — 手動入力
+];
+
+// 手作業シート: 協賛申込みシートの参照列（XLOOKUP用）
+// キー = 手作業の列番号(1始まり), 値 = 協賛申込みの列アルファベット
+const TETSUGYO_LOOKUP_COLS = {
+  2: 'M',  // 区分
+  3: 'K',  // 電話番号
+  4: 'C',  // 個人名・会社名・団体名
+  5: 'J',  // 住所
+  6: 'E',  // 役職・代表者名
+  7: 'L',  // メールアドレス
+};
 
 // 事務局情報（返信先メールアドレスに使用）
 const OFFICE_EMAIL = 'gioitre.kamifukuoka2023@gmail.com';
@@ -61,9 +85,8 @@ function doPost(e) {
  */
 function handleSubmission(data) {
   try {
-    // シート書き込みとメール送信を分離 — lock はシート書き込みのみに絞る
     const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
-    // メールはロック解放後に送信（ロック保持時間を最小化）
+    appendToTetsugyoSheet(receptNo);
     if (data.email) sendConfirmationEmail(data, receptNo);
     return jsonResponse({ result: 'success' });
   } catch (err) {
@@ -153,6 +176,49 @@ function setupHeaders() {
 function applyColumnWidths(sheet) {
   const widths = [160,150,200,180,150,150,120,120,90,220,120,220,60];
   widths.forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+}
+
+// ─── 手作業シート書き込み ──────────────────────────────────────────────────────
+
+/**
+ * 手作業シートに受付番号を追記し、各列にXLOOKUP数式を挿入する。
+ * @param {string} receptNo - 受付番号
+ */
+function appendToTetsugyoSheet(receptNo) {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet   = ss.getSheetByName(TETSUGYO_SHEET_NAME);
+  if (!sheet) sheet = ss.insertSheet(TETSUGYO_SHEET_NAME);
+
+  // ヘッダー行の初期化（初回のみ）
+  if (sheet.getLastRow() === 0) {
+    sheet.appendRow(TETSUGYO_HEADERS);
+    const hRange = sheet.getRange(1, 1, 1, TETSUGYO_HEADERS.length);
+    hRange.setFontWeight('bold').setBackground('#fce8b2');  // 黄色ヘッダー
+    // 列幅設定
+    [160, 80, 120, 200, 200, 150, 200, 160].forEach((w, i) =>
+      sheet.setColumnWidth(i + 1, w)
+    );
+    // 電話番号列（C=3列目）をテキスト形式に設定（先頭0を保持）
+    sheet.getRange(2, 3, sheet.getMaxRows() - 1).setNumberFormat('@');
+  }
+
+  const newRow = sheet.getLastRow() + 1;
+
+  // A列: 受付番号を直接書き込み
+  sheet.getRange(newRow, 1).setValue(receptNo);
+
+  // 電話番号セル（C列）をテキスト形式に設定（先頭0保持）
+  sheet.getRange(newRow, 3).setNumberFormat('@');
+
+  // B〜G列: XLOOKUPで協賛申込みシートから自動参照
+  Object.entries(TETSUGYO_LOOKUP_COLS).forEach(([col, srcCol]) => {
+    const formula =
+      `=IFERROR(XLOOKUP($A${newRow};'協賛申込み'!$A:$A;'協賛申込み'!$${srcCol}:$${srcCol});"見つかりません")`;
+    sheet.getRange(newRow, Number(col)).setFormula(formula);
+  });
+
+  // H列: 会社HP URL は手動入力のため空欄
+  // （何も書かない）
 }
 
 // ─── シート書き込み ────────────────────────────────────────────────────────────
