@@ -37,6 +37,8 @@ const TETSUGYO_HEADERS = [
   '役職・代表者名',   // F — XLOOKUP
   'メールアドレス',   // G — XLOOKUP
   '会社HP URL',       // H — 手動入力
+  '入金完了',         // I — チェックボックス（自動）
+  'お礼状送付',       // J — 未（自動）→ 手動更新
 ];
 
 // 手作業シート: 協賛申込みシートの参照列（XLOOKUP用）
@@ -207,7 +209,7 @@ function appendToTetsugyoSheet(receptNo, sheetName2) {
     const hRange = sheet.getRange(1, 1, 1, TETSUGYO_HEADERS.length);
     hRange.setFontWeight('bold').setBackground('#fce8b2');  // 黄色ヘッダー
     // 列幅設定
-    [160, 80, 120, 200, 200, 150, 200, 160].forEach((w, i) =>
+    [160, 80, 120, 200, 200, 150, 200, 160, 80, 80].forEach((w, i) =>
       sheet.setColumnWidth(i + 1, w)
     );
     // 電話番号列（C=3列目）をテキスト形式に設定（先頭0を保持）
@@ -230,7 +232,13 @@ function appendToTetsugyoSheet(receptNo, sheetName2) {
   });
 
   // H列: 会社HP URL は手動入力のため空欄
-  // （何も書かない）
+
+  // I列: 入金完了チェックボックスを挿入
+  const checkboxCell = sheet.getRange(newRow, 9);
+  checkboxCell.insertCheckboxes();
+
+  // J列: お礼状送付ステータスを「未」で初期化
+  sheet.getRange(newRow, 10).setValue('未');
 }
 
 // ─── シート書き込み ────────────────────────────────────────────────────────────
