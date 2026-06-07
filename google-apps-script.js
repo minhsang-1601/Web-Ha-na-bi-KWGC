@@ -489,16 +489,35 @@ function onEditInstallable(e) {
   const col = e.range.getColumn();
   const row = e.range.getRow();
 
-  // I列（9）のチェックボックスがONになった場合のみ処理
+  // I列（9）以外は無視
   if (col !== 9 || row <= 1) return;
-  if (e.range.getValue() !== true) return;
 
   const statusCell = sheet.getRange(row, 10); // J列
   const status     = statusCell.getValue();
 
+  // ── チェックを外した場合（済み → 未に戻す確認） ──
+  if (e.range.getValue() === false) {
+    if (status === '済み') {
+      const ui  = SpreadsheetApp.getUi();
+      const res = ui.alert(
+        '⚠️ チェックを外しますか？',
+        'このチェックを外すと「お礼状送付」が「済み」→「未」に戻ります。\n' +
+        '本当によろしいですか？',
+        ui.ButtonSet.YES_NO
+      );
+      if (res === ui.Button.YES) {
+        statusCell.setValue('未');
+      } else {
+        // キャンセル → チェックを戻す
+        e.range.setValue(true);
+      }
+    }
+    return;
+  }
+
   if (status === '未') {
-    // 協賛申込みシートから顧客情報を取得
     const receptNo  = sheet.getRange(row, 1).getValue();
+    const category  = sheet.getRange(row, 2).getValue();
     const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
 
     if (!mainSheet) {
@@ -515,11 +534,19 @@ function onEditInstallable(e) {
       return;
     }
 
-    // お礼状メールを送信
-    sendOreijouEmail(data, receptNo);
+    // 確認ダイアログを表示（送信はユーザーが「送信する」を押してから）
+    const tpl = HtmlService.createTemplateFromFile('ConfirmOreijouDialog');
+    tpl.receptNo     = receptNo;
+    tpl.company_name = data.company_name || '';
+    tpl.rep_name     = data.rep_name     || '';
+    tpl.category     = category          || '';
+    tpl.email        = data.email        || '';
+    tpl.row          = row;
 
-    // J列を「済み」に更新
-    statusCell.setValue('済み');
+    SpreadsheetApp.getUi().showModalDialog(
+      tpl.evaluate().setWidth(420).setHeight(310),
+      'お礼状送付の確認'
+    );
 
   } else {
     // すでに送付済み — 警告してチェックを解除
@@ -529,6 +556,32 @@ function onEditInstallable(e) {
     );
     e.range.setValue(false);
   }
+}
+
+/**
+ * ダイアログで「送信する」が押されたときに呼ばれる。
+ * お礼状メールを送信してJ列を「済み」に更新する。
+ */
+function sendOreijouConfirmed(row, receptNo) {
+  const ss        = SpreadsheetApp.getActiveSpreadsheet();
+  const tetsuSheet = ss.getSheetByName(DEFAULT_SHEET_NAME2 || '手作業');
+  const mainSheet  = ss.getSheetByName(DEFAULT_SHEET_NAME);
+
+  const data = findRowByReceptNo(mainSheet, receptNo);
+  if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
+
+  sendOreijouEmail(data, receptNo);
+  tetsuSheet.getRange(row, 10).setValue('済み');
+}
+
+/**
+ * ダイアログで「キャンセル」が押されたときに呼ばれる。
+ * チェックボックスを外す。
+ */
+function cancelOreijou(row) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet()
+    .getSheetByName(DEFAULT_SHEET_NAME2 || '手作業');
+  if (sheet) sheet.getRange(row, 9).setValue(false);
 }
 
 /**

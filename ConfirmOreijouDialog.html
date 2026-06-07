@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: "Yu Gothic", "Meiryo", sans-serif;
+    font-size: 13px;
+    color: #333;
+    padding: 20px;
+    background: #fff;
+  }
+  h3 {
+    font-size: 14px;
+    color: #4a3b68;
+    border-bottom: 2px solid #826ea0;
+    padding-bottom: 8px;
+    margin-bottom: 16px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  td {
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    vertical-align: top;
+  }
+  td:first-child {
+    color: #666;
+    width: 100px;
+    white-space: nowrap;
+  }
+  td:last-child {
+    font-weight: bold;
+  }
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+  }
+  button {
+    padding: 9px 22px;
+    border: none;
+    border-radius: 4px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .btn-cancel {
+    background: #f0eaf8;
+    color: #4a3b68;
+    border: 1px solid #c9b8e0;
+  }
+  .btn-send {
+    background: #007BFF;
+    color: #fff;
+    font-weight: bold;
+  }
+  .btn-send:disabled {
+    background: #aaa;
+    cursor: not-allowed;
+  }
+  .status {
+    font-size: 12px;
+    color: #888;
+    margin-top: 10px;
+    text-align: right;
+    min-height: 16px;
+  }
+</style>
+</head>
+<body>
+
+<h3>📧 お礼状送付の確認</h3>
+
+<table>
+  <tr>
+    <td>受付番号</td>
+    <td><?= receptNo ?></td>
+  </tr>
+  <tr>
+    <td>会社名</td>
+    <td><?= company_name ?></td>
+  </tr>
+  <tr>
+    <td>役職・代表者名</td>
+    <td><?= rep_name ?></td>
+  </tr>
+  <tr>
+    <td>区分</td>
+    <td><?= category ?> プラン</td>
+  </tr>
+  <tr>
+    <td>送付先</td>
+    <td><?= email ?></td>
+  </tr>
+</table>
+
+<div class="btn-row">
+  <button class="btn-cancel" onclick="cancelDialog()">キャンセル</button>
+  <button class="btn-send" id="sendBtn" onclick="confirmSend()">送信する</button>
+</div>
+<div class="status" id="status"></div>
+
+<script>
+  function cancelDialog() {
+    google.script.run.cancelOreijou(<?= row ?>);
+    google.script.host.close();
+  }
+
+  function confirmSend() {
+    const btn = document.getElementById('sendBtn');
+    btn.disabled = true;
+    document.getElementById('status').textContent = '送信中...';
+
+    google.script.run
+      .withSuccessHandler(() => {
+        document.getElementById('status').textContent = '✅ 送信完了';
+        setTimeout(() => google.script.host.close(), 800);
+      })
+      .withFailureHandler((err) => {
+        document.getElementById('status').textContent = '❌ エラー: ' + err.message;
+        btn.disabled = false;
+      })
+      .sendOreijouConfirmed(<?= row ?>, '<?= receptNo ?>');
+  }
+</script>
+
+</body>
+</html>
