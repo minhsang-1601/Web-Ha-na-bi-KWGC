@@ -688,6 +688,55 @@ function generateOreijouPdf(data) {
   }
 }
 
+// ─── シート保護設定 ────────────────────────────────────────────────────────────
+
+/**
+ * 手作業シートを保護する。
+ * オーナー（自分）のみ編集可能。他のユーザーおよびモバイルからの編集を防ぐ。
+ * Apps Script エディタで一度だけ実行する。
+ */
+function setupSheetProtection() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2 || '手作業');
+
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('手作業シートが見つかりません。');
+    return;
+  }
+
+  // 既存の保護をすべて解除してから再設定
+  sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach(p => p.remove());
+
+  const protection = sheet.protect();
+  protection.setDescription('手作業シート保護 — オーナーのみ編集可');
+
+  // 自分以外の編集者をすべて削除（オーナーは常に編集可）
+  const me = Session.getEffectiveUser();
+  protection.addEditor(me);
+  protection.removeEditors(protection.getEditors().filter(e => e.getEmail() !== me.getEmail()));
+
+  // 警告メッセージを有効にする（編集しようとすると警告が出る）
+  protection.setWarningOnly(false);
+
+  SpreadsheetApp.getUi().alert(
+    '✅ 手作業シートを保護しました。\n\n' +
+    'オーナー（' + me.getEmail() + '）のみ編集できます。\n' +
+    'モバイルからの編集は制限されます。'
+  );
+}
+
+/**
+ * 手作業シートの保護を解除する（必要な場合のみ）。
+ */
+function removeSheetProtection() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2 || '手作業');
+  if (!sheet) return;
+
+  sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach(p => p.remove());
+  SpreadsheetApp.getUi().alert('手作業シートの保護を解除しました。');
+}
+
 // ─── ユーティリティ ────────────────────────────────────────────────────────────
 
 function jsonResponse(payload) {
