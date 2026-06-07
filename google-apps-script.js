@@ -423,6 +423,218 @@ function generateInvoicePdf(data, receptNo) {
   return pdf;
 }
 
+// ─── お礼状メールテンプレート初期設定 ─────────────────────────────────────────
+
+/**
+ * お礼状メールテンプレートを Script Properties に保存する。
+ * 初回のみ実行すること。
+ */
+function setupOreijouTemplate() {
+  const subject = '【第5回川口花火大会】ご協賛へのお礼（受付番号：{{receipt_no}}）';
+
+  const body = [
+    '{{company_name}}',
+    '{{rep_name}} 様',
+    '',
+    '平素より格別のご高配を賜り、厚く御礼申し上げます。',
+    '川口花火大会実行委員会 事務局でございます。',
+    '',
+    'このたびは、第5回川口花火大会へのご協賛ならびに',
+    'ご入金いただきまして、誠にありがとうございます。',
+    '',
+    'なお、お礼状をPDFにて添付しておりますのでご確認ください。',
+    '',
+    'おかげさまで大会の準備を進めることができております。',
+    '当日は皆様に素晴らしい花火をお届けできるよう、',
+    '実行委員会一同、精一杯努めてまいります。',
+    '',
+    '今後ともどうぞよろしくお願い申し上げます。',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '第5回川口花火大会 実行委員会 事務局',
+    'TEL　　：048-XXX-XXXX',
+    'E-mail：' + OFFICE_EMAIL,
+    '受付時間：平日 10:00 〜 17:00',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '',
+    '※ このメールは自動送信されています。',
+    '　 本メールへの返信はお受けできませんのでご了承ください。',
+  ].join('\n');
+
+  PropertiesService.getScriptProperties().setProperties({
+    OREIJOU_SUBJECT: subject,
+    OREIJOU_BODY:    body,
+  });
+
+  SpreadsheetApp.getUi().alert('お礼状テンプレートを保存しました。');
+}
+
+// ─── チェックボックストリガー ──────────────────────────────────────────────────
+
+/**
+ * 手作業シートのI列チェックボックスがONになったときに呼ばれる。
+ * J列が「未」であればお礼状メールを送信して「済み」に更新する。
+ * すでに「済み」の場合は警告を表示してチェックを外す。
+ *
+ * ⚠️ Apps Script エディタで「トリガー」→「onEditInstallable」を
+ *    スプレッドシートの onChange/onEdit イベントとして登録すること。
+ * @param {GoogleAppsScript.Events.SheetsOnEdit} e
+ */
+function onEditInstallable(e) {
+  const sheet = e.range.getSheet();
+
+  // 手作業シート以外は無視
+  if (sheet.getName() !== (DEFAULT_SHEET_NAME2 || '手作業')) return;
+
+  const col = e.range.getColumn();
+  const row = e.range.getRow();
+
+  // I列（9）のチェックボックスがONになった場合のみ処理
+  if (col !== 9 || row <= 1) return;
+  if (e.range.getValue() !== true) return;
+
+  const statusCell = sheet.getRange(row, 10); // J列
+  const status     = statusCell.getValue();
+
+  if (status === '未') {
+    // 協賛申込みシートから顧客情報を取得
+    const receptNo  = sheet.getRange(row, 1).getValue();
+    const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
+
+    if (!mainSheet) {
+      SpreadsheetApp.getUi().alert('申込みシートが見つかりません。');
+      e.range.setValue(false);
+      return;
+    }
+
+    const data = findRowByReceptNo(mainSheet, receptNo);
+
+    if (!data || !data.email) {
+      SpreadsheetApp.getUi().alert('メールアドレスが見つかりません。手動でご確認ください。');
+      e.range.setValue(false);
+      return;
+    }
+
+    // お礼状メールを送信
+    sendOreijouEmail(data, receptNo);
+
+    // J列を「済み」に更新
+    statusCell.setValue('済み');
+
+  } else {
+    // すでに送付済み — 警告してチェックを解除
+    SpreadsheetApp.getUi().alert(
+      '⚠️ お礼状はすでに「' + status + '」です。\n' +
+      '送付済みかどうかご確認のうえ、必要であれば手動で更新してください。'
+    );
+    e.range.setValue(false);
+  }
+}
+
+/**
+ * 受付番号で申込みシートを検索し、顧客情報を返す。
+ * @param {GoogleAppsScript.Spreadsheet.Sheet} sheet
+ * @param {string} receptNo
+ * @returns {{ company_name, rep_name, email } | null}
+ */
+function findRowByReceptNo(sheet, receptNo) {
+  const data = sheet.getDataRange().getValues();
+  for (let i = 1; i < data.length; i++) {
+    if (data[i][0] === receptNo) {
+      return {
+        company_name: data[i][2],  // C列
+        rep_name:     data[i][4],  // E列
+        email:        data[i][11], // L列
+      };
+    }
+  }
+  return null;
+}
+
+/**
+ * お礼状メールを送信する。
+ * @param {{ company_name, rep_name, email }} data
+ */
+function sendOreijouEmail(data, receptNo) {
+  const props   = PropertiesService.getScriptProperties();
+  let subject   = props.getProperty('OREIJOU_SUBJECT') || '【第5回川口花火大会】ご協賛へのお礼（受付番号：{{receipt_no}}）';
+  let body      = props.getProperty('OREIJOU_BODY')    || 'お礼申し上げます。';
+
+  const vars = {
+    company_name: data.company_name || '',
+    rep_name:     data.rep_name     || '',
+    receipt_no:   receptNo          || '',
+  };
+
+  Object.entries(vars).forEach(([key, val]) => {
+    const re = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+    subject  = subject.replace(re, val);
+    body     = body.replace(re, val);
+  });
+
+  // お礼状PDFを生成（OreijouTemplate.htmlをApps Scriptプロジェクト内に配置）
+  const pdf = generateOreijouPdf(data);
+
+  const mailOptions = {
+    to:      data.email,
+    subject: subject,
+    body:    body,
+    replyTo: OFFICE_EMAIL,
+  };
+  if (pdf) {
+    mailOptions.attachments = [pdf.setName(`申込受理書_${data.company_name || ''}.pdf`)];
+  }
+
+  MailApp.sendEmail(mailOptions);
+}
+
+/**
+ * OreijouTemplate.html からお礼状PDFを生成する。
+ * @param {{ company_name, rep_name }} data
+ * @returns {Blob|null}
+ */
+function generateOreijouPdf(data) {
+  try {
+    const now       = new Date();
+    const reiwa     = now.getFullYear() - 2018;
+    const issueDate = `令和${reiwa}年${now.getMonth() + 1}月${now.getDate()}日`;
+
+    // OreijouTemplate が存在するか確認
+    let html;
+    try {
+      html = HtmlService.createHtmlOutputFromFile('oreijou-template').getContent();
+    } catch (htmlErr) {
+      console.error('OreijouTemplate.html が見つかりません。Apps Scriptプロジェクトに追加してください。', htmlErr);
+      throw htmlErr;
+    }
+
+    // 角印画像をDrive URLで置換
+    const hankoUrl = `https://drive.google.com/uc?id=${HANKO_FILE_ID}`;
+    html = html.replace('src="hanko.png"', `src="${hankoUrl}"`);
+
+    // プレースホルダー置換
+    const replacements = {
+      '{{company_name}}': data.company_name || '',
+      '{{rep_name}}':     data.rep_name     || '',
+      '{{issue_date}}':   issueDate,
+    };
+    Object.entries(replacements).forEach(([key, val]) => {
+      html = html.split(key).join(val);
+    });
+
+    const tmpFile = DriveApp.createFile(
+      Utilities.newBlob(html, MimeType.HTML, `_tmp_oreijou.html`)
+    );
+    const pdf = tmpFile.getAs(MimeType.PDF);
+    tmpFile.setTrashed(true);
+    return pdf;
+  } catch (err) {
+    console.error('Oreijou PDF生成エラー:', err.message);
+    // PDFなしでもメールは送信する
+    return null;
+  }
+}
+
 // ─── ユーティリティ ────────────────────────────────────────────────────────────
 
 function jsonResponse(payload) {

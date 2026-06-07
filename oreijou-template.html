@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "MS Mincho", "Yu Mincho", serif;
+    font-size: 10.5pt;
+    color: #000;
+    padding: 18mm 20mm;
+    width: 210mm;
+    line-height: 1.85;
+  }
+
+  /* ── タイトル ── */
+  .doc-title {
+    text-align: center;
+    font-size: 13pt;
+    font-weight: bold;
+    letter-spacing: 0.2em;
+    border-top: 1px solid #000;
+    border-bottom: 1px solid #000;
+    padding: 1.5mm 0;
+    margin-bottom: 6mm;
+  }
+
+  /* ── 発行日 ── */
+  .issue-date {
+    text-align: right;
+    font-size: 10pt;
+    margin-bottom: 6mm;
+  }
+
+  /* ── 宛先 / 発行者 ── */
+  .header-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8mm;
+  }
+  .addressee {
+    font-size: 12pt;
+    font-weight: bold;
+  }
+  .sender-wrap {
+    display: flex;
+    align-items: center;
+    gap: 3mm;
+    justify-content: flex-end;
+  }
+  .sender {
+    font-size: 10pt;
+    text-align: right;
+    line-height: 1.9;
+  }
+  .sender .org { font-weight: bold; }
+
+  /* ── 角印 ── */
+  .hanko {
+    width: 16mm;
+    height: 16mm;
+    flex-shrink: 0;
+    transform: rotate(-3deg);
+    opacity: 0.85;
+  }
+
+  /* ── 件名 ── */
+  .letter-subject {
+    text-align: center;
+    font-size: 11pt;
+    font-weight: bold;
+    letter-spacing: 0.1em;
+    margin-bottom: 6mm;
+  }
+
+  /* ── 本文 ── */
+  .body-text {
+    text-align: justify;
+    margin-bottom: 5mm;
+  }
+
+  /* ── 箇条書き ── */
+  .bullet-list {
+    margin: 3mm 0 5mm 5mm;
+    line-height: 2;
+  }
+  .bullet-list li {
+    list-style: none;
+  }
+  .bullet-list li::before {
+    content: "・";
+  }
+
+  /* ── 結び ── */
+  .closing {
+    text-align: justify;
+    margin-bottom: 10mm;
+  }
+
+  /* ── 問合せ先ボックス ── */
+  .contact-box {
+    border: 1px solid #000;
+    padding: 3mm 5mm;
+    font-size: 10pt;
+    line-height: 2;
+    float: right;
+    min-width: 70mm;
+  }
+  .contact-box .contact-title {
+    font-weight: bold;
+  }
+</style>
+</head>
+<body>
+
+<!-- タイトル -->
+<div class="doc-title">申　込　受　理　書</div>
+
+<!-- 発行日 -->
+<div class="issue-date">発行日　{{issue_date}}</div>
+
+<!-- 宛先 / 発行者 -->
+<div class="header-section">
+  <div class="addressee">{{company_name}}　御中</div>
+  <div class="sender-wrap">
+    <div class="sender">
+      <div class="org">川口花火大会実行委員会</div>
+      <div>委員長　廣瀬 進治</div>
+    </div>
+    <img class="hanko" src="hanko.png" alt="印">
+  </div>
+</div>
+
+<!-- 件名 -->
+<div class="letter-subject">協賛申込受付に関するご案内</div>
+
+<!-- 本文 -->
+<p class="body-text">
+　拝啓　時下、ますますご清栄のこととお慶び申し上げます。<br>
+　日頃、本実行委員会の事業に対し格別なるご理解を賜り厚くお礼申し上げます。<br>
+　このたびは第5回川口花火大会へのご協賛をお申込みいただき、誠にありがとうございました。お申込みについて、確かに受け付けましたことをご報告申し上げます。<br>
+　つきましては、今後の協賛仮決定に関し、以下のとおりご案内申し上げます。
+</p>
+
+<ul class="bullet-list">
+  <li>A協賛申込締切日（令和7年7月31日(木)）までに募集枠を超えなかった場合は、そのまま協賛企業として決定させていただきます。</li>
+  <li>協賛のお申込みが募集枠を超えた場合は、締切後に抽選を行い、協賛企業を決定いたします。</li>
+</ul>
+
+<p class="closing">
+　協賛の可否につきましては、締切後に改めてご通知申し上げますので、何卒ご了承賜りますようお願い申し上げます。<br>
+　今後ともご変わらぬご支援のほど、よろしくお願い申し上げます。
+</p>
+
+<!-- 問合せ先 -->
+<div class="contact-box">
+  <div class="contact-title">【問合せ先】</div>
+  川口花火大会実行委員会<br>
+  （川口商工会議所内）<br>
+  TEL：048-228-2220<br>
+  FAX：048-228-2221
+</div>
+
+</body>
+</html>
