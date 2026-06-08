@@ -574,7 +574,7 @@ function onEditInstallable(e) {
     return;
   }
 
-  if (status === '未') {
+  if (status === '未' || status === '' || status === null || status === undefined) {
     const receptNo  = sheet.getRange(row, 1).getValue();
     const category  = sheet.getRange(row, 2).getValue();
     const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
