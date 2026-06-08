@@ -221,13 +221,22 @@ function cancelOreijou(row) {
 }
 
 function findRowByReceptNo(sheet, receptNo) {
-  const data = sheet.getDataRange().getValues();
-  for (let i = 1; i < data.length; i++) {
-    if (data[i][0] === receptNo) {
+  const rows = sheet.getDataRange().getValues();
+  for (let i = 1; i < rows.length; i++) {
+    if (rows[i][0] === receptNo) {
       return {
-        company_name: data[i][2],   // C列
-        rep_name:     data[i][4],   // E列
-        email:        data[i][11],  // L列
+        company_name:     rows[i][2],   // C列
+        company_furigana: rows[i][3],   // D列
+        rep_name:         rows[i][4],   // E列
+        rep_furigana:     rows[i][5],   // F列
+        staff_name:       rows[i][6],   // G列
+        staff_furigana:   rows[i][7],   // H列
+        zipcode:          rows[i][8],   // I列
+        address:          rows[i][9],   // J列
+        phone:            rows[i][10],  // K列
+        email:            rows[i][11],  // L列
+        category:         rows[i][12],  // M列
+        website_url:      rows[i][13],  // N列
       };
     }
   }
