@@ -11,8 +11,6 @@
     padding: 20mm 18mm;
     width: 210mm;
   }
-
-  /* ── タイトル ── */
   .title {
     font-size: 13pt;
     font-weight: bold;
@@ -23,62 +21,20 @@
     text-align: center;
     margin-bottom: 3mm;
   }
-  .issue-date {
-    font-size: 10pt;
-    text-align: right;
-    margin-bottom: 6mm;
-  }
-
-  /* ── 宛先 / 発行者 ── */
+  .issue-date { font-size: 10pt; text-align: right; margin-bottom: 6mm; }
   .header-section {
     display: flex;
     justify-content: space-between;
     margin-bottom: 8mm;
     margin-top: 4mm;
   }
-  .addressee {
-    font-size: 13pt;
-    font-weight: bold;
-    min-width: 90mm;
-  }
-  .sender {
-    font-size: 10pt;
-    text-align: right;
-    line-height: 1.8;
-  }
-  .sender .org {
-    font-weight: bold;
-  }
-  .sender-wrap {
-    display: flex;
-    align-items: center;
-    gap: 4mm;
-    justify-content: flex-end;
-  }
-
-  /* ── 角印（画像） ── */
-  .hanko {
-    width: 18mm;
-    height: 18mm;
-    flex-shrink: 0;
-    transform: rotate(-3deg);
-    opacity: 0.85;
-  }
-
-  /* ── 本文 ── */
-  .body-text {
-    font-size: 10pt;
-    line-height: 1.9;
-    margin-bottom: 6mm;
-    text-align: justify;
-  }
-
-  /* ── 合計 ── */
-  .total-line {
-    font-size: 15pt;
-    font-weight: bold;
-    margin-bottom: 2mm;
-  }
+  .addressee { font-size: 13pt; font-weight: bold; min-width: 90mm; }
+  .sender { font-size: 10pt; text-align: right; line-height: 1.8; }
+  .sender .org { font-weight: bold; }
+  .sender-wrap { display: flex; align-items: center; gap: 4mm; justify-content: flex-end; }
+  .hanko { width: 18mm; height: 18mm; flex-shrink: 0; transform: rotate(-3deg); opacity: 0.85; }
+  .body-text { font-size: 10pt; line-height: 1.9; margin-bottom: 6mm; text-align: justify; }
+  .total-line { font-size: 15pt; font-weight: bold; margin-bottom: 2mm; }
   .total-line .total-amount {
     font-size: 18pt;
     font-weight: bold;
@@ -87,56 +43,22 @@
     border-bottom: 2.5px solid #000;
     padding-bottom: 1mm;
   }
-  .total-note {
-    font-size: 10pt;
+  .total-note { font-size: 10pt; margin-bottom: 5mm; }
+  .kubun-line {
+    font-size: 11pt;
     margin-bottom: 5mm;
+    padding: 2mm 0;
+    border-bottom: 1px solid #ccc;
   }
-
-  /* ── 協賛金額テーブル ── */
-  .sponsorship-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 10.5pt;
-    margin-bottom: 4mm;
-  }
-  .sponsorship-table td {
-    padding: 1.5mm 2mm;
-    vertical-align: middle;
-  }
-  .sponsorship-table .label-col { width: 20mm; }
-  .sponsorship-table .cat-col   { width: 10mm; text-align: center; }
-  .sponsorship-table .price-col { width: 32mm; text-align: right; }
-  .sponsorship-table .x-col     { width: 6mm;  text-align: center; }
-  .sponsorship-table .count-col { width: 10mm; text-align: center; }
-  .sponsorship-table .kuchi-col { width: 8mm;  text-align: center; }
-  .sponsorship-table .eq-col    { width: 4mm;  text-align: center; padding-right: 0; }
-  .sponsorship-table .amount-col{ width: 30mm; text-align: left; padding-left: 1mm; }
-  .sponsorship-table .total-row td {
-    border-top: 1px solid #000;
-    font-weight: bold;
-    padding-top: 2mm;
-  }
-
-  /* ── 内訳 / 登録番号 ── */
   .breakdown-section {
     display: flex;
     justify-content: space-between;
     align-items: flex-start;
     margin-bottom: 5mm;
   }
-  .breakdown {
-    font-size: 10pt;
-    min-width: 60mm;
-  }
-  .breakdown .breakdown-title {
-    font-size: 9pt;
-    color: #333;
-    margin-bottom: 1mm;
-  }
-  .breakdown .breakdown-row {
-    border-bottom: 1px solid #000;
-    padding: 1.5mm 0;
-  }
+  .breakdown { font-size: 10pt; min-width: 60mm; }
+  .breakdown .breakdown-title { font-size: 9pt; color: #333; margin-bottom: 1mm; }
+  .breakdown .breakdown-row { border-bottom: 1px solid #000; padding: 1.5mm 0; }
   .regist-box {
     font-size: 9.5pt;
     text-align: center;
@@ -144,42 +66,17 @@
     border: 1px solid #000;
     padding: 2mm 6mm;
   }
-
-  /* ── 支払期限 ── */
-  .payment-due {
-    font-size: 11pt;
-    font-weight: bold;
-    margin-bottom: 3mm;
-  }
-
-  /* ── 注意書き ── */
-  .notes {
-    font-size: 9pt;
-    color: #333;
-    line-height: 1.8;
-    margin-bottom: 6mm;
-  }
-
-  /* ── 振込先ボックス ── */
-  .bank-box {
-    border: 1px solid #000;
-    padding: 3mm 4mm;
-    font-size: 10pt;
-    line-height: 1.9;
-  }
-  .bank-box .bank-title {
-    font-weight: bold;
-    margin-bottom: 1mm;
-  }
+  .payment-due { font-size: 11pt; font-weight: bold; margin-bottom: 3mm; }
+  .notes { font-size: 9pt; color: #333; line-height: 1.8; margin-bottom: 6mm; }
+  .bank-box { border: 1px solid #000; padding: 3mm 4mm; font-size: 10pt; line-height: 1.9; }
+  .bank-box .bank-title { font-weight: bold; margin-bottom: 1mm; }
 </style>
 </head>
 <body>
 
-<!-- タイトル -->
 <div class="title">申込受理書兼請求書</div>
 <div class="issue-date">発行日　{{issue_date}}</div>
 
-<!-- 宛先 / 発行者 -->
 <div class="header-section">
   <div class="addressee">{{company_name}}　御中</div>
   <div class="sender-wrap">
@@ -191,79 +88,16 @@
   </div>
 </div>
 
-<!-- 本文 -->
 <p class="body-text">
 　この度は、第5回川口花火大会への協賛にお申込みいただき誠にありがとうございます。<br>
 　下記のとおり、ご請求させていただきますのでお振込みくださいますようお願い申し上げます。
 </p>
 
-<!-- 合計 -->
 <div class="total-line">合計：<span class="total-amount">{{total}}　ー</span></div>
 <div class="total-note">ただし、第5回川口花火大会協賛金として</div>
 
-<!-- 協賛金額テーブル -->
-<table class="sponsorship-table">
-  <tr>
-    <td class="label-col">協賛金額</td>
-    <td class="cat-col">A</td>
-    <td class="price-col">¥1,000,000</td>
-    <td class="x-col">×</td>
-    <td class="count-col">{{mark_a}}</td>
-    <td class="kuchi-col">口</td>
-    <td class="eq-col">＝</td>
-    <td class="amount-col">{{amount_a}}</td>
-  </tr>
-  <tr>
-    <td class="label-col"></td>
-    <td class="cat-col">B</td>
-    <td class="price-col">¥500,000</td>
-    <td class="x-col">×</td>
-    <td class="count-col">{{mark_b}}</td>
-    <td class="kuchi-col">口</td>
-    <td class="eq-col">＝</td>
-    <td class="amount-col">{{amount_b}}</td>
-  </tr>
-  <tr>
-    <td class="label-col"></td>
-    <td class="cat-col">C</td>
-    <td class="price-col">¥300,000</td>
-    <td class="x-col">×</td>
-    <td class="count-col">{{mark_c}}</td>
-    <td class="kuchi-col">口</td>
-    <td class="eq-col">＝</td>
-    <td class="amount-col">{{amount_c}}</td>
-  </tr>
-  <tr>
-    <td class="label-col"></td>
-    <td class="cat-col">D</td>
-    <td class="price-col">¥200,000</td>
-    <td class="x-col">×</td>
-    <td class="count-col">{{mark_d}}</td>
-    <td class="kuchi-col">口</td>
-    <td class="eq-col">＝</td>
-    <td class="amount-col">{{amount_d}}</td>
-  </tr>
-  <tr>
-    <td class="label-col"></td>
-    <td class="cat-col">E</td>
-    <td class="price-col">¥100,000</td>
-    <td class="x-col">×</td>
-    <td class="count-col">{{mark_e}}</td>
-    <td class="kuchi-col">口</td>
-    <td class="eq-col">＝</td>
-    <td class="amount-col">{{amount_e}}</td>
-  </tr>
-  <tr class="total-row">
-    <td class="label-col"></td>
-    <td class="cat-col"></td>
-    <td class="price-col"></td>
-    <td class="x-col"></td>
-    <td class="count-col"></td>
-    <td colspan="3" style="text-align:left;">合　計：{{total}}</td>
-  </tr>
-</table>
+<div class="kubun-line">協賛区分：{{category}} プラン　　金額：{{total}}</div>
 
-<!-- 内訳 / 登録番号 -->
 <div class="breakdown-section">
   <div class="breakdown">
     <div class="breakdown-title">内訳（税率10%）</div>
@@ -276,16 +110,13 @@
   </div>
 </div>
 
-<!-- 支払期限 -->
 <div class="payment-due">【お振込期限】9月12日（金）</div>
 
-<!-- 注意書き -->
 <div class="notes">
   ※お振込み手数料は、恐れ入りますがご負担お願い申し上げます。<br>
   ※本協賛は会計上、広告宣伝費として処理できますので申し添えます。
 </div>
 
-<!-- 振込先 -->
 <div class="bank-box">
   <div class="bank-title">＜お振込み先＞</div>
   埼玉りそな銀行　川口支店<br>

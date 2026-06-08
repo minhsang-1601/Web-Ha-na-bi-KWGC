@@ -72,14 +72,18 @@ function handleUketsuke(e, sheet, row) {
     return;
   }
 
-  try {
-    const pdf = generateInvoicePdf(data, receptNo);
-    sendInvoiceEmail(data, receptNo, pdf);
-    invoiceStatusCell.setValue('済み');
-  } catch (err) {
-    SpreadsheetApp.getUi().alert('❌ 送信エラー: ' + err.message);
-    e.range.setValue(false);
-  }
+  // 確認ダイアログを表示してから送信
+  const tpl = HtmlService.createTemplateFromFile('ConfirmInvoiceDialog');
+  tpl.receptNo     = receptNo;
+  tpl.company_name = data.company_name || '';
+  tpl.rep_name     = data.rep_name     || '';
+  tpl.email        = data.email        || '';
+  tpl.row          = row;
+
+  SpreadsheetApp.getUi().showModalDialog(
+    tpl.evaluate().setWidth(420).setHeight(280),
+    '請求書送信の確認'
+  );
 }
 
 // ─── 入金完了チェック → お礼状送付トリガー ────────────────────────────────────
@@ -107,6 +111,14 @@ function handleNyukin(e, sheet, row) {
 
   if (status === '済み') {
     SpreadsheetApp.getUi().alert('⚠️ お礼状はすでに「済み」です。\n送付済みかどうかご確認ください。');
+    e.range.setValue(false);
+    return;
+  }
+
+  // 請求書が未送信の場合はブロック
+  const invoiceStatus = sheet.getRange(row, 10).getValue(); // J列: 請求書送信
+  if (invoiceStatus !== '済み') {
+    SpreadsheetApp.getUi().alert('⚠️ 請求書がまだ送信されていません（「未」）。\nお礼状を送付する前に請求書を送信してください。');
     e.range.setValue(false);
     return;
   }
@@ -140,6 +152,26 @@ function handleNyukin(e, sheet, row) {
     tpl.evaluate().setWidth(420).setHeight(310),
     'お礼状送付の確認'
   );
+}
+
+// ConfirmInvoiceDialog から呼ばれる（確認後に実際に送信）
+function sendInvoiceConfirmed(row, receptNo) {
+  const ss        = SpreadsheetApp.getActiveSpreadsheet();
+  const tetsuSheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
+  const mainSheet  = ss.getSheetByName(DEFAULT_SHEET_NAME);
+
+  const data = findRowByReceptNo(mainSheet, receptNo);
+  if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
+
+  const pdf = generateInvoicePdf(data, receptNo);
+  sendInvoiceEmail(data, receptNo, pdf);
+  tetsuSheet.getRange(row, 10).setValue('済み'); // J列: 請求書送信
+}
+
+// ConfirmInvoiceDialog からキャンセル時に呼ばれる
+function cancelInvoiceSend(row) {
+  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME2);
+  if (sheet) sheet.getRange(row, 9).setValue(false); // I列: 受付完了を戻す
 }
 
 function sendInvoiceEmail(data, receptNo, pdf) {

@@ -55,6 +55,43 @@ function setupMailTemplate() {
   SpreadsheetApp.getUi().alert('申込確認メールテンプレートを保存しました。');
 }
 
+/** S/A 区分：受付確認のみメールテンプレートを Script Properties に保存する */
+function setupReceiptOnlyTemplate() {
+  const subject = '【第5回川口花火大会】お申し込みを受け付けました（受付番号：{{receipt_no}}）';
+  const body = [
+    '{{company_name}}',
+    '{{rep_name}} 様',
+    '',
+    '川口花火大会実行委員会 事務局でございます。',
+    'このたびは第5回川口花火大会へのご協賛をお申し込みいただき、誠にありがとうございます。',
+    '',
+    '─────────────────────────────',
+    '■ お申し込み内容',
+    '　会社名・団体名　：{{company_name}}',
+    '　ご担当者名　　　：{{staff_name}}',
+    '　区分　　　　　　：{{category}} プラン',
+    '　お申し込み日時　：{{date}}',
+    '　受付番号　　　　：{{receipt_no}}',
+    '─────────────────────────────',
+    '',
+    '請求書は改めてご送付いたします。',
+    'ご不明な点がございましたら、下記までご連絡ください。',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '第5回川口花火大会 実行委員会 事務局',
+    'E-mail：' + OFFICE_EMAIL,
+    '受付時間：平日 10:00 〜 17:00',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '※ このメールは自動送信されています。',
+  ].join('\n');
+
+  PropertiesService.getScriptProperties().setProperties({
+    RECEIPT_ONLY_SUBJECT: subject,
+    RECEIPT_ONLY_BODY:    body,
+  });
+  SpreadsheetApp.getUi().alert('受付確認メールテンプレート（S/A用）を保存しました。');
+}
+
 /** お礼状メールのテンプレートを Script Properties に保存する */
 function setupOreijouTemplate() {
   const subject = '【第5回川口花火大会】ご協賛へのお礼（受付番号：{{receipt_no}}）';

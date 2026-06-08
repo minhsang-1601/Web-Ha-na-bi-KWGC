@@ -44,12 +44,7 @@ function generateInvoicePdf(data, receptNo) {
   const tax        = totalPrice - subtotal;
   const fmt        = (n) => n > 0 ? `¥${n.toLocaleString()}` : '';
 
-  const marks = { A: '', B: '', C: '', D: '', E: '' };
-  if (marks[category] !== undefined) marks[category] = '1';
-
-  const amountLine = (cat) => cat === category ? fmt(totalPrice) : '';
-
-  let html = HtmlService.createHtmlOutputFromFile('InvoiceTemplate').getContent();
+  let html = HtmlService.createHtmlOutputFromFile('invoice-template').getContent();
   const hankoUrl = `https://drive.google.com/uc?id=${HANKO_FILE_ID}`;
   html = html.replace('src="hanko.png"', `src="${hankoUrl}"`);
 
@@ -57,13 +52,10 @@ function generateInvoicePdf(data, receptNo) {
     '{{company_name}}': data.company_name || '',
     '{{issue_date}}':   issueDate,
     '{{receipt_no}}':   receptNo,
+    '{{category}}':     category,
     '{{total}}':        fmt(totalPrice),
     '{{subtotal}}':     fmt(subtotal),
     '{{tax}}':          fmt(tax),
-    '{{mark_a}}': marks['A'], '{{mark_b}}': marks['B'],
-    '{{mark_c}}': marks['C'], '{{mark_d}}': marks['D'], '{{mark_e}}': marks['E'],
-    '{{amount_a}}': amountLine('A'), '{{amount_b}}': amountLine('B'),
-    '{{amount_c}}': amountLine('C'), '{{amount_d}}': amountLine('D'), '{{amount_e}}': amountLine('E'),
   };
 
   Object.entries(replacements).forEach(([key, val]) => {
@@ -74,6 +66,55 @@ function generateInvoicePdf(data, receptNo) {
   const pdf     = tmpFile.getAs(MimeType.PDF);
   tmpFile.setTrashed(true);
   return pdf;
+}
+
+// ─── 受付確認のみメール（S/A 申込時、請求書なし） ────────────────────────────────
+
+function sendReceiptOnlyEmail(data, receptNo) {
+  const props = PropertiesService.getScriptProperties();
+  let subject = props.getProperty('RECEIPT_ONLY_SUBJECT') ||
+    '【第5回川口花火大会】お申し込みを受け付けました（受付番号：{{receipt_no}}）';
+  let body = props.getProperty('RECEIPT_ONLY_BODY') || [
+    '{{company_name}}',
+    '{{rep_name}} 様',
+    '',
+    '川口花火大会実行委員会 事務局でございます。',
+    'このたびは第5回川口花火大会へのご協賛をお申し込みいただき、誠にありがとうございます。',
+    '',
+    '─────────────────────────────',
+    '■ お申し込み内容',
+    '　会社名・団体名　：{{company_name}}',
+    '　ご担当者名　　　：{{staff_name}}',
+    '　区分　　　　　　：{{category}} プラン',
+    '　お申し込み日時　：{{date}}',
+    '　受付番号　　　　：{{receipt_no}}',
+    '─────────────────────────────',
+    '',
+    '請求書は改めてご送付いたします。',
+    'ご不明な点がございましたら、下記までご連絡ください。',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '第5回川口花火大会 実行委員会 事務局',
+    'E-mail：' + OFFICE_EMAIL,
+    '受付時間：平日 10:00 〜 17:00',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+  ].join('\n');
+
+  const vars = {
+    company_name: data.company_name || '',
+    rep_name:     data.rep_name     || '',
+    staff_name:   data.staff_name   || '',
+    category:     data.category     || '',
+    date:         Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm'),
+    receipt_no:   receptNo          || '',
+  };
+  Object.entries(vars).forEach(([key, val]) => {
+    const re = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
+    subject  = subject.replace(re, val);
+    body     = body.replace(re, val);
+  });
+
+  MailApp.sendEmail({ to: data.email, subject, body, replyTo: OFFICE_EMAIL });
 }
 
 // ─── お礼状メール ──────────────────────────────────────────────────────────────

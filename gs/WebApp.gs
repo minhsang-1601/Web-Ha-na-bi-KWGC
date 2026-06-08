@@ -56,10 +56,14 @@ function submitForm(data) {
   appendToTesagyouSheet(receptNo, sheetName2, data);
 
   if (data.email) {
-    // B〜E: 請求書PDF を添付して送信
-    // S/A : 受付確認のみ（PDFなし）
-    const pdf = autoSend ? generateInvoicePdf(data, receptNo) : null;
-    sendConfirmationEmail(data, receptNo, pdf);
+    if (autoSend) {
+      // B〜E: 受付確認 + 請求書PDF を添付して送信
+      const pdf = generateInvoicePdf(data, receptNo);
+      sendConfirmationEmail(data, receptNo, pdf);
+    } else {
+      // S/A: 受付確認のみ（請求書は手動送信）
+      sendReceiptOnlyEmail(data, receptNo);
+    }
   }
   return { result: 'success', receipt_no: receptNo };
 }
