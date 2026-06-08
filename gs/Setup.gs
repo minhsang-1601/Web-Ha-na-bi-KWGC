@@ -101,16 +101,18 @@ function setupHeaders() {
 }
 
 /** 手作業シートの既存行のチェックボックス・J列を修正する */
-function fixTetsugyoSheet() {
+function fixTesagyouSheet() {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
   if (!sheet) return;
   const lastRow = sheet.getLastRow();
   if (lastRow < 2) return;
+  // I列(9): 受付完了, K列(11): 入金完了 → チェックボックス
   sheet.getRange(2, 9, lastRow - 1).insertCheckboxes();
+  sheet.getRange(2, 11, lastRow - 1).insertCheckboxes();
   for (let r = 2; r <= lastRow; r++) {
-    const cell = sheet.getRange(r, 10);
-    if (cell.getValue() === '' || cell.getValue() === null) cell.setValue('未');
+    if (!sheet.getRange(r, 10).getValue()) sheet.getRange(r, 10).setValue('未'); // J: 請求書送信
+    if (!sheet.getRange(r, 12).getValue()) sheet.getRange(r, 12).setValue('未'); // L: お礼状送付
   }
   SpreadsheetApp.getUi().alert('✅ チェックボックスとJ列を修正しました。');
 }

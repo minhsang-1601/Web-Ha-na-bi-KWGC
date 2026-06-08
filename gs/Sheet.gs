@@ -39,6 +39,7 @@ function appendRow(data, sheetName) {
       data.phone            || '',
       data.email            || '',
       data.category         || '',
+      data.website_url      || '',
     ]]);
 
     SpreadsheetApp.flush();
@@ -48,36 +49,46 @@ function appendRow(data, sheetName) {
   }
 }
 
-function appendToTetsugyoSheet(receptNo, sheetName2) {
+function appendToTesagyouSheet(receptNo, sheetName2, data) {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
   let sheet   = ss.getSheetByName(sheetName2);
   if (!sheet) sheet = ss.insertSheet(sheetName2);
 
   if (sheet.getLastRow() === 0) {
-    sheet.appendRow(TETSUGYO_HEADERS);
-    sheet.getRange(1, 1, 1, TETSUGYO_HEADERS.length).setFontWeight('bold').setBackground('#fce8b2');
-    [160, 80, 120, 200, 200, 150, 200, 160, 80, 80].forEach((w, i) =>
+    sheet.appendRow(TESAGYOU_HEADERS);
+    sheet.getRange(1, 1, 1, TESAGYOU_HEADERS.length).setFontWeight('bold').setBackground('#fce8b2');
+    [160, 80, 120, 200, 200, 150, 200, 160, 80, 80, 80, 100].forEach((w, i) =>
       sheet.setColumnWidth(i + 1, w)
     );
     sheet.getRange(2, 3, sheet.getMaxRows() - 1).setNumberFormat('@');
   }
 
-  const newRow = sheet.getLastRow() + 1;
+  const newRow   = sheet.getLastRow() + 1;
+  const kubun    = data ? (data.category || '').trim().toUpperCase() : '';
+  const autoSend = AUTO_SEND_KUBUN.includes(kubun);
+
   sheet.getRange(newRow, 1).setValue(receptNo);
   sheet.getRange(newRow, 3).setNumberFormat('@');
 
-  Object.entries(TETSUGYO_LOOKUP_COLS).forEach(([col, srcCol]) => {
+  Object.entries(TESAGYOU_LOOKUP_COLS).forEach(([col, srcCol]) => {
     const formula =
       `=IFERROR(XLOOKUP($A${newRow};'${DEFAULT_SHEET_NAME}'!$A:$A;'${DEFAULT_SHEET_NAME}'!$${srcCol}:$${srcCol});"見つかりません")`;
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 
+  // I列: 受付完了
   sheet.getRange(newRow, 9).insertCheckboxes();
-  sheet.getRange(newRow, 10).setValue('未');
+  if (autoSend) sheet.getRange(newRow, 9).setValue(true);
+  // J列: 請求書送信
+  sheet.getRange(newRow, 10).setValue(autoSend ? '済み' : '未');
+  // K列: 入金完了
+  sheet.getRange(newRow, 11).insertCheckboxes();
+  // L列: お礼状送付
+  sheet.getRange(newRow, 12).setValue('未');
 }
 
 function applyColumnWidths(sheet) {
-  [160,150,200,180,150,150,120,120,90,220,120,220,60].forEach((w, i) =>
+  [160,150,200,180,150,150,120,120,90,220,120,220,60,200].forEach((w, i) =>
     sheet.setColumnWidth(i + 1, w)
   );
 }

@@ -107,17 +107,20 @@
         </div>
 
         <div class="form-group">
+            <label>会社HP URL</label>
+            <input type="text" name="website_url" placeholder="https://example.com">
+            <span class="form-note">ない場合は <i>「なし」</i> とご入力ください。</span>
+        </div>
+
+        <div class="form-group">
             <label>区分</label>
             <div class="radio-group-container">
-                <label class="radio-label">
-                    <input type="radio" name="category" value="A" required> A (100万)
-                </label>
-                <label class="radio-label">
-                    <input type="radio" name="category" value="B"> B (70万)
-                </label>
-                <label class="radio-label">
-                    <input type="radio" name="category" value="C"> C (30万)
-                </label>
+                <label class="radio-label"><input type="radio" name="category" value="S" required> S (200万)</label>
+                <label class="radio-label"><input type="radio" name="category" value="A"> A (100万)</label>
+                <label class="radio-label"><input type="radio" name="category" value="B"> B (70万)</label>
+                <label class="radio-label"><input type="radio" name="category" value="C"> C (30万)</label>
+                <label class="radio-label"><input type="radio" name="category" value="D"> D (20万)</label>
+                <label class="radio-label"><input type="radio" name="category" value="E"> E (10万)</label>
             </div>
         </div>
 
@@ -288,6 +291,7 @@
         address:          '住所',
         phone:            '電話番号',
         email:            'メールアドレス',
+        website_url:      '会社HP URL',
         category:         '区分',
     };
 

@@ -11,7 +11,7 @@ function doPost(e) {
   try {
     const data     = e.parameter;
     const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
-    appendToTetsugyoSheet(receptNo, data.sheetName2 || DEFAULT_SHEET_NAME2);
+    appendToTesagyouSheet(receptNo, data.sheetName2 || DEFAULT_SHEET_NAME2);
     if (data.email) {
       const pdf = generateInvoicePdf(data, receptNo);
       sendConfirmationEmail(data, receptNo, pdf);
@@ -49,11 +49,16 @@ function submitForm(data) {
   const config     = getConfig();
   const sheetName  = data.sheetName  || config.sheetName1;
   const sheetName2 = data.sheetName2 || config.sheetName2;
+  const kubun      = (data.category || '').trim().toUpperCase();
+  const autoSend   = AUTO_SEND_KUBUN.includes(kubun);
 
   const receptNo = appendRow(data, sheetName);
-  appendToTetsugyoSheet(receptNo, sheetName2);
+  appendToTesagyouSheet(receptNo, sheetName2, data);
+
   if (data.email) {
-    const pdf = generateInvoicePdf(data, receptNo);
+    // B〜E: 請求書PDF を添付して送信
+    // S/A : 受付確認のみ（PDFなし）
+    const pdf = autoSend ? generateInvoicePdf(data, receptNo) : null;
     sendConfirmationEmail(data, receptNo, pdf);
   }
   return { result: 'success', receipt_no: receptNo };
