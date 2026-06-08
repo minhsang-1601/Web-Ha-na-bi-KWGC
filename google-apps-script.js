@@ -75,15 +75,53 @@ const HEADERS = [
 
 // ─── エントリーポイント ────────────────────────────────────────────────────────
 
-/** GET でフォームデータを受け取りシートに書き込む（CORS回避のため GET を使用） */
-function doGet(e) {
-  if (!e || !e.parameter || !e.parameter.company_name) {
-    return jsonResponse({ result: 'ok' });
-  }
-  return handleSubmission(e.parameter);
+/** GAS Web App として HTML ページを返す */
+function doGet() {
+  return HtmlService.createTemplateFromFile('Index')
+    .evaluate()
+    .setTitle('【第5回川口花火大会】協賛申込み')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-/** POST でフォームデータを受け取る（フォールバック） */
+/** HtmlService の <?!= include('FileName') ?> 用ヘルパー */
+function include(filename) {
+  return HtmlService.createHtmlOutputFromFile(filename).getContent();
+}
+
+/**
+ * クライアントから呼ばれる設定取得関数。
+ * Script Properties に値がなければデフォルト値を返す。
+ * @returns {{ startDate, endDate, sheetName1, sheetName2 }}
+ */
+function getConfig() {
+  const props = PropertiesService.getScriptProperties();
+  return {
+    startDate:  props.getProperty('START_DATE')   || '2025-01-01T00:00:00',
+    endDate:    props.getProperty('END_DATE')      || '2026-10-01T23:59:59',
+    sheetName1: props.getProperty('SHEET_NAME1')  || DEFAULT_SHEET_NAME,
+    sheetName2: props.getProperty('SHEET_NAME2')  || DEFAULT_SHEET_NAME2,
+  };
+}
+
+/**
+ * クライアントから google.script.run で呼ばれるフォーム送信関数。
+ * @param {Object} data - フォームフィールドのプレーンオブジェクト
+ */
+function submitForm(data) {
+  const config     = getConfig();
+  const sheetName  = data.sheetName  || config.sheetName1;
+  const sheetName2 = data.sheetName2 || config.sheetName2;
+
+  const receptNo = appendRow(data, sheetName);
+  appendToTetsugyoSheet(receptNo, sheetName2);
+  if (data.email) {
+    const invoicePdf = generateInvoicePdf(data, receptNo);
+    sendConfirmationEmail(data, receptNo, invoicePdf);
+  }
+  return { result: 'success', receipt_no: receptNo };
+}
+
+/** POST フォールバック（直接POSTが来た場合） */
 function doPost(e) {
   return handleSubmission(e.parameter);
 }
@@ -105,6 +143,27 @@ function handleSubmission(data) {
   } catch (err) {
     return jsonResponse({ result: 'error', message: err.message });
   }
+}
+
+// ─── Web App 設定初期化 ────────────────────────────────────────────────────────
+
+/**
+ * Script Properties に受付期間とシート名を保存する。
+ * Apps Script エディタでこの関数を選択して▶ Run で初回設定完了。
+ * 以後は「プロジェクトの設定」→「スクリプト プロパティ」から直接編集可能。
+ */
+function setupWebAppConfig() {
+  PropertiesService.getScriptProperties().setProperties({
+    START_DATE:  '2025-01-01T00:00:00',
+    END_DATE:    '2026-10-01T23:59:59',
+    SHEET_NAME1: DEFAULT_SHEET_NAME,
+    SHEET_NAME2: DEFAULT_SHEET_NAME2,
+  });
+  SpreadsheetApp.getUi().alert(
+    'Web App 設定を保存しました。\n\n' +
+    '変更するには：\n「プロジェクトの設定」→「スクリプト プロパティ」\n' +
+    '→ START_DATE / END_DATE / SHEET_NAME1 / SHEET_NAME2 を編集してください。'
+  );
 }
 
 // ─── メールテンプレート初期設定 ───────────────────────────────────────────────

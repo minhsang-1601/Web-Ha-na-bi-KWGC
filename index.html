@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>【第5回川口花火大会】協賛申込み</title>
-    <link rel="stylesheet" href="style.css">
+    <?!= include('Stylesheet') ?>
 </head>
 <body>
 
@@ -12,15 +12,13 @@
     <h2>【第5回川口花火大会】協賛申込みフォーム</h2>
     <p>第5回川口花火大会HPから協賛申込みがあります。<br>以下の内容を入力してください。</p>
 
-    <!-- Registration period banner — text is populated by checkRegistrationPeriod() -->
     <div id="period-display" class="registration-period">Loading...</div>
 
-    <!-- Out-of-period message — shown when outside the registration window -->
     <div id="form-closed-message" style="display:none; text-align:center; padding:30px; color:#d9534f; font-weight:bold;">
         ただいまの期間は、協賛申込みの受付時間外となっております。
     </div>
 
-    <!-- Confirmation screen — shown after 確認 button, before actual submission -->
+    <!-- 確認画面 -->
     <div id="confirm-screen" style="display:none;">
         <h3 style="font-size:1.05em; border-bottom:2px solid #826ea0; padding-bottom:6px; color:#4a3b68; margin-top:0;">
             入力内容のご確認
@@ -41,20 +39,15 @@
         </div>
     </div>
 
-    <!-- Hidden iframe receives the Apps Script response, avoiding page reload -->
-    <iframe id="hidden-target" name="hidden-target" style="display:none;"></iframe>
+    <!-- メインフォーム（初期非表示、getConfig()後に表示） -->
+    <form id="registration-form" style="display:none;">
 
-    <!-- Main registration form — visibility controlled by checkRegistrationPeriod() -->
-    <form id="registration-form" method="POST" target="hidden-target" enctype="application/x-www-form-urlencoded">
-
-        <!-- Sponsor name (individual / company / organization) -->
         <div class="form-group">
             <label>個人名・会社名・団体名</label>
             <input type="text" name="company_name"
                    placeholder="医療法人社団紡世会 かわぐちレディースクリニック" required>
         </div>
 
-        <!-- Furigana reading for sponsor name (full-width katakana only) -->
         <div class="form-group">
             <label class="furigana">個人名・会社名・団体名（フリガナ）</label>
             <input type="text" id="company_furigana" name="company_furigana"
@@ -63,13 +56,11 @@
                    title="全角カタカナ、スペース、および全角閉じカッコのみで入力してください。" required>
         </div>
 
-        <!-- Representative title and name -->
         <div class="form-group">
             <label>役職・代表者名</label>
             <input type="text" name="rep_name" placeholder="理事長 檜垣博" required>
         </div>
 
-        <!-- Furigana reading for representative (full-width katakana only) -->
         <div class="form-group">
             <label class="furigana">役職・代表者名（フリガナ）</label>
             <input type="text" id="rep_furigana" name="rep_furigana"
@@ -78,13 +69,11 @@
                    title="全角カタカナで入力してください。" required>
         </div>
 
-        <!-- Contact person name -->
         <div class="form-group">
             <label>担当者名</label>
             <input type="text" name="staff_name" placeholder="佐藤 未来" required>
         </div>
 
-        <!-- Furigana reading for contact person (full-width katakana only) -->
         <div class="form-group">
             <label class="furigana">担当者名（フリガナ）</label>
             <input type="text" id="staff_furigana" name="staff_furigana"
@@ -93,20 +82,17 @@
                    title="全角カタカナで入力してください。" required>
         </div>
 
-        <!-- 7-digit postal code (digits only, hyphens not accepted) -->
         <div class="form-group">
             <label>郵便番号</label>
             <input type="text" id="zipcode" name="zipcode"
                    placeholder="3330846" maxlength="7" pattern="\d{7}" required>
         </div>
 
-        <!-- Full mailing address -->
         <div class="form-group">
             <label>住所</label>
             <input type="text" name="address" placeholder="埼玉県川口市南前川2-4-20" required>
         </div>
 
-        <!-- Phone number (10–11 digits, no hyphens) -->
         <div class="form-group">
             <label>電話番号</label>
             <input type="text" id="phone" name="phone"
@@ -114,14 +100,12 @@
             <span class="form-note"><i>「-」</i>なしでご入力ください。</span>
         </div>
 
-        <!-- Email address -->
         <div class="form-group">
             <label>メールアドレス</label>
             <input type="email" name="email"
                    placeholder="soumu@kawaguchiladys-clinic.net" required>
         </div>
 
-        <!-- Sponsorship tier selection -->
         <div class="form-group">
             <label>区分</label>
             <div class="radio-group-container">
@@ -137,13 +121,11 @@
             </div>
         </div>
 
-        <!-- Terms and conditions scroll box.
-             The agreement checkbox below stays disabled until the user scrolls to the bottom. -->
         <div class="form-group">
             <label>誓約事項</label>
             <div id="terms-box" class="terms-box">
                 <p><strong>【協賛に伴う誓約事項】</strong></p>
-                <p>1. 申込者は、川口花火大会の開催趣旨に賛同し <a href="kiyaku.pdf" target="_blank" class="pdf-link">規約(PDF)</a> を遵守することを誓約します。</p>
+                <p>1. 申込者は、川口花火大会の開催趣旨に賛同し 規約 を遵守することを誓約します。</p>
                 <p>2. 提供された協賛金は、大会の運営および安全対策の費用として正当に使用されます。</p>
                 <p>3. 荒天や不測の事態により大会が中止となった場合でも、原則として協賛金の返金は行われませんのでご了承ください。</p>
                 <p>4. 暴力団員、暴力団関係企業・団体、その他反社会的勢力に該当しないことを表明し、将来にわたっても該当しないことを誓約します。</p>
@@ -154,17 +136,13 @@
             </div>
         </div>
 
-        <!-- Agreement checkbox — disabled until the terms box is scrolled to the bottom -->
         <div class="form-group checkbox-group">
             <label id="agreement-label" class="disabled-label">
                 <input type="checkbox" name="agreement" id="checkbox-927" disabled>
                 誓約事項に同意する
             </label>
-            <!-- Hidden input that carries the required constraint with a Japanese message.
-                 It is cleared when the checkbox is checked, allowing the form to submit. -->
         </div>
 
-        <!-- Confirm button — shows the confirmation screen before actual submission -->
         <div class="form-group">
             <button type="submit">入力内容を確認する</button>
         </div>
@@ -173,7 +151,7 @@
 </div>
 
 <script>
-    // ─── Japanese validation messages ──────────────────────────────────────────
+    // ─── Validation messages ────────────────────────────────────────────────────
 
     const validationMessages = {
         company_name:      'こちらは入力必須項目です。',
@@ -192,9 +170,7 @@
     Object.entries(validationMessages).forEach(([name, message]) => {
         const el = document.querySelector(`[name="${name}"]`);
         if (!el) return;
-        // Set on load so the message shows from the first attempt.
         el.setCustomValidity(message);
-        // Clear custom error first, then re-check native validity.
         const revalidate = () => {
             el.setCustomValidity('');
             el.setCustomValidity(el.validity.valid ? '' : message);
@@ -203,7 +179,6 @@
         el.addEventListener('change', revalidate);
     });
 
-    // Radio group: validate on change of any option in the group.
     document.querySelectorAll('[name="category"]').forEach((radio) => {
         radio.addEventListener('change', () => {
             document.querySelectorAll('[name="category"]').forEach(r => r.setCustomValidity(''));
@@ -212,22 +187,18 @@
 
     // ─── Input sanitizers ───────────────────────────────────────────────────────
 
-    // Strip any non-digit characters from the postal code field on every keystroke.
     document.getElementById('zipcode').addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/\D/g, '');
     });
 
-    // Strip any non-digit characters from the phone number field on every keystroke.
     document.getElementById('phone').addEventListener('input', (e) => {
         e.target.value = e.target.value.replace(/\D/g, '');
     });
 
     // ─── Terms scroll gate ──────────────────────────────────────────────────────
 
-    // The agreement checkbox is locked until the user has scrolled to the very bottom
-    // of the terms box (within a 2 px tolerance for sub-pixel rounding).
-    const termsBox      = document.getElementById('terms-box');
-    const checkbox      = document.getElementById('checkbox-927');
+    const termsBox       = document.getElementById('terms-box');
+    const checkbox       = document.getElementById('checkbox-927');
     const agreementLabel = document.getElementById('agreement-label');
 
     termsBox.addEventListener('scroll', () => {
@@ -238,20 +209,13 @@
         }
     });
 
+    // ─── Furigana validation ────────────────────────────────────────────────────
 
-    // ─── Furigana validation for company / organization name ───────────────────
-
-    // On blur: auto-correct a half-width closing parenthesis ) to its full-width
-    // equivalent ）, then reject the value if it still contains invalid characters.
     document.getElementById('company_furigana').addEventListener('blur', (e) => {
         let value = e.target.value;
         if (value === '') return;
-
-        // Auto-correct half-width ) → full-width ）
         value = value.replace(/\)/g, '）');
         e.target.value = value;
-
-        // Accept only: full-width katakana, long vowel mark, full/half-width spaces, ）
         const isValid = /^[ァ-ヶー　\s）]+$/.test(value);
         if (!isValid) {
             alert('フリガナは全角カタカナ、スペース、および全角閉じカッコ「）」のみで入力してください。');
@@ -259,13 +223,8 @@
         }
     });
 
-    // ─── Registration period check ─────────────────────────────────────────────
+    // ─── Config & period check via google.script.run ────────────────────────────
 
-    /**
-     * Format an ISO date string (YYYY-MM-DD…) for display as YYYY/MM/DD.
-     * @param {string} dateStr - ISO date string
-     * @returns {string}
-     */
     function formatDateDisplay(dateStr) {
         const date = new Date(dateStr);
         const yyyy = date.getFullYear();
@@ -274,68 +233,50 @@
         return `${yyyy}/${mm}/${dd}`;
     }
 
-    // Values loaded from config.json and used by the submit handler.
-    let targetSheetName  = '協賛申込み';
-    let targetSheetName2 = '手作業';
-    let appsScriptUrl    = '';
+    let appConfig = {};
 
-    /**
-     * Fetch registration window config from config.json and show or hide the form
-     * depending on whether the current time falls within [startDate, endDate].
-     *
-     * config.json shape:
-     *   { "startDate": "YYYY-MM-DDTHH:MM:SS", "endDate": "YYYY-MM-DDTHH:MM:SS", "sheetName": "..." }
-     */
-    async function checkRegistrationPeriod() {
+    function onConfigLoaded(config) {
+        appConfig = config;
+
         const form          = document.getElementById('registration-form');
         const closedMessage = document.getElementById('form-closed-message');
         const periodDisplay = document.getElementById('period-display');
 
-        // Hide everything while loading to prevent a flash of incorrect UI state.
-        form.style.display          = 'none';
-        closedMessage.style.display = 'none';
+        periodDisplay.innerText =
+            `申し込み時間：${formatDateDisplay(config.startDate)} ~ ${formatDateDisplay(config.endDate)}`;
 
-        try {
-            const response = await fetch('config.json');
-            const config   = await response.json();
+        const now       = new Date();
+        const startDate = new Date(config.startDate);
+        const endDate   = new Date(config.endDate);
 
-            // Store values from config so the submit handler can use them.
-            if (config.sheetName1)   targetSheetName  = config.sheetName1;
-            if (config.sheetName2)   targetSheetName2 = config.sheetName2;
-            if (config.deploymentId) appsScriptUrl    = `https://script.google.com/macros/s/${config.deploymentId}/exec`;
-
-            const startDate = new Date(config.startDate);
-            const endDate   = new Date(config.endDate);
-            const now       = new Date();
-
-            periodDisplay.innerText =
-                `申し込み時間：${formatDateDisplay(config.startDate)} ~ ${formatDateDisplay(config.endDate)}`;
-
-            if (now >= startDate && now <= endDate) {
-                form.style.display          = 'block';
-                closedMessage.style.display = 'none';
-            } else {
-                form.style.display          = 'none';
-                closedMessage.style.display = 'block';
-            }
-        } catch (error) {
-            console.error('Failed to load config.json:', error);
-            periodDisplay.innerText     = '申し込み時間：設定エラー';
+        if (now >= startDate && now <= endDate) {
+            form.style.display          = 'block';
+            closedMessage.style.display = 'none';
+        } else {
             form.style.display          = 'none';
             closedMessage.style.display = 'block';
         }
     }
 
-    // Run the period check as soon as the DOM is ready.
-    window.addEventListener('DOMContentLoaded', checkRegistrationPeriod);
+    function onConfigError(err) {
+        document.getElementById('period-display').innerText = '申し込み時間：設定エラー';
+        document.getElementById('form-closed-message').style.display = 'block';
+        console.error('getConfig error:', err);
+    }
 
-    // ─── Form submission → 確認画面 → Google Sheets ────────────────────────────
+    window.addEventListener('DOMContentLoaded', () => {
+        google.script.run
+            .withSuccessHandler(onConfigLoaded)
+            .withFailureHandler(onConfigError)
+            .getConfig();
+    });
+
+    // ─── Form → 確認画面 ────────────────────────────────────────────────────────
 
     const form          = document.getElementById('registration-form');
     const confirmScreen = document.getElementById('confirm-screen');
     const confirmTable  = document.getElementById('confirm-table');
 
-    // Label map for display in the confirmation screen
     const FIELD_LABELS = {
         company_name:     '個人名・会社名・団体名',
         company_furigana: '個人名・会社名（フリガナ）',
@@ -350,7 +291,6 @@
         category:         '区分',
     };
 
-    // ── Step 1: 確認ボタン → 確認画面を表示 ──
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
@@ -359,7 +299,6 @@
             return;
         }
 
-        // Build confirmation table from form values
         const formData = new FormData(form);
         confirmTable.innerHTML = '';
         Object.entries(FIELD_LABELS).forEach(([name, label]) => {
@@ -377,21 +316,20 @@
         confirmScreen.style.display = 'block';
     });
 
-    // ── 修正ボタン → フォームに戻る ──
     document.getElementById('btn-back').addEventListener('click', () => {
         confirmScreen.style.display = 'none';
         form.style.display          = 'block';
     });
 
-    // ── 送信ボタン → Google Sheets へ送信 ──
-    document.getElementById('btn-submit').addEventListener('click', async () => {
+    // ─── 送信 → google.script.run.submitForm() ──────────────────────────────────
+
+    document.getElementById('btn-submit').addEventListener('click', () => {
         const submitBtn = document.getElementById('btn-submit');
         const backBtn   = document.getElementById('btn-back');
         submitBtn.disabled    = true;
         submitBtn.textContent = '送信中...';
         backBtn.disabled      = true;
 
-        // Generate 受付番号 (KWGC + MMddHHmmssSSS)
         const now = new Date();
         const pad = (n, len = 2) => String(n).padStart(len, '0');
         const receptNo = 'KWGC'
@@ -403,26 +341,33 @@
             + pad(now.getMilliseconds(), 3);
 
         const formData = new FormData(form);
-        const params   = new URLSearchParams(formData);
-        params.set('sheetName',  targetSheetName);
-        params.set('sheetName2', targetSheetName2);
-        params.set('receipt_no', receptNo);
+        const data = {};
+        formData.forEach((value, key) => { data[key] = value; });
+        data.receipt_no = receptNo;
+        data.sheetName  = appConfig.sheetName1 || '';
+        data.sheetName2 = appConfig.sheetName2 || '';
 
-        try {
-            await fetch(appsScriptUrl + '?' + params.toString(), { method: 'GET', mode: 'no-cors' });
-        } catch (_) { /* opaque response — ignore */ }
-
-        confirmScreen.style.display = 'none';
-        const thanks = document.createElement('div');
-        thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
-        thanks.innerHTML = `
-            お申し込みありがとうございます。<br>内容を受け付けました。<br>
-            <span style="display:inline-block; margin-top:14px; font-size:0.88em; color:#555; background:#f0eaf8; border:1px solid #c9b8e0; border-radius:6px; padding:8px 20px; letter-spacing:0.05em;">
-                受付番号：${receptNo}
-            </span>
-            <em style="font-size:0.78em; color:#999; display:block; margin-top:10px; text-align:center;">申込受理書兼請求書をメールにてお送りしました。</em>
-        `;
-        confirmScreen.parentNode.insertBefore(thanks, confirmScreen.nextSibling);
+        google.script.run
+            .withSuccessHandler(() => {
+                confirmScreen.style.display = 'none';
+                const thanks = document.createElement('div');
+                thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
+                thanks.innerHTML = `
+                    お申し込みありがとうございます。<br>内容を受け付けました。<br>
+                    <span style="display:inline-block; margin-top:14px; font-size:0.88em; color:#555; background:#f0eaf8; border:1px solid #c9b8e0; border-radius:6px; padding:8px 20px; letter-spacing:0.05em;">
+                        受付番号：${receptNo}
+                    </span>
+                    <em style="font-size:0.78em; color:#999; display:block; margin-top:10px; text-align:center;">申込受理書兼請求書をメールにてお送りしました。</em>
+                `;
+                confirmScreen.parentNode.insertBefore(thanks, confirmScreen.nextSibling);
+            })
+            .withFailureHandler((err) => {
+                submitBtn.disabled    = false;
+                submitBtn.textContent = '送信する';
+                backBtn.disabled      = false;
+                alert('送信中にエラーが発生しました。\n' + err.message);
+            })
+            .submitForm(data);
     });
 </script>
 
