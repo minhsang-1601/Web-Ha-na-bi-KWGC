@@ -158,8 +158,26 @@ function formatTs(value) {
   return String(value);
 }
 
-function generateSeatNo(kubun, dataRow) {
-  return `${String(kubun || 'X').trim().toUpperCase()}-${String(dataRow - 1).padStart(7, '0')}`;
+/**
+ * 座席番号を発行する（区分ごとに 1 から連番）
+ * @param {string} kubun - 区分（B/C/D/E など）
+ * @param {Sheet}  tesagyouSheet - 手作業シート（既存の座席番号を数えるため）
+ */
+function generateSeatNo(kubun, tesagyouSheet) {
+  const k = String(kubun || 'X').trim().toUpperCase();
+  let count = 0;
+  if (tesagyouSheet) {
+    const lastRow = tesagyouSheet.getLastRow();
+    if (lastRow > 2) {
+      const vals = tesagyouSheet
+        .getRange(3, COL_SEAT_NO, lastRow - 2, 1)
+        .getValues();
+      vals.forEach(([v]) => {
+        if (String(v).startsWith(k + '-')) count++;
+      });
+    }
+  }
+  return `${k}-${String(count + 1).padStart(7, '0')}`;
 }
 
 function nowStr() {

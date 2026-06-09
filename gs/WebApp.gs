@@ -35,14 +35,16 @@ function submitForm(data) {
   // ─── 管理ID処理 ─────────────────────────────────────────────────────────────
   let kanriId = String(data.kanri_id || '').trim();
 
+  let isNewKanri = false;
   if (kanriId) {
     // 既存IDの場合 → 変更チェック → update_kanri フラグがあれば更新
     const doUpdate = data.update_kanri === 'yes';
     saveKanriId(kanriId, data, doUpdate);
   } else {
     // 新規ユーザー → 新ID発行 → 保存
-    kanriId = generateKanriId();
+    kanriId    = generateKanriId();
     saveKanriId(kanriId, data, true);
+    isNewKanri = true;
   }
   data.kanri_id = kanriId;
 
@@ -51,6 +53,9 @@ function submitForm(data) {
   appendToTesagyouSheet(receptNo, DEFAULT_SHEET_NAME2, data);
 
   if (data.email) {
+    // 新規ユーザーには管理ID発行通知メールを先に送信
+    if (isNewKanri) sendKanriIdIssuedEmail(data, kanriId);
+
     if (autoSend) {
       const pdf = generateInvoicePdf(data, receptNo);
       sendConfirmationEmail(data, receptNo, pdf, kanriId);

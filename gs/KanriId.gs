@@ -33,21 +33,26 @@ function getKanriSheet() {
     let   sheet = ss.getSheetByName(KANRI_SHEET);
 
     if (!sheet) {
-      // シート自体が存在しない → 新規作成
+      // シート自体が存在しない → 新規作成（書式含む）
       sheet = ss.insertSheet(KANRI_SHEET);
+      sheet.appendRow(KANRI_HEADERS);
+      sheet.getRange(1, 1, 1, KANRI_HEADERS.length)
+        .setFontWeight('bold').setBackground('#d0e4f7');
+      sheet.setFrozenRows(1);
+      return sheet;
     }
 
-    // ヘッダー行がなければ先頭に挿入
+    // ヘッダーがなければ先頭に挿入（書式も一緒に設定）
     const firstCell = String(sheet.getRange(1, 1).getValue()).trim();
     if (firstCell !== '管理ID番号') {
       sheet.insertRowBefore(1);
-      sheet.getRange(1, 1, 1, KANRI_HEADERS.length).setValues([KANRI_HEADERS]);
+      sheet.getRange(1, 1, 1, KANRI_HEADERS.length)
+        .setValues([KANRI_HEADERS])
+        .setFontWeight('bold').setBackground('#d0e4f7');
+      sheet.setFrozenRows(1);
     }
-    // 書式を常に適用（冪等）
-    sheet.getRange(1, 1, 1, KANRI_HEADERS.length)
-      .setFontWeight('bold').setBackground('#d0e4f7');
-    sheet.setFrozenRows(1);
 
+    // ✅ 通常時はここで返す（書式操作なし）
     return sheet;
   } catch (e) {
     console.error('getKanriSheet エラー:', e.message);

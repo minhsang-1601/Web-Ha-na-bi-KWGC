@@ -79,35 +79,29 @@ function setupAllMailTemplates() {
 }
 
 function setupMailTemplate() {
-  const eventName = getEventName();
-  const subject = `【${eventName}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）`;
   PropertiesService.getScriptProperties().setProperties({
-    MAIL_SUBJECT: subject,
+    MAIL_SUBJECT: '【{{event_name}}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）',
     MAIL_BODY:    _defaultConfirmBody(),
-    PAYMENT_DUE:  getPaymentDue(),
   });
 }
 
 function setupReceiptOnlyTemplate() {
-  const eventName = getEventName();
   PropertiesService.getScriptProperties().setProperties({
-    RECEIPT_ONLY_SUBJECT: `【${eventName}】お申し込みを受け付けました（受付番号：{{receipt_no}}）`,
+    RECEIPT_ONLY_SUBJECT: '【{{event_name}}】お申し込みを受け付けました（受付番号：{{receipt_no}}）',
     RECEIPT_ONLY_BODY:    _defaultReceiptOnlyBody(),
   });
 }
 
 function setupOreijouTemplate() {
-  const eventName = getEventName();
   PropertiesService.getScriptProperties().setProperties({
-    OREIJOU_SUBJECT: `【${eventName}】ご協賛へのお礼（受付番号：{{receipt_no}}）`,
+    OREIJOU_SUBJECT: '【{{event_name}}】ご協賛へのお礼（受付番号：{{receipt_no}}）',
     OREIJOU_BODY:    _defaultOreijouBody(),
   });
 }
 
 function setupAnnaiTemplate() {
-  const eventName = getEventName();
   PropertiesService.getScriptProperties().setProperties({
-    ANNAI_SUBJECT: `【${eventName}】ご案内（受付番号：{{receipt_no}}）`,
+    ANNAI_SUBJECT: '【{{event_name}}】ご案内（受付番号：{{receipt_no}}）',
     ANNAI_BODY:    _defaultAnnaiBody(),
   });
 }

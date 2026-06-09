@@ -147,6 +147,53 @@ function generateOreijouPdf(data) {
   }
 }
 
+// ─── 管理ID新規発行通知メール ────────────────────────────────────────────────────
+
+/**
+ * 新規ユーザーに管理ID番号を通知するメールを送信する
+ * submitForm() から isNew === true の場合のみ呼び出す
+ */
+function sendKanriIdIssuedEmail(data, kanriId) {
+  if (!data.email) return;
+  const eventName  = getEventName();
+  const officeEmail = getOfficeEmail();
+  const subject = `【${eventName}】管理ID番号のご登録完了のお知らせ`;
+  const body = [
+    `${data.company_name || ''}`,
+    `${data.rep_name || ''} 様`,
+    '',
+    `このたびは【${eventName}】にご登録いただき、誠にありがとうございます。`,
+    '以下の管理ID番号が発行されました。',
+    '',
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    `　管理ID番号：${kanriId}`,
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '',
+    '次回以降のお申し込みの際は、上記IDをご入力いただくと',
+    '登録情報が自動的に入力されます。',
+    '大切に保管してください。',
+    '',
+    `━━━━━━━━━━━━━━━━━━━━━━━━`,
+    `${eventName} 実行委員会 事務局`,
+    `E-mail：${officeEmail}`,
+    `受付時間：${getOfficeHours()}`,
+    '━━━━━━━━━━━━━━━━━━━━━━━━',
+    '※ このメールは自動送信されています。',
+  ].join('\n');
+
+  try {
+    MailApp.sendEmail({
+      to:      data.email,
+      cc:      officeEmail,
+      subject,
+      body,
+      replyTo: officeEmail,
+    });
+  } catch (e) {
+    console.warn('管理ID発行通知メール送信失敗:', e.message);
+  }
+}
+
 // ─── 内部ユーティリティ ────────────────────────────────────────────────────────
 
 function _buildVars(data, receptNo, kanriId) {

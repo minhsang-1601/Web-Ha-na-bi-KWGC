@@ -1,5 +1,7 @@
 // ─── スプレッドシート書き込み ──────────────────────────────────────────────────
 
+const _t = v => String(v || '').trim(); // TRIM ヘルパー
+
 function appendRow(data, sheetName) {
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
@@ -12,6 +14,7 @@ function appendRow(data, sheetName) {
     if (sheet.getLastRow() === 0) {
       sheet.appendRow(HEADERS);
       sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
+      sheet.setFrozenRows(1);
       applyColumnWidths(sheet);
     }
 
@@ -22,21 +25,21 @@ function appendRow(data, sheetName) {
 
     const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
     sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([[
-      data.kanri_id         || '',  // A: 管理ID番号
-      receptNo,                      // B: 受付番号
-      dateStr,                       // C: 受付日時
-      data.company_name     || '',   // D
-      data.company_furigana || '',   // E
-      data.rep_name         || '',   // F
-      data.rep_furigana     || '',   // G
-      data.staff_name       || '',   // H
-      data.staff_furigana   || '',   // I
-      data.zipcode          || '',   // J
-      data.address          || '',   // K
-      data.phone            || '',   // L
-      data.email            || '',   // M
-      data.category         || '',   // N
-      data.website_url      || '',   // O
+      _t(data.kanri_id),         // A: 管理ID番号
+      receptNo,                   // B: 受付番号
+      dateStr,                    // C: 受付日時
+      _t(data.company_name),     // D
+      _t(data.company_furigana), // E
+      _t(data.rep_name),         // F
+      _t(data.rep_furigana),     // G
+      _t(data.staff_name),       // H
+      _t(data.staff_furigana),   // I
+      _t(data.zipcode),          // J
+      _t(data.address),          // K
+      _t(data.phone),            // L
+      _t(data.email),            // M
+      _t(data.category),         // N
+      _t(data.website_url),      // O
     ]]);
 
     SpreadsheetApp.flush();
@@ -68,11 +71,12 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
     sheet.getRange(2, 1, 1, TESAGYOU_HEADERS.length)
       .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
     sheet.setRowHeight(2, 36);
+    sheet.setFrozenRows(2);
     applyTesagyouColumnWidths(sheet);
   }
 
   const newRow   = sheet.getLastRow() + 1;
-  const kubun    = (data ? (data.category || '') : '').trim().toUpperCase();
+  const kubun    = _t(data ? (data.category || '') : '').toUpperCase();
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
   // B: 受付番号（直接入力）
@@ -85,28 +89,32 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 
-  // I(9): 受付完了 — B〜E は申込時に自動完了
+  // J: 受付完了 checkbox — B〜E は申込時に自動完了
   sheet.getRange(newRow, COL_UKETSUKE).insertCheckboxes();
   if (autoSend) sheet.getRange(newRow, COL_UKETSUKE).setValue(true);
 
-  // J(10): 請求書送信日時 — B〜E は申込時に自動送信済みのため現在日時
+  // K: 請求書送信日時 — B〜E は申込時に自動送信済みのため現在日時
   if (autoSend) sheet.getRange(newRow, COL_INV_DATE).setValue(nowStr());
 
-  // K(11): 入金完了 checkbox
+  // L: 入金完了 checkbox
   sheet.getRange(newRow, COL_NYUKIN).insertCheckboxes();
 
-  // N(14): 案内実施 checkbox
+  // O: 案内実施 checkbox
   sheet.getRange(newRow, COL_ANNAIBUN).insertCheckboxes();
 
-  // L, M, O, P は空（各トリガーが自動設定）
+  // M, N, P, Q は空（各トリガーが自動設定）
 }
 
 function applyColumnWidths(sheet) {
-  [160,150,200,180,150,150,120,120,90,220,120,220,60,200]
+  // A=管理ID B=受付番号 C=受付日時 D=個人名 E=ふりがな F=代表者 G=ふりがな
+  // H=担当者 I=ふりがな J=郵便番号 K=住所 L=電話番号 M=メール N=区分 O=URL
+  [160, 150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
 }
 
 function applyTesagyouColumnWidths(sheet) {
-  [160, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150, 110, 70, 150, 150]
+  // A=管理ID B=受付番号 C=区分 D=電話 E=個人名 F=住所 G=代表者 H=メール I=URL
+  // J=受付完了 K=請求書日時 L=入金 M=座席日時 N=座席番号 O=案内 P=案内日時 Q=礼状日時
+  [160, 150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150, 120, 70, 150, 150]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
 }
