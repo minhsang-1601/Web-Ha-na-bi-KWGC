@@ -81,20 +81,20 @@
   <div class="addressee">{{company_name}}　御中</div>
   <div class="sender-wrap">
     <div class="sender">
-      <div class="org">川口花火大会実行委員会</div>
-      <div>委員長　廣瀬 進治</div>
+      <div class="org">{{org_name}}</div>
+      <div>{{org_rep}}</div>
     </div>
     <img class="hanko" src="hanko.png" alt="印">
   </div>
 </div>
 
 <p class="body-text">
-　この度は、第5回川口花火大会への協賛にお申込みいただき誠にありがとうございます。<br>
+　この度は、{{event_name}}への協賛にお申込みいただき誠にありがとうございます。<br>
 　下記のとおり、ご請求させていただきますのでお振込みくださいますようお願い申し上げます。
 </p>
 
 <div class="total-line">合計：<span class="total-amount">{{total}}　ー</span></div>
-<div class="total-note">ただし、第5回川口花火大会協賛金として</div>
+<div class="total-note">ただし、{{event_name}}協賛金として</div>
 
 <div class="kubun-line">協賛区分：{{category}} プラン　　金額：{{total}}</div>
 
@@ -105,12 +105,12 @@
     <div class="breakdown-row">消費税額　　{{tax}}</div>
   </div>
   <div class="regist-box">
-    川口花火大会実行委員会<br>
-    登録番号：T9700150122003
+    {{org_name}}<br>
+    登録番号：{{invoice_reg_no}}
   </div>
 </div>
 
-<div class="payment-due">【お振込期限】9月12日（金）</div>
+<div class="payment-due">【お振込期限】{{payment_due}}</div>
 
 <div class="notes">
   ※お振込み手数料は、恐れ入りますがご負担お願い申し上げます。<br>
@@ -119,10 +119,10 @@
 
 <div class="bank-box">
   <div class="bank-title">＜お振込み先＞</div>
-  埼玉りそな銀行　川口支店<br>
-  普通預金（口座番号）36216349<br>
-  　　　　　(口座名義人）川口商工会議所<br>
-  　　　　　　川口花火大会実行委員会委員長　廣瀬 進治
+  {{bank_name}}<br>
+  普通預金（口座番号）{{bank_no}}<br>
+  　　　　　(口座名義人）{{bank_holder}}<br>
+  　　　　　　{{bank_rep}}
 </div>
 
 </body>

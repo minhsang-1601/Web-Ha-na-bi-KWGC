@@ -20,6 +20,8 @@ function getConfig() {
     endDate:    String(getConfigVal('END_DATE',     '2026-10-01T23:59:59')),
     sheetName1: DEFAULT_SHEET_NAME,
     sheetName2: DEFAULT_SHEET_NAME2,
+    eventName:        getEventName(),
+    receiptNoPrefix:  getReceiptNoPrefix(),
   };
 }
 
@@ -30,24 +32,35 @@ function submitForm(data) {
   const kubun    = (data.category || '').trim().toUpperCase();
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
+  // ─── 管理ID処理 ─────────────────────────────────────────────────────────────
+  let kanriId = String(data.kanri_id || '').trim();
+
+  if (kanriId) {
+    // 既存IDの場合 → 変更チェック → update_kanri フラグがあれば更新
+    const doUpdate = data.update_kanri === 'yes';
+    saveKanriId(kanriId, data, doUpdate);
+  } else {
+    // 新規ユーザー → 新ID発行 → 保存
+    kanriId = generateKanriId();
+    saveKanriId(kanriId, data, true);
+  }
+  data.kanri_id = kanriId;
+
+  // ─── スプレッドシート登録 ─────────────────────────────────────────────────
   const receptNo = appendRow(data, DEFAULT_SHEET_NAME);
   appendToTesagyouSheet(receptNo, DEFAULT_SHEET_NAME2, data);
 
   if (data.email) {
     if (autoSend) {
-      // B〜E: 受付確認 + 請求書PDF を自動送信
       const pdf = generateInvoicePdf(data, receptNo);
-      sendConfirmationEmail(data, receptNo, pdf);
+      sendConfirmationEmail(data, receptNo, pdf, kanriId);
     } else {
-      // S/A: 受付確認のみ（請求書は事務局が手動送信）
-      sendReceiptOnlyEmail(data, receptNo);
+      sendReceiptOnlyEmail(data, receptNo, kanriId);
     }
-
-    // 事務局へも通知
-    _notifyOffice(data, receptNo, autoSend);
+    _notifyOffice(data, receptNo, autoSend, kanriId);
   }
 
-  return { result: 'success', receipt_no: receptNo };
+  return { result: 'success', receipt_no: receptNo, kanri_id: kanriId };
 }
 
 /** カスタムメニュー登録 */
@@ -66,17 +79,18 @@ function onOpen() {
 
 // ─── 内部ユーティリティ ────────────────────────────────────────────────────────
 
-function _notifyOffice(data, receptNo, autoSent) {
+function _notifyOffice(data, receptNo, autoSent, kanriId) {
   const subject = `【協賛申込】${data.company_name || ''} (${data.category || ''}) 受付番号:${receptNo}`;
   const body = [
     '新規協賛申込みがありました。',
     '',
-    `会社名：${data.company_name || ''}`,
-    `区分　：${data.category || ''} プラン`,
-    `担当者：${data.staff_name || ''}`,
-    `メール：${data.email || ''}`,
+    `会社名　：${data.company_name || ''}`,
+    `区分　　：${data.category || ''} プラン`,
+    `担当者　：${data.staff_name || ''}`,
+    `メール　：${data.email || ''}`,
     `受付番号：${receptNo}`,
-    `請求書：${autoSent ? '自動送信済み' : '手動送信待ち（S/Aプラン）'}`,
+    `管理ID　：${kanriId || ''}`,
+    `請求書　：${autoSent ? '自動送信済み' : '手動送信待ち（S/Aプラン）'}`,
   ].join('\n');
   try {
     MailApp.sendEmail({ to: getOfficeEmail(), subject, body });

@@ -118,7 +118,7 @@ function handleNyukin(e, sheet, row) {
   }
 
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
-  const kubun     = sheet.getRange(row, 2).getValue(); // B列: 区分
+  const kubun     = sheet.getRange(row, 3).getValue(); // C列: 区分
   const seatNo    = generateSeatNo(kubun, row);
   const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
   const data      = findRowByReceptNo(mainSheet, receptNo);
@@ -263,6 +263,11 @@ function sendInvoiceConfirmed(row, receptNo) {
   const data = findRowByReceptNo(mainSheet, receptNo);
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 
+  // 管理ID番号を手作業シートの A 列から取得して data に補完
+  if (!data.kanri_id) {
+    data.kanri_id = tetsuSheet.getRange(row, COL_KANRI_ID).getValue() || '';
+  }
+
   const pdf = generateInvoicePdf(data, receptNo);
   sendInvoiceEmail(data, receptNo, pdf);
   tetsuSheet.getRange(row, COL_INV_DATE).setValue(nowStr());
@@ -326,7 +331,7 @@ function sendInvoiceEmail(data, receptNo, pdf) {
   const props = PropertiesService.getScriptProperties();
   let subject = props.getProperty('MAIL_SUBJECT') ||
     `【${getEventName()}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）`;
-  let body    = props.getProperty('MAIL_BODY') || '';
+  let body    = props.getProperty('MAIL_BODY') || _defaultConfirmBody();
 
   const vars = {
     company_name: data.company_name || '',
@@ -334,7 +339,12 @@ function sendInvoiceEmail(data, receptNo, pdf) {
     staff_name:   data.staff_name   || '',
     category:     data.category     || '',
     receipt_no:   receptNo          || '',
+    kanri_id:     data.kanri_id     || '',
     date:         nowStr(),
+    event_name:   getEventName(),
+    payment_due:  getPaymentDue(),
+    office_email: getOfficeEmail(),
+    office_hours: getOfficeHours(),
   };
   Object.entries(vars).forEach(([key, val]) => {
     const re = new RegExp(`\\{\\{${key}\\}\\}`, 'g');
@@ -342,7 +352,7 @@ function sendInvoiceEmail(data, receptNo, pdf) {
     body     = body.replace(re, val);
   });
 
-  const mailOptions = { to: data.email, subject, body, replyTo: getOfficeEmail() };
+  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
   if (pdf) {
     mailOptions.attachments = [
       pdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
@@ -352,22 +362,26 @@ function sendInvoiceEmail(data, receptNo, pdf) {
 }
 
 function findRowByReceptNo(sheet, receptNo) {
+  // 協賛申込み一覧: A=管理ID B=受付番号 C=受付日時 D=個人名 E=個人名ふりがな
+  //                F=役職代表者 G=役職ふりがな H=担当者 I=担当者ふりがな
+  //                J=郵便番号 K=住所 L=電話番号 M=メール N=区分 O=会社HP URL
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
-    if (rows[i][0] === receptNo) {
+    if (String(rows[i][1]).trim() === String(receptNo).trim()) { // B列: 受付番号
       return {
-        company_name:     rows[i][2],
-        company_furigana: rows[i][3],
-        rep_name:         rows[i][4],
-        rep_furigana:     rows[i][5],
-        staff_name:       rows[i][6],
-        staff_furigana:   rows[i][7],
-        zipcode:          rows[i][8],
-        address:          rows[i][9],
-        phone:            rows[i][10],
-        email:            rows[i][11],
-        category:         rows[i][12],
-        website_url:      rows[i][13],
+        kanri_id:         rows[i][0],   // A
+        company_name:     rows[i][3],   // D
+        company_furigana: rows[i][4],   // E
+        rep_name:         rows[i][5],   // F
+        rep_furigana:     rows[i][6],   // G
+        staff_name:       rows[i][7],   // H
+        staff_furigana:   rows[i][8],   // I
+        zipcode:          rows[i][9],   // J
+        address:          rows[i][10],  // K
+        phone:            rows[i][11],  // L
+        email:            rows[i][12],  // M
+        category:         rows[i][13],  // N
+        website_url:      rows[i][14],  // O
       };
     }
   }

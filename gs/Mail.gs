@@ -1,17 +1,17 @@
 // ─── 申込確認メール ────────────────────────────────────────────────────────────
 
 /** B〜E: 受付確認 + 請求書PDF 添付 */
-function sendConfirmationEmail(data, receptNo, invoicePdf) {
+function sendConfirmationEmail(data, receptNo, invoicePdf, kanriId) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('MAIL_SUBJECT') ||
     `【${getEventName()}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）`;
   let body      = props.getProperty('MAIL_BODY') || _defaultConfirmBody();
 
-  const vars = _buildVars(data, receptNo);
+  const vars = _buildVars(data, receptNo, kanriId);
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  const mailOptions = { to: data.email, subject, body, replyTo: getOfficeEmail() };
+  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
   if (invoicePdf) {
     mailOptions.attachments = [
       invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
@@ -21,17 +21,17 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
 }
 
 /** S/A: 受付確認のみ（請求書は手動送信） */
-function sendReceiptOnlyEmail(data, receptNo) {
+function sendReceiptOnlyEmail(data, receptNo, kanriId) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('RECEIPT_ONLY_SUBJECT') ||
     `【${getEventName()}】お申し込みを受け付けました（受付番号：{{receipt_no}}）`;
   let body      = props.getProperty('RECEIPT_ONLY_BODY') || _defaultReceiptOnlyBody();
 
-  const vars = _buildVars(data, receptNo);
+  const vars = _buildVars(data, receptNo, kanriId);
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  MailApp.sendEmail({ to: data.email, subject, body, replyTo: getOfficeEmail() });
+  MailApp.sendEmail({ to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() });
 }
 
 // ─── 請求書PDF生成 ─────────────────────────────────────────────────────────────
@@ -51,14 +51,22 @@ function generateInvoicePdf(data, receptNo) {
   html = html.replace('src="hanko.png"', `src="https://drive.google.com/uc?id=${getHankoFileId()}"`);
 
   const replacements = {
-    '{{company_name}}': data.company_name || '',
-    '{{issue_date}}':   issueDate,
-    '{{receipt_no}}':   receptNo,
-    '{{category}}':     category,
-    '{{total}}':        fmt(totalPrice),
-    '{{subtotal}}':     fmt(subtotal),
-    '{{tax}}':          fmt(tax),
-    '{{payment_due}}':  getPaymentDue(),
+    '{{company_name}}':  data.company_name || '',
+    '{{issue_date}}':    issueDate,
+    '{{receipt_no}}':    receptNo,
+    '{{category}}':      category,
+    '{{total}}':         fmt(totalPrice),
+    '{{subtotal}}':      fmt(subtotal),
+    '{{tax}}':           fmt(tax),
+    '{{payment_due}}':   getPaymentDue(),
+    '{{event_name}}':    getEventName(),
+    '{{org_name}}':      getOrgName(),
+    '{{org_rep}}':       getOrgRep(),
+    '{{invoice_reg_no}}':getInvoiceRegNo(),
+    '{{bank_name}}':     getBankName(),
+    '{{bank_no}}':       getBankNo(),
+    '{{bank_holder}}':   getBankHolder(),
+    '{{bank_rep}}':      getBankRep(),
   };
   Object.entries(replacements).forEach(([k, v]) => { html = html.split(k).join(v); });
 
@@ -82,7 +90,7 @@ function sendAnnaibunEmail(data, receptNo) {
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  MailApp.sendEmail({ to: data.email, subject, body, replyTo: getOfficeEmail() });
+  MailApp.sendEmail({ to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() });
 }
 
 // ─── お礼状メール ──────────────────────────────────────────────────────────────
@@ -98,7 +106,7 @@ function sendOreijouEmail(data, receptNo) {
   body    = _replaceVars(body,    vars);
 
   const pdf = generateOreijouPdf(data);
-  const mailOptions = { to: data.email, subject, body, replyTo: getOfficeEmail() };
+  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
   if (pdf) mailOptions.attachments = [pdf.setName(`お礼状_${data.company_name || ''}.pdf`)];
   MailApp.sendEmail(mailOptions);
 }
@@ -115,9 +123,15 @@ function generateOreijouPdf(data) {
     html = html.replace('src="hanko.png"', `src="https://drive.google.com/uc?id=${getHankoFileId()}"`);
 
     const replacements = {
-      '{{company_name}}': data.company_name || '',
-      '{{rep_name}}':     data.rep_name     || '',
-      '{{issue_date}}':   issueDate,
+      '{{company_name}}':  data.company_name || '',
+      '{{rep_name}}':      data.rep_name     || '',
+      '{{issue_date}}':    issueDate,
+      '{{event_name}}':    getEventName(),
+      '{{org_name}}':      getOrgName(),
+      '{{org_rep}}':       getOrgRep(),
+      '{{org_location}}':  getOrgLocation(),
+      '{{org_tel}}':       getOrgTel(),
+      '{{org_fax}}':       getOrgFax(),
     };
     Object.entries(replacements).forEach(([k, v]) => { html = html.split(k).join(v); });
 
@@ -135,17 +149,19 @@ function generateOreijouPdf(data) {
 
 // ─── 内部ユーティリティ ────────────────────────────────────────────────────────
 
-function _buildVars(data, receptNo) {
+function _buildVars(data, receptNo, kanriId) {
   return {
     company_name: data.company_name || '',
     rep_name:     data.rep_name     || '',
     staff_name:   data.staff_name   || '',
     category:     data.category     || '',
     receipt_no:   receptNo          || '',
+    kanri_id:     kanriId || data.kanri_id || '',
     date:         nowStr(),
     event_name:   getEventName(),
     payment_due:  getPaymentDue(),
     office_email: getOfficeEmail(),
+    office_hours: getOfficeHours(),
   };
 }
 
@@ -171,7 +187,10 @@ function _defaultConfirmBody() {
     '　区分　　　　　　：{{category}} プラン',
     '　お申し込み日時　：{{date}}',
     '　受付番号　　　　：{{receipt_no}}',
+    '　管理ID番号　　　：{{kanri_id}}',
     '─────────────────────────────',
+    '',
+    '※ 管理ID番号は次回以降のお申し込みでご利用いただけます。大切に保管してください。',
     '',
     '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
     'お振込期限（{{payment_due}}）までにお手続きくださいますようお願い申し上げます。',
@@ -179,7 +198,7 @@ function _defaultConfirmBody() {
     '━━━━━━━━━━━━━━━━━━━━━━━━',
     '{{event_name}} 実行委員会 事務局',
     'E-mail：{{office_email}}',
-    '受付時間：平日 10:00 〜 17:00',
+    '受付時間：{{office_hours}}',
     '━━━━━━━━━━━━━━━━━━━━━━━━',
     '※ このメールは自動送信されています。',
   ].join('\n');
@@ -200,14 +219,17 @@ function _defaultReceiptOnlyBody() {
     '　区分　　　　　　：{{category}} プラン',
     '　お申し込み日時　：{{date}}',
     '　受付番号　　　　：{{receipt_no}}',
+    '　管理ID番号　　　：{{kanri_id}}',
     '─────────────────────────────',
+    '',
+    '※ 管理ID番号は次回以降のお申し込みでご利用いただけます。大切に保管してください。',
     '',
     '請求書は改めてご送付いたします。',
     '',
     '━━━━━━━━━━━━━━━━━━━━━━━━',
     '{{event_name}} 実行委員会 事務局',
     'E-mail：{{office_email}}',
-    '受付時間：平日 10:00 〜 17:00',
+    '受付時間：{{office_hours}}',
     '━━━━━━━━━━━━━━━━━━━━━━━━',
     '※ このメールは自動送信されています。',
   ].join('\n');

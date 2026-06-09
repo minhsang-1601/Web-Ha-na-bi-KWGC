@@ -125,8 +125,8 @@
   <div class="addressee">{{company_name}}　御中</div>
   <div class="sender-wrap">
     <div class="sender">
-      <div class="org">川口花火大会実行委員会</div>
-      <div>委員長　廣瀬 進治</div>
+      <div class="org">{{org_name}}</div>
+      <div>{{org_rep}}</div>
     </div>
     <img class="hanko" src="hanko.png" alt="印">
   </div>
@@ -139,7 +139,7 @@
 <p class="body-text">
 　拝啓　時下、ますますご清栄のこととお慶び申し上げます。<br>
 　日頃、本実行委員会の事業に対し格別なるご理解を賜り厚くお礼申し上げます。<br>
-　このたびは第5回川口花火大会へのご協賛をお申込みいただき、誠にありがとうございました。お申込みについて、確かに受け付けましたことをご報告申し上げます。<br>
+　このたびは{{event_name}}へのご協賛をお申込みいただき、誠にありがとうございました。お申込みについて、確かに受け付けましたことをご報告申し上げます。<br>
 　つきましては、今後の協賛仮決定に関し、以下のとおりご案内申し上げます。
 </p>
 
@@ -156,10 +156,10 @@
 <!-- 問合せ先 -->
 <div class="contact-box">
   <div class="contact-title">【問合せ先】</div>
-  川口花火大会実行委員会<br>
-  （川口商工会議所内）<br>
-  TEL：048-228-2220<br>
-  FAX：048-228-2221
+  {{org_name}}<br>
+  {{org_location}}<br>
+  TEL：{{org_tel}}<br>
+  FAX：{{org_fax}}
 </div>
 
 </body>

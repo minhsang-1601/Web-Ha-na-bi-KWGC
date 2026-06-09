@@ -17,24 +17,26 @@ function appendRow(data, sheetName) {
 
     const now      = new Date();
     const receptNo = data.receipt_no ||
-                     'KWGC' + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
+                     getReceiptNoPrefix() + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
     const newRow   = sheet.getLastRow() + 1;
 
     const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
     sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([[
-      receptNo, dateStr,
-      data.company_name     || '',
-      data.company_furigana || '',
-      data.rep_name         || '',
-      data.rep_furigana     || '',
-      data.staff_name       || '',
-      data.staff_furigana   || '',
-      data.zipcode          || '',
-      data.address          || '',
-      data.phone            || '',
-      data.email            || '',
-      data.category         || '',
-      data.website_url      || '',
+      data.kanri_id         || '',  // A: 管理ID番号
+      receptNo,                      // B: 受付番号
+      dateStr,                       // C: 受付日時
+      data.company_name     || '',   // D
+      data.company_furigana || '',   // E
+      data.rep_name         || '',   // F
+      data.rep_furigana     || '',   // G
+      data.staff_name       || '',   // H
+      data.staff_furigana   || '',   // I
+      data.zipcode          || '',   // J
+      data.address          || '',   // K
+      data.phone            || '',   // L
+      data.email            || '',   // M
+      data.category         || '',   // N
+      data.website_url      || '',   // O
     ]]);
 
     SpreadsheetApp.flush();
@@ -55,10 +57,13 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
       .setFontWeight('bold').setBackground('#fce8b2');
     // 2行目: サブヘッダー（操作種別メモ）
     sheet.appendRow([
-      '', '', '', '', '', '', '', '',
-      'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',
-      'タイムスタンプ\n自動', '区分＋7桁\n自動',
-      'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',
+      'XLOOKUP\n自動',   // A: 管理ID番号
+      '直接入力',         // B: 受付番号
+      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // C-E
+      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // F-I
+      'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // J-L
+      'タイムスタンプ\n自動', '区分＋7桁\n自動',                             // M-N
+      'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',       // O-Q
     ]);
     sheet.getRange(2, 1, 1, TESAGYOU_HEADERS.length)
       .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
@@ -70,13 +75,13 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
   const kubun    = (data ? (data.category || '') : '').trim().toUpperCase();
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
-  // A: 受付番号
-  sheet.getRange(newRow, 1).setValue(receptNo);
+  // B: 受付番号（直接入力）
+  sheet.getRange(newRow, COL_RECEPT_NO).setValue(receptNo);
 
-  // B〜H: XLOOKUP（セミコロン区切りはロケール依存のためカンマ使用）
+  // XLOOKUP: 受付番号（$B）をキーに協賛申込み一覧から各列を参照
   Object.entries(TESAGYOU_LOOKUP_COLS).forEach(([col, srcCol]) => {
     const formula =
-      `=IFERROR(XLOOKUP($A${newRow},'${DEFAULT_SHEET_NAME}'!$A:$A,'${DEFAULT_SHEET_NAME}'!$${srcCol}:$${srcCol}),"見つかりません")`;
+      `=IFERROR(XLOOKUP($B${newRow},'${DEFAULT_SHEET_NAME}'!$B:$B,'${DEFAULT_SHEET_NAME}'!$${srcCol}:$${srcCol}),"見つかりません")`;
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 
