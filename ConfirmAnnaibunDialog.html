@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: "Hiragino Sans","Meiryo",sans-serif; font-size:13px; padding:16px 20px; color:#333; }
+  h3 { margin:0 0 14px; font-size:15px; color:#1565c0; border-bottom:2px solid #4a90d9; padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+  td { padding:5px 8px; border-bottom:1px solid #eee; }
+  td:first-child { color:#666; width:44%; }
+  .info-box { background:#e3f2fd; border:1px solid #4a90d9; border-radius:4px;
+    padding:8px 12px; font-size:13px; margin-bottom:14px; }
+  .warning { background:#fff8e1; border:1px solid #f0c040; border-radius:4px;
+    padding:8px 12px; font-size:12px; color:#7a5800; margin-bottom:14px; }
+  .buttons { display:flex; gap:10px; justify-content:flex-end; }
+  button { padding:7px 22px; border-radius:4px; border:none; cursor:pointer;
+    font-size:13px; font-weight:bold; }
+  .btn-send   { background:#1565c0; color:#fff; }
+  .btn-send:hover { background:#0d47a1; }
+  .btn-cancel { background:#e0e0e0; color:#555; }
+  .btn-cancel:hover { background:#c0c0c0; }
+  .btn-send:disabled { background:#aaa; cursor:not-allowed; }
+</style>
+</head>
+<body>
+<h3>案内送信の確認</h3>
+<table>
+  <tr><td>受付番号</td><td><?= receptNo ?></td></tr>
+  <tr><td>会社名・団体名</td><td><?= company_name ?></td></tr>
+  <tr><td>代表者名</td><td><?= rep_name ?></td></tr>
+  <tr><td>座席番号</td><td><?= seatNo ?></td></tr>
+  <tr><td>送信先メール</td><td><?= email ?></td></tr>
+</table>
+<div class="warning">
+  ⚠️ 送信後は「案内送信日時」が自動セットされます。
+</div>
+<div class="buttons">
+  <button class="btn-cancel" onclick="cancel()">キャンセル</button>
+  <button class="btn-send" id="sendBtn" onclick="send()">送信する</button>
+</div>
+
+<script>
+  function send() {
+    document.getElementById('sendBtn').disabled = true;
+    document.getElementById('sendBtn').textContent = '送信中...';
+    google.script.run
+      .withSuccessHandler(function() { google.script.host.close(); })
+      .withFailureHandler(function(err) {
+        alert('❌ 送信エラー: ' + err.message);
+        document.getElementById('sendBtn').disabled = false;
+        document.getElementById('sendBtn').textContent = '送信する';
+      })
+      .sendAnnaibunConfirmed(<?= row ?>, '<?= receptNo ?>');
+  }
+  function cancel() {
+    google.script.run
+      .withSuccessHandler(function() { google.script.host.close(); })
+      .withFailureHandler(function() { google.script.host.close(); })
+      .cancelAnnaibun(<?= row ?>);
+  }
+</script>
+</body>
+</html>

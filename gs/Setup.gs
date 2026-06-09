@@ -1,157 +1,117 @@
-// ─── 初回セットアップ用関数（エディタから手動実行） ────────────────────────────
+// ─── 初回セットアップ用関数（カスタムメニューまたはエディタから手動実行） ──────
 
-/** 受付期間・シート名を Script Properties に保存する */
-function setupWebAppConfig() {
-  PropertiesService.getScriptProperties().setProperties({
-    START_DATE:  '2025-01-01T00:00:00',
-    END_DATE:    '2026-10-01T23:59:59',
-    SHEET_NAME1: DEFAULT_SHEET_NAME,
-    SHEET_NAME2: DEFAULT_SHEET_NAME2,
-  });
-  SpreadsheetApp.getUi().alert(
-    'Web App 設定を保存しました。\n' +
-    '変更: プロジェクトの設定 → スクリプト プロパティ'
-  );
-}
+/** Info シートを作成・初期化する */
+function setupInfoSheet() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  let sheet   = ss.getSheetByName(INFO_SHEET_NAME);
+  if (!sheet) sheet = ss.insertSheet(INFO_SHEET_NAME, 0);
 
-/** 申込確認メールのテンプレートを Script Properties に保存する */
-function setupMailTemplate() {
-  const subject = '【第5回川口花火大会】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）';
-  const body = [
-    '{{company_name}}',
-    '{{rep_name}} 様',
-    '',
-    '平素より格別のご高配を賜り、厚く御礼申し上げます。',
-    '川口花火大会実行委員会 事務局でございます。',
-    '',
-    'このたびは、第5回川口花火大会へのご協賛をお申し込みいただき、',
-    '誠にありがとうございます。',
-    '',
-    '─────────────────────────────',
-    '■ お申し込み内容',
-    '　会社名・団体名　：{{company_name}}',
-    '　ご担当者名　　　：{{staff_name}}',
-    '　区分　　　　　　：{{category}} プラン',
-    '　お申し込み日時　：{{date}}',
-    '　受付番号　　　　：{{receipt_no}}',
-    '─────────────────────────────',
-    '',
-    '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
-    'ご確認のうえ、お振込期限までにお手続きくださいますようお願い申し上げます。',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '第5回川口花火大会 実行委員会 事務局',
-    'E-mail：' + OFFICE_EMAIL,
-    '受付時間：平日 10:00 〜 17:00',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
-  ].join('\n');
+  if (sheet.getLastRow() > 1) {
+    const ui  = SpreadsheetApp.getUi();
+    const res = ui.alert('⚠️ Info シートは既に存在します。上書きしますか？', ui.ButtonSet.YES_NO);
+    if (res !== ui.Button.YES) return;
+    sheet.clearContents();
+  }
 
-  PropertiesService.getScriptProperties().setProperties({
-    MAIL_SUBJECT: subject,
-    MAIL_BODY:    body,
-    PAYMENT_DUE:  '9月11日（金）',
-  });
-  SpreadsheetApp.getUi().alert('申込確認メールテンプレートを保存しました。');
-}
+  const rows = [
+    ['キー', '値', '説明'],
+    ['EVENT_NAME',        '第5回川口花火大会',              'イベント名'],
+    ['EVENT_DATE',        '2026-09-20',                     '開催日'],
+    ['PAYMENT_DUE',       '9月12日（金）',                  '入金期限'],
+    ['OFFICE_EMAIL',      OFFICE_EMAIL_DEFAULT,              '事務局メールアドレス'],
+    ['HANKO_FILE_ID',     HANKO_FILE_ID_DEFAULT,             '印影PNG の Google Drive ファイルID'],
+    ['ROOT_FOLDER_ID',    '',                                'プロジェクト作成先のフォルダID（Drive）'],
+    ['START_DATE',        '2025-01-01T00:00:00',             'フォーム受付開始日時'],
+    ['END_DATE',          '2026-10-01T23:59:59',             'フォーム受付終了日時'],
+    ['PRICE_S',           2000000,                           'S協賛 金額（円）'],
+    ['PRICE_A',           1000000,                           'A協賛 金額（円）'],
+    ['PRICE_B',           500000,                            'B協賛 金額（円）'],
+    ['PRICE_C',           300000,                            'C協賛 金額（円）'],
+    ['PRICE_D',           200000,                            'D協賛 金額（円）'],
+    ['PRICE_E',           100000,                            'E協賛 金額（円）'],
+    ['DATA_SPREADSHEET_ID', '',                              'データシートID（initProject で自動設定）'],
+  ];
 
-/** S/A 区分：受付確認のみメールテンプレートを Script Properties に保存する */
-function setupReceiptOnlyTemplate() {
-  const subject = '【第5回川口花火大会】お申し込みを受け付けました（受付番号：{{receipt_no}}）';
-  const body = [
-    '{{company_name}}',
-    '{{rep_name}} 様',
-    '',
-    '川口花火大会実行委員会 事務局でございます。',
-    'このたびは第5回川口花火大会へのご協賛をお申し込みいただき、誠にありがとうございます。',
-    '',
-    '─────────────────────────────',
-    '■ お申し込み内容',
-    '　会社名・団体名　：{{company_name}}',
-    '　ご担当者名　　　：{{staff_name}}',
-    '　区分　　　　　　：{{category}} プラン',
-    '　お申し込み日時　：{{date}}',
-    '　受付番号　　　　：{{receipt_no}}',
-    '─────────────────────────────',
-    '',
-    '請求書は改めてご送付いたします。',
-    'ご不明な点がございましたら、下記までご連絡ください。',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '第5回川口花火大会 実行委員会 事務局',
-    'E-mail：' + OFFICE_EMAIL,
-    '受付時間：平日 10:00 〜 17:00',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
-  ].join('\n');
+  sheet.getRange(1, 1, rows.length, 3).setValues(rows);
+  sheet.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#d0e4f7');
+  sheet.getRange(2, 1, rows.length - 1, 1).setBackground('#f8f8f8').setFontWeight('bold');
+  sheet.setColumnWidth(1, 200);
+  sheet.setColumnWidth(2, 260);
+  sheet.setColumnWidth(3, 300);
+  sheet.setFrozenRows(1);
 
-  PropertiesService.getScriptProperties().setProperties({
-    RECEIPT_ONLY_SUBJECT: subject,
-    RECEIPT_ONLY_BODY:    body,
-  });
-  SpreadsheetApp.getUi().alert('受付確認メールテンプレート（S/A用）を保存しました。');
-}
-
-/** お礼状メールのテンプレートを Script Properties に保存する */
-function setupOreijouTemplate() {
-  const subject = '【第5回川口花火大会】ご協賛へのお礼（受付番号：{{receipt_no}}）';
-  const body = [
-    '{{company_name}}',
-    '{{rep_name}} 様',
-    '',
-    '平素より格別のご高配を賜り、厚く御礼申し上げます。',
-    '川口花火大会実行委員会 事務局でございます。',
-    '',
-    'このたびは、第5回川口花火大会へのご協賛ならびにご入金いただきまして、',
-    '誠にありがとうございます。',
-    '',
-    'なお、お礼状をPDFにて添付しておりますのでご確認ください。',
-    '',
-    '当日は皆様に素晴らしい花火をお届けできるよう、実行委員会一同、精一杯努めてまいります。',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '第5回川口花火大会 実行委員会 事務局',
-    'E-mail：' + OFFICE_EMAIL,
-    '受付時間：平日 10:00 〜 17:00',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
-  ].join('\n');
-
-  PropertiesService.getScriptProperties().setProperties({
-    OREIJOU_SUBJECT: subject,
-    OREIJOU_BODY:    body,
-  });
-  SpreadsheetApp.getUi().alert('お礼状テンプレートを保存しました。');
+  _infoCache = null;
+  SpreadsheetApp.getUi().alert('✅ Info シートを作成しました。\n各値を確認・編集してください。');
 }
 
 /** 申込みシートのヘッダー行を作成する（初回のみ） */
 function setupHeaders() {
-  const sheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME);
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME);
   if (!sheet) { SpreadsheetApp.getUi().alert(`シート "${DEFAULT_SHEET_NAME}" が見つかりません。`); return; }
   if (sheet.getLastRow() > 0) { SpreadsheetApp.getUi().alert('ヘッダー行はすでに存在します。'); return; }
   sheet.appendRow(HEADERS);
   sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
-  sheet.getRange(2, 9,  sheet.getMaxRows() - 1).setNumberFormat('@');
-  sheet.getRange(2, 11, sheet.getMaxRows() - 1).setNumberFormat('@');
   applyColumnWidths(sheet);
   SpreadsheetApp.getUi().alert('ヘッダー行を作成しました。');
 }
 
-/** 手作業シートの既存行のチェックボックス・J列を修正する */
+/** すべてのメールテンプレートを Script Properties に保存する */
+function setupAllMailTemplates() {
+  setupMailTemplate();
+  setupReceiptOnlyTemplate();
+  setupOreijouTemplate();
+  setupAnnaiTemplate();
+  SpreadsheetApp.getUi().alert('✅ 全メールテンプレートを保存しました。');
+}
+
+function setupMailTemplate() {
+  const eventName = getEventName();
+  const subject = `【${eventName}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）`;
+  PropertiesService.getScriptProperties().setProperties({
+    MAIL_SUBJECT: subject,
+    MAIL_BODY:    _defaultConfirmBody(),
+    PAYMENT_DUE:  getPaymentDue(),
+  });
+}
+
+function setupReceiptOnlyTemplate() {
+  const eventName = getEventName();
+  PropertiesService.getScriptProperties().setProperties({
+    RECEIPT_ONLY_SUBJECT: `【${eventName}】お申し込みを受け付けました（受付番号：{{receipt_no}}）`,
+    RECEIPT_ONLY_BODY:    _defaultReceiptOnlyBody(),
+  });
+}
+
+function setupOreijouTemplate() {
+  const eventName = getEventName();
+  PropertiesService.getScriptProperties().setProperties({
+    OREIJOU_SUBJECT: `【${eventName}】ご協賛へのお礼（受付番号：{{receipt_no}}）`,
+    OREIJOU_BODY:    _defaultOreijouBody(),
+  });
+}
+
+function setupAnnaiTemplate() {
+  const eventName = getEventName();
+  PropertiesService.getScriptProperties().setProperties({
+    ANNAI_SUBJECT: `【${eventName}】ご案内（受付番号：{{receipt_no}}）`,
+    ANNAI_BODY:    _defaultAnnaiBody(),
+  });
+}
+
+/** 手作業シートの既存行を修正（チェックボックスとタイムスタンプ列の修正） */
 function fixTesagyouSheet() {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
   if (!sheet) return;
   const lastRow = sheet.getLastRow();
-  if (lastRow < 2) return;
-  // I列(9): 受付完了, K列(11): 入金完了 → チェックボックス
-  sheet.getRange(2, 9, lastRow - 1).insertCheckboxes();
-  sheet.getRange(2, 11, lastRow - 1).insertCheckboxes();
-  for (let r = 2; r <= lastRow; r++) {
-    if (!sheet.getRange(r, 10).getValue()) sheet.getRange(r, 10).setValue('未'); // J: 請求書送信
-    if (!sheet.getRange(r, 12).getValue()) sheet.getRange(r, 12).setValue('未'); // L: お礼状送付
-  }
-  SpreadsheetApp.getUi().alert('✅ チェックボックスとJ列を修正しました。');
+  if (lastRow < 3) return;
+
+  // I, K, N列: チェックボックス
+  sheet.getRange(3, COL_UKETSUKE,  lastRow - 2).insertCheckboxes();
+  sheet.getRange(3, COL_NYUKIN,    lastRow - 2).insertCheckboxes();
+  sheet.getRange(3, COL_ANNAIBUN,  lastRow - 2).insertCheckboxes();
+  SpreadsheetApp.getUi().alert('✅ チェックボックスを修正しました。');
 }
 
 /** 手作業シートを保護する（オーナーのみ編集可） */
@@ -170,7 +130,6 @@ function setupSheetProtection() {
   SpreadsheetApp.getUi().alert('✅ 手作業シートを保護しました。\nオーナー：' + me.getEmail());
 }
 
-/** 手作業シートの保護を解除する */
 function removeSheetProtection() {
   const ss    = SpreadsheetApp.getActiveSpreadsheet();
   const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);

@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<style>
+  body { font-family: "Hiragino Sans","Meiryo",sans-serif; font-size:13px; padding:16px 20px; color:#333; }
+  h3 { margin:0 0 14px; font-size:15px; color:#2e6b4f; border-bottom:2px solid #4caf7d; padding-bottom:6px; }
+  table { width:100%; border-collapse:collapse; margin-bottom:14px; }
+  td { padding:5px 8px; border-bottom:1px solid #eee; }
+  td:first-child { color:#666; width:44%; }
+  .seat-box { background:#f0faf5; border:1px solid #4caf7d; border-radius:4px;
+    padding:8px 12px; font-size:14px; font-weight:bold; text-align:center;
+    letter-spacing:0.1em; color:#2e6b4f; margin-bottom:14px; }
+  .warning { background:#fff8e1; border:1px solid #f0c040; border-radius:4px;
+    padding:8px 12px; font-size:12px; color:#7a5800; margin-bottom:14px; }
+  .buttons { display:flex; gap:10px; justify-content:flex-end; }
+  button { padding:7px 22px; border-radius:4px; border:none; cursor:pointer;
+    font-size:13px; font-weight:bold; }
+  .btn-ok     { background:#4caf7d; color:#fff; }
+  .btn-ok:hover { background:#388e5c; }
+  .btn-cancel { background:#e0e0e0; color:#555; }
+  .btn-cancel:hover { background:#c0c0c0; }
+  .btn-ok:disabled { background:#aaa; cursor:not-allowed; }
+</style>
+</head>
+<body>
+<h3>入金確認・座席番号発行</h3>
+<table>
+  <tr><td>受付番号</td><td><?= receptNo ?></td></tr>
+  <tr><td>会社名・団体名</td><td><?= company_name ?></td></tr>
+  <tr><td>区分</td><td><?= kubun ?> プラン</td></tr>
+  <tr><td>送信先メール</td><td><?= email ?></td></tr>
+</table>
+<div class="seat-box">座席番号：<?= seatNo ?></div>
+<div class="warning">
+  ⚠️ 確定すると座席割当送信日時と座席番号がセットされます。<br>
+  入金が確認できていない場合はキャンセルしてください。
+</div>
+<div class="buttons">
+  <button class="btn-cancel" onclick="cancel()">キャンセル</button>
+  <button class="btn-ok" id="okBtn" onclick="confirm_()">確定する</button>
+</div>
+
+<script>
+  function confirm_() {
+    document.getElementById('okBtn').disabled = true;
+    document.getElementById('okBtn').textContent = '処理中...';
+    google.script.run
+      .withSuccessHandler(function() { google.script.host.close(); })
+      .withFailureHandler(function(err) {
+        alert('❌ エラー: ' + err.message);
+        document.getElementById('okBtn').disabled = false;
+        document.getElementById('okBtn').textContent = '確定する';
+      })
+      .sendNyukinConfirmed(<?= row ?>, '<?= receptNo ?>', '<?= seatNo ?>');
+  }
+  function cancel() {
+    google.script.run
+      .withSuccessHandler(function() { google.script.host.close(); })
+      .withFailureHandler(function() { google.script.host.close(); })
+      .cancelNyukin(<?= row ?>);
+  }
+</script>
+</body>
+</html>

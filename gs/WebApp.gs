@@ -3,73 +3,84 @@
 function doGet() {
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
-    .setTitle('【第5回川口花火大会】協賛申込み')
+    .setTitle(`【${getEventName()}】協賛申込み`)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 
-function doPost(e) {
-  try {
-    const data     = e.parameter;
-    const receptNo = appendRow(data, data.sheetName || DEFAULT_SHEET_NAME);
-    appendToTesagyouSheet(receptNo, data.sheetName2 || DEFAULT_SHEET_NAME2);
-    if (data.email) {
-      const pdf = generateInvoicePdf(data, receptNo);
-      sendConfirmationEmail(data, receptNo, pdf);
-    }
-    return jsonResponse({ result: 'success' });
-  } catch (err) {
-    return jsonResponse({ result: 'error', message: err.message });
-  }
-}
-
-/** HtmlService の <?!= include('FileName') ?> 用ヘルパー */
 function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
 /**
- * クライアント(google.script.run)から呼ばれる設定取得。
- * @returns {{ startDate, endDate, sheetName1, sheetName2 }}
+ * クライアント(google.script.run)から呼ばれる設定取得
  */
 function getConfig() {
-  const props = PropertiesService.getScriptProperties();
   return {
-    startDate:  props.getProperty('START_DATE')  || '2025-01-01T00:00:00',
-    endDate:    props.getProperty('END_DATE')     || '2026-10-01T23:59:59',
-    sheetName1: props.getProperty('SHEET_NAME1') || DEFAULT_SHEET_NAME,
-    sheetName2: props.getProperty('SHEET_NAME2') || DEFAULT_SHEET_NAME2,
+    startDate:  String(getConfigVal('START_DATE',  '2025-01-01T00:00:00')),
+    endDate:    String(getConfigVal('END_DATE',     '2026-10-01T23:59:59')),
+    sheetName1: DEFAULT_SHEET_NAME,
+    sheetName2: DEFAULT_SHEET_NAME2,
   };
 }
 
 /**
- * クライアント(google.script.run)から呼ばれるフォーム送信。
- * @param {Object} data - フォームフィールドのプレーンオブジェクト
+ * クライアント(google.script.run)から呼ばれるフォーム送信
  */
 function submitForm(data) {
-  const config     = getConfig();
-  const sheetName  = data.sheetName  || config.sheetName1;
-  const sheetName2 = data.sheetName2 || config.sheetName2;
-  const kubun      = (data.category || '').trim().toUpperCase();
-  const autoSend   = AUTO_SEND_KUBUN.includes(kubun);
+  const kubun    = (data.category || '').trim().toUpperCase();
+  const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
-  const receptNo = appendRow(data, sheetName);
-  appendToTesagyouSheet(receptNo, sheetName2, data);
+  const receptNo = appendRow(data, DEFAULT_SHEET_NAME);
+  appendToTesagyouSheet(receptNo, DEFAULT_SHEET_NAME2, data);
 
   if (data.email) {
     if (autoSend) {
-      // B〜E: 受付確認 + 請求書PDF を添付して送信
+      // B〜E: 受付確認 + 請求書PDF を自動送信
       const pdf = generateInvoicePdf(data, receptNo);
       sendConfirmationEmail(data, receptNo, pdf);
     } else {
-      // S/A: 受付確認のみ（請求書は手動送信）
+      // S/A: 受付確認のみ（請求書は事務局が手動送信）
       sendReceiptOnlyEmail(data, receptNo);
     }
+
+    // 事務局へも通知
+    _notifyOffice(data, receptNo, autoSend);
   }
+
   return { result: 'success', receipt_no: receptNo };
 }
 
-function jsonResponse(payload) {
-  return ContentService
-    .createTextOutput(JSON.stringify(payload))
-    .setMimeType(ContentService.MimeType.JSON);
+/** カスタムメニュー登録 */
+function onOpen() {
+  SpreadsheetApp.getUi()
+    .createMenu('📋 協賛管理')
+    .addItem('お礼状送信',  'sendOreijouFromMenu')
+    .addSeparator()
+    .addItem('Info シート作成',     'setupInfoSheet')
+    .addItem('申込みヘッダー作成',  'setupHeaders')
+    .addItem('プロジェクト初期化',  'initProject')
+    .addSeparator()
+    .addItem('メールテンプレ保存',  'setupAllMailTemplates')
+    .addToUi();
+}
+
+// ─── 内部ユーティリティ ────────────────────────────────────────────────────────
+
+function _notifyOffice(data, receptNo, autoSent) {
+  const subject = `【協賛申込】${data.company_name || ''} (${data.category || ''}) 受付番号:${receptNo}`;
+  const body = [
+    '新規協賛申込みがありました。',
+    '',
+    `会社名：${data.company_name || ''}`,
+    `区分　：${data.category || ''} プラン`,
+    `担当者：${data.staff_name || ''}`,
+    `メール：${data.email || ''}`,
+    `受付番号：${receptNo}`,
+    `請求書：${autoSent ? '自動送信済み' : '手動送信待ち（S/Aプラン）'}`,
+  ].join('\n');
+  try {
+    MailApp.sendEmail({ to: getOfficeEmail(), subject, body });
+  } catch (e) {
+    console.warn('事務局通知メール送信失敗:', e.message);
+  }
 }
