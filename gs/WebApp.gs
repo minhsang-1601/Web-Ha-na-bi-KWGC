@@ -74,11 +74,12 @@ function onOpen() {
     .createMenu('📋 協賛管理')
     .addItem('お礼状送信',  'sendOreijouFromMenu')
     .addSeparator()
-    .addItem('Info シート作成',     'setupInfoSheet')
-    .addItem('申込みヘッダー作成',  'setupHeaders')
-    .addItem('プロジェクト初期化',  'initProject')
+    .addItem('Info シート作成',         'setupInfoSheet')
+    .addItem('申込みヘッダー作成',      'setupHeaders')
+    .addItem('プロジェクト初期化',      'initProject')
     .addSeparator()
-    .addItem('メールテンプレ保存',  'setupAllMailTemplates')
+    .addItem('メールテンプレ保存',      'setupAllMailTemplates')
+    .addItem('手作業ヘッダー修正',      'fixTesagyouHeaders')
     .addToUi();
 }
 

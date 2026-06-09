@@ -106,18 +106,88 @@ function setupAnnaiTemplate() {
   });
 }
 
-/** 手作業シートの既存行を修正（チェックボックスとタイムスタンプ列の修正） */
+/**
+ * 手作業シートのヘッダー行・サブヘッダー行を最新の列構成に修正する
+ * ★ GAS エディタから直接 "repairTesagyouNow" を実行してください
+ */
+function repairTesagyouNow() {
+  // Main の Info シートから DATA_SPREADSHEET_ID を直接取得
+  const mainSs = SpreadsheetApp.getActiveSpreadsheet(); // GAS エディタ実行時 = Main
+  const infoSheet = mainSs.getSheetByName(INFO_SHEET_NAME);
+  let dataSsId = '';
+  if (infoSheet) {
+    const rows = infoSheet.getDataRange().getValues();
+    for (const row of rows) {
+      if (String(row[0]).trim() === 'DATA_SPREADSHEET_ID') { dataSsId = String(row[1]).trim(); break; }
+    }
+  }
+
+  let sheet = null;
+  if (dataSsId) {
+    try { sheet = SpreadsheetApp.openById(dataSsId).getSheetByName(DEFAULT_SHEET_NAME2); } catch (e) {}
+  }
+  if (!sheet) sheet = mainSs.getSheetByName(DEFAULT_SHEET_NAME2);
+  if (!sheet) { console.error('手作業シートが見つかりません。'); return; }
+
+  _applyTesagyouHeaders(sheet);
+  console.log('✅ 手作業ヘッダーを修正しました。対象: ' + sheet.getParent().getName());
+}
+
+function fixTesagyouHeaders() {
+  // Data spreadsheet → Active の順で手作業シートを探す
+  let sheet = null;
+  let ssName = '';
+  const candidates = [getDataSpreadsheet(), SpreadsheetApp.getActiveSpreadsheet()];
+  for (const ss of candidates) {
+    try {
+      const s = ss.getSheetByName(DEFAULT_SHEET_NAME2);
+      if (s) { sheet = s; ssName = ss.getName(); break; }
+    } catch (e) { /* skip */ }
+  }
+  if (!sheet) { SpreadsheetApp.getUi().alert('手作業シートが見つかりません。'); return; }
+  _applyTesagyouHeaders(sheet);
+  SpreadsheetApp.getUi().alert(`✅ 手作業ヘッダーを修正しました。\n対象: ${ssName}`);
+  if (!sheet) { SpreadsheetApp.getUi().alert('手作業シートが見つかりません。'); return; }
+
+  _applyTesagyouHeaders(sheet);
+  SpreadsheetApp.getUi().alert('✅ 手作業シートのヘッダーを修正しました。');
+}
+
+/** 手作業シートのヘッダー/サブヘッダーを書き込む共通処理 */
+function _applyTesagyouHeaders(sheet) {
+  // 行1: ヘッダー
+  sheet.getRange(1, 1, 1, TESAGYOU_HEADERS.length).setValues([TESAGYOU_HEADERS]);
+  sheet.getRange(1, 1, 1, TESAGYOU_HEADERS.length)
+    .setFontWeight('bold').setBackground('#fce8b2');
+
+  // 行2: サブヘッダー（17列）
+  const sub = [
+    'XLOOKUP\n自動',  '直接入力',                                          // A,B
+    'XLOOKUP\n自動',  'XLOOKUP\n自動', 'XLOOKUP\n自動',                    // C,D,E
+    'XLOOKUP\n自動',  'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',   // F,G,H,I
+    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',              // J,K,L
+    'タイムスタンプ\n自動', '区分＋7桁\n自動',                               // M,N
+    'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',         // O,P,Q
+  ];
+  sheet.getRange(2, 1, 1, sub.length).setValues([sub]);
+  sheet.getRange(2, 1, 1, sub.length)
+    .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
+  sheet.setRowHeight(2, 36);
+  sheet.setFrozenRows(2);
+  applyTesagyouColumnWidths(sheet);
+}
+
+/** 手作業シートの既存行を修正（チェックボックス列の修正） */
 function fixTesagyouSheet() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
+  const dataSs = getDataSpreadsheet();
+  const sheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
   if (!sheet) return;
   const lastRow = sheet.getLastRow();
   if (lastRow < 3) return;
 
-  // I, K, N列: チェックボックス
-  sheet.getRange(3, COL_UKETSUKE,  lastRow - 2).insertCheckboxes();
-  sheet.getRange(3, COL_NYUKIN,    lastRow - 2).insertCheckboxes();
-  sheet.getRange(3, COL_ANNAIBUN,  lastRow - 2).insertCheckboxes();
+  sheet.getRange(3, COL_UKETSUKE, lastRow - 2).insertCheckboxes();
+  sheet.getRange(3, COL_NYUKIN,   lastRow - 2).insertCheckboxes();
+  sheet.getRange(3, COL_ANNAIBUN, lastRow - 2).insertCheckboxes();
   SpreadsheetApp.getUi().alert('✅ チェックボックスを修正しました。');
 }
 
