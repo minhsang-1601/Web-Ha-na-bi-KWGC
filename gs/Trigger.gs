@@ -31,13 +31,37 @@ function handleUketsuke(e, sheet, row) {
   const invDate     = invDateCell.getValue();
 
   if (e.range.getValue() === false) {
-    if (invDate) {
+    // ── クリア順序チェック: 下流（L→O→P→Q）を先に解除しないと外せない ──
+    const oreijouDate = sheet.getRange(row, COL_OREIJOU_DATE).getValue();
+    const annaiDate   = sheet.getRange(row, COL_ANNAI_DATE).getValue();
+    const annaibun    = sheet.getRange(row, COL_ANNAIBUN).getValue();
+    const seatDate    = sheet.getRange(row, COL_SEAT_DATE).getValue();
+    const nyukin      = sheet.getRange(row, COL_NYUKIN).getValue();
+
+    // J を外す → 全下流（L・O・P・Q・M・N・K）を自動クリア
+    const hasDownstream = nyukin || seatDate || annaibun || annaiDate || oreijouDate || invDate;
+    if (hasDownstream) {
+      const detail = [
+        oreijouDate ? `　お礼状送信日時（Q）：${formatTs(oreijouDate)}` : null,
+        annaiDate   ? `　案内送信日時（P）：${formatTs(annaiDate)}`      : null,
+        annaibun    ? `　案内実施（O）：チェック済み`                    : null,
+        seatDate    ? `　座席割当送信日時（M）：${formatTs(seatDate)}`   : null,
+        seatDate    ? `　座席番号（N）`                                  : null,
+        nyukin      ? `　入金完了（L）：チェック済み`                    : null,
+        invDate     ? `　請求書送信日時（K）：${formatTs(invDate)}`      : null,
+      ].filter(Boolean).join('\n');
       const res = SpreadsheetApp.getUi().alert(
         '⚠️ チェックを外しますか？',
-        `請求書送信日時「${formatTs(invDate)}」がクリアされます。よろしいですか？`,
+        `以下の値が自動でクリアされます。\n\n${detail}\n\nよろしいですか？`,
         SpreadsheetApp.getUi().ButtonSet.YES_NO
       );
       if (res === SpreadsheetApp.getUi().Button.YES) {
+        sheet.getRange(row, COL_NYUKIN).setValue(false);
+        sheet.getRange(row, COL_SEAT_DATE).clearContent();
+        sheet.getRange(row, COL_SEAT_NO).clearContent();
+        sheet.getRange(row, COL_ANNAIBUN).setValue(false);
+        sheet.getRange(row, COL_ANNAI_DATE).clearContent();
+        sheet.getRange(row, COL_OREIJOU_DATE).clearContent();
         invDateCell.clearContent();
       } else {
         e.range.setValue(true);
@@ -85,13 +109,30 @@ function handleNyukin(e, sheet, row) {
   const seatDate     = seatDateCell.getValue();
 
   if (e.range.getValue() === false) {
-    if (seatDate) {
+    // ── クリア順序チェック: 下流（O→P→Q）を先に解除しないと外せない ──
+    const oreijouDate = sheet.getRange(row, COL_OREIJOU_DATE).getValue();
+    const annaiDate   = sheet.getRange(row, COL_ANNAI_DATE).getValue();
+    const annaibun    = sheet.getRange(row, COL_ANNAIBUN).getValue();
+
+    // L を外す → O・P・Q・M・N を自動クリア（値がある場合は確認）
+    const hasDownstream = annaibun || annaiDate || oreijouDate || seatDate;
+    if (hasDownstream) {
+      const detail = [
+        oreijouDate ? `　お礼状送信日時（Q）：${formatTs(oreijouDate)}` : null,
+        annaiDate   ? `　案内送信日時（P）：${formatTs(annaiDate)}`      : null,
+        annaibun    ? `　案内実施（O）：チェック済み`                    : null,
+        seatDate    ? `　座席割当送信日時（M）：${formatTs(seatDate)}`   : null,
+        seatDate    ? `　座席番号（N）`                                  : null,
+      ].filter(Boolean).join('\n');
       const res = SpreadsheetApp.getUi().alert(
         '⚠️ チェックを外しますか？',
-        `座席割当送信日時「${formatTs(seatDate)}」と座席番号がクリアされます。よろしいですか？`,
+        `以下の値が自動でクリアされます。\n\n${detail}\n\nよろしいですか？`,
         SpreadsheetApp.getUi().ButtonSet.YES_NO
       );
       if (res === SpreadsheetApp.getUi().Button.YES) {
+        sheet.getRange(row, COL_ANNAIBUN).setValue(false);
+        sheet.getRange(row, COL_ANNAI_DATE).clearContent();
+        sheet.getRange(row, COL_OREIJOU_DATE).clearContent();
         seatDateCell.clearContent();
         sheet.getRange(row, COL_SEAT_NO).clearContent();
       } else {
@@ -141,20 +182,31 @@ function handleNyukin(e, sheet, row) {
 }
 
 // ─── N列: 案内実施 → 案内文送信 ───────────────────────────────────────────────
+// 送信順序:  O(案内実施✔) → P(案内送信日時) → Q(お礼状送信日時)
+// クリア順序: Q → P → O の順で削除が必要（逆順強制）
 
 function handleAnnaibun(e, sheet, row) {
-  const annaiDateCell = sheet.getRange(row, COL_ANNAI_DATE);
-  const annaiDate     = annaiDateCell.getValue();
+  const annaiDateCell  = sheet.getRange(row, COL_ANNAI_DATE);
+  const oreijouDateCell = sheet.getRange(row, COL_OREIJOU_DATE);
+  const annaiDate      = annaiDateCell.getValue();
+  const oreijouDate    = oreijouDateCell.getValue();
 
   if (e.range.getValue() === false) {
-    if (annaiDate) {
+    // O を外す → P・Q を自動クリア（値がある場合は確認）
+    const hasData = annaiDate || oreijouDate;
+    if (hasData) {
+      const detail = [
+        annaiDate   ? `　案内送信日時（P）：${formatTs(annaiDate)}`   : null,
+        oreijouDate ? `　お礼状送信日時（Q）：${formatTs(oreijouDate)}` : null,
+      ].filter(Boolean).join('\n');
       const res = SpreadsheetApp.getUi().alert(
         '⚠️ チェックを外しますか？',
-        `案内送信日時「${formatTs(annaiDate)}」がクリアされます。よろしいですか？`,
+        `以下の値が自動でクリアされます。\n\n${detail}\n\nよろしいですか？`,
         SpreadsheetApp.getUi().ButtonSet.YES_NO
       );
       if (res === SpreadsheetApp.getUi().Button.YES) {
         annaiDateCell.clearContent();
+        oreijouDateCell.clearContent();
       } else {
         e.range.setValue(true);
       }
