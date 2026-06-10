@@ -112,16 +112,28 @@ function initProject() {
 
 // ─── CreateLog 書き込み ────────────────────────────────────────────────────────
 
+const CREATELOG_HEADERS = ['日時', '操作', '詳細', '実行者'];
+
 function _writeCreateLog(action, detail) {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet(); // 常に Main に書く
-  let sheet   = ss.getSheetByName(CREATELOG_SHEET);
+  const ss  = SpreadsheetApp.getActiveSpreadsheet(); // 常に Main に書く
+  let sheet = ss.getSheetByName(CREATELOG_SHEET);
+
   if (!sheet) {
+    // シートが存在しない → 新規作成
     sheet = ss.insertSheet(CREATELOG_SHEET);
-    sheet.appendRow(['日時', '操作', '詳細', '実行者']);
-    sheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#e8f4f8');
+  }
+
+  // ヘッダーが未設定（シートが空 or 先頭セルが違う）→ ヘッダー行を挿入
+  const firstCell = String(sheet.getRange(1, 1).getValue()).trim();
+  if (firstCell !== '日時') {
+    if (sheet.getLastRow() > 0) sheet.insertRowBefore(1);
+    sheet.getRange(1, 1, 1, CREATELOG_HEADERS.length).setValues([CREATELOG_HEADERS]);
+    sheet.getRange(1, 1, 1, CREATELOG_HEADERS.length)
+      .setFontWeight('bold').setBackground('#e8f4f8');
     [170, 150, 400, 220].forEach((w, i) => sheet.setColumnWidth(i + 1, w));
     sheet.setFrozenRows(1);
   }
+
   const now  = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
   const user = Session.getActiveUser().getEmail() || '(unknown)';
   sheet.appendRow([now, action, detail, user]);

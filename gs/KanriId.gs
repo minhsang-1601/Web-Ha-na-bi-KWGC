@@ -14,9 +14,10 @@
 //   L: メールアドレス
 //   M: 会社HP URL
 
-const KANRI_SS_ID  = '12SP_fszizLYubFvhI0JYcgm_LUDesG4UAkG_Wi_uHvM';
-const KANRI_SHEET  = '管理IDリスト';
-const KANRI_PREFIX = 'KRNO';
+const KANRI_SS_ID   = '12SP_fszizLYubFvhI0JYcgm_LUDesG4UAkG_Wi_uHvM';
+const KANRI_SHEET   = '管理IDリスト';
+const KANRI_LOG_SHEET = 'Log';
+const KANRI_PREFIX  = 'KRNO';
 
 const KANRI_HEADERS = [
   '管理ID番号', '登録日時',
@@ -225,6 +226,7 @@ function saveKanriId(kanriId, data, forceUpdate) {
         // 登録日時（B列 = index 1）は元の値を保持
         const newRow = _dataToRow(kanriId, data, rows[i][1] || nowStr());
         sheet.getRange(i + 1, 1, 1, KANRI_HEADERS.length).setValues([newRow]);
+        _writeKanriLog(sheet.getParent(), kanriId, '更新', data.company_name, data.rep_name);
         return { isNew: false, changed: [] };
       }
       // 変更点を検出（C列〜M列 = index 2〜12）
@@ -256,6 +258,7 @@ function saveKanriId(kanriId, data, forceUpdate) {
   // 新規: 登録日時付きで保存
   const newRow = _dataToRow(kanriId, data, nowStr());
   sheet.appendRow(newRow);
+  _writeKanriLog(sheet.getParent(), kanriId, '新規登録', data.company_name, data.rep_name);
   return { isNew: true, changed: [] };
 }
 
@@ -304,4 +307,41 @@ function detectKanriChanges(kanriId, data) {
   return fields
     .filter(([, key]) => String(existing[key] || '').trim() !== String(data[key] || '').trim())
     .map(([label, key]) => `${label}: 「${existing[key] || ''}」→「${data[key] || ''}」`);
+}
+
+// ─── 管理IDリスト Log シート書き込み ─────────────────────────────────────────────
+
+const KANRI_LOG_HEADERS = ['管理ID番号', 'ステータス', '日時', '会社名', '代表者'];
+
+/**
+ * @param {GoogleAppsScript.Spreadsheet.Spreadsheet} ss - 管理IDリストのスプレッドシート
+ * @param {string} kanriId
+ * @param {string} action  - '新規登録' | '更新'
+ * @param {string} companyName
+ * @param {string} repName
+ */
+function _writeKanriLog(ss, kanriId, action, companyName, repName) {
+  try {
+    let sheet = ss.getSheetByName(KANRI_LOG_SHEET);
+
+    if (!sheet) {
+      sheet = ss.insertSheet(KANRI_LOG_SHEET);
+    }
+
+    // ヘッダーが未設定なら挿入
+    const firstCell = String(sheet.getRange(1, 1).getValue()).trim();
+    if (firstCell !== '管理ID番号') {
+      if (sheet.getLastRow() > 0) sheet.insertRowBefore(1);
+      sheet.getRange(1, 1, 1, KANRI_LOG_HEADERS.length).setValues([KANRI_LOG_HEADERS]);
+      sheet.getRange(1, 1, 1, KANRI_LOG_HEADERS.length)
+        .setFontWeight('bold').setBackground('#d9ead3');
+      [160, 100, 160, 220, 160].forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+      sheet.setFrozenRows(1);
+    }
+
+    const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
+    sheet.appendRow([kanriId, action, now, companyName || '', repName || '']);
+  } catch (e) {
+    console.warn('KanriLog 書き込みエラー:', e.message);
+  }
 }
