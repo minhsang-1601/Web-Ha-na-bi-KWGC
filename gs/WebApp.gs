@@ -1,26 +1,93 @@
 // ─── Web App エントリーポイント ────────────────────────────────────────────────
 
 function doGet() {
-  // Info シート必須チェック
+  // ─── 必須シート存在チェック（Info + 管理IDリスト） ──────────────────────────
+  const missing = [];
+
   const infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INFO_SHEET_NAME);
-  if (!infoSheet) {
-    // 警告メール送信
+  if (!infoSheet) missing.push('Info シート（メインスプレッドシート）');
+
+  let kanriSheet = null;
+  try {
+    kanriSheet = SpreadsheetApp.openById(KANRI_SS_ID).getSheetByName(KANRI_SHEET);
+  } catch (e) { /* アクセス不可 = なし扱い */ }
+  if (!kanriSheet) missing.push(`管理IDリスト シート（ファイルID: ${KANRI_SS_ID}）`);
+
+  if (missing.length > 0) {
+    // 警告メール送信（ファイルオーナー宛・HTMLメールで折り返し防止）
+    // ★ 重複送信抑制: LockService で直列化 + Properties で再送防止
+    const lock = LockService.getScriptLock();
     try {
+      // ロック取得（競合する実行を直列化。取れなければメール送信せず終了）
+      if (!lock.tryLock(10000)) throw { _skip: true };
+
+      const props    = PropertiesService.getScriptProperties();
+      const propKey   = 'MISSING_ALERT_' + missing.join('|');
+      const last      = Number(props.getProperty(propKey) || 0);
+      const nowMs     = Date.now();
+      // 30分（1800000ms）以内に送信済みならスキップ
+      if (nowMs - last < 1800000) throw { _skip: true };
+      props.setProperty(propKey, String(nowMs));
+
+      let owner = '';
+      try { owner = SpreadsheetApp.getActiveSpreadsheet().getOwner().getEmail(); } catch (_) {}
+      if (!owner) owner = Session.getEffectiveUser().getEmail();
+
+      const missingHtml = missing
+        .map(m => `<li style="white-space:nowrap;">${m}</li>`).join('');
+
+      // 各種リンク取得
+      let webUrl = '';
+      try { webUrl = ScriptApp.getService().getUrl(); } catch (_) {}
+      let mainUrl = '';
+      try { mainUrl = SpreadsheetApp.getActiveSpreadsheet().getUrl(); } catch (_) {}
+      const kanriUrl = `https://docs.google.com/spreadsheets/d/${KANRI_SS_ID}/edit`;
+
+      const linksHtml = [
+        webUrl  ? `<li><a href="${webUrl}">協賛申込みフォーム（Web App）</a></li>` : '',
+        mainUrl ? `<li><a href="${mainUrl}">メインスプレッドシート</a></li>`        : '',
+        `<li><a href="${kanriUrl}">管理IDリスト スプレッドシート</a></li>`,
+      ].join('');
+
+      const htmlBody = `
+        <div style="font-family:sans-serif;font-size:14px;color:#333;line-height:1.7;">
+          <p>協賛申込みフォームにアクセスがありましたが、以下の必須シートが存在しないため
+          エラーページを表示しました。</p>
+          <p><b>■ 不足しているシート:</b></p>
+          <ul style="margin:4px 0;">${missingHtml}</ul>
+          <p>　アクセス日時：${nowStr()}</p>
+          <hr>
+          <p><b>■ 関連リンク:</b></p>
+          <ul style="margin:4px 0;">${linksHtml}</ul>
+          <hr>
+          <p><b>【対応をお願いします】</b></p>
+          <p>① シートが誰かに削除された可能性があります。内容をご確認ください。<br>
+          ② 初めてお使いの場合は初期設定が必要です。<br>
+          　 カスタムメニュー「⚙️ 初期設定」から以下を順番に実行してください:</p>
+          <ol style="margin:4px 0;">
+            <li>Info シート作成 → 必要な値を手動記入</li>
+            <li>管理ID番号シート生成</li>
+            <li>プロジェクト初期化</li>
+          </ol>
+          <hr>
+        </div>`;
+
       MailApp.sendEmail({
-        to:      OFFICE_EMAIL_DEFAULT,
-        subject: '【⚠️ 緊急】Info シートが見つかりません（フォームアクセス時）',
-        body: [
-          '協賛申込みフォームにアクセスがありましたが、Info シートが存在しないためエラーページを表示しました。',
-          '',
-          `　アクセス日時：${nowStr()}`,
-          '',
-          '━━━━━━━━━━━━━━━━━━━━━━━━',
-          '【対応をお願いします】',
-          'カスタムメニュー「⚙️ 初期設定 → Info シート作成」を実行してください。',
-          '━━━━━━━━━━━━━━━━━━━━━━━━',
-        ].join('\n'),
+        to:       owner,
+        subject:  '【⚠️ 緊急】必須シートが見つかりません（フォームアクセス時）',
+        body:     '※ HTMLメール対応の環境でご覧ください。\n\n' +
+                  '不足シート:\n' + missing.map(m => `・${m}`).join('\n') + '\n\n' +
+                  '関連リンク:\n' +
+                  (webUrl  ? `・フォーム: ${webUrl}\n`  : '') +
+                  (mainUrl ? `・メイン: ${mainUrl}\n`   : '') +
+                  `・管理IDリスト: ${kanriUrl}`,
+        htmlBody: htmlBody,
       });
-    } catch (e) { console.error('Info警告メール送信失敗:', e.message); }
+    } catch (e) {
+      if (!e._skip) console.error('警告メール送信失敗:', e.message);
+    } finally {
+      try { lock.releaseLock(); } catch (_) {}
+    }
 
     // エラーページを表示
     return HtmlService.createHtmlOutput(`
@@ -62,10 +129,10 @@ function submitForm(data) {
   // ─── Info シート 存在確認（必須） ────────────────────────────────────────────
   const _infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INFO_SHEET_NAME);
   if (!_infoSheet) {
-    const _fallbackEmail = OFFICE_EMAIL_DEFAULT;
     try {
+      const _owner = Session.getEffectiveUser().getEmail();
       MailApp.sendEmail({
-        to:      _fallbackEmail,
+        to:      _owner,
         subject: '【⚠️ 緊急】Info シートが見つかりません',
         body: [
           'Info シートが存在しないため、以下のユーザーの申込みが失敗しました。',
