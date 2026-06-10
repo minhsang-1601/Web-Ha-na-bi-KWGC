@@ -52,21 +52,11 @@ function setupInfoSheet() {
   sheet.setColumnWidth(2, 260);
   sheet.setColumnWidth(3, 300);
   sheet.setFrozenRows(1);
+  _ensureFilter(sheet, 1, 3);
+  _applyAlignment(sheet, 2, 3);
 
   _infoCache = null;
   SpreadsheetApp.getUi().alert('✅ Info シートを作成しました。\n各値を確認・編集してください。');
-}
-
-/** 申込みシートのヘッダー行を作成する（初回のみ） */
-function setupHeaders() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME);
-  if (!sheet) { SpreadsheetApp.getUi().alert(`シート "${DEFAULT_SHEET_NAME}" が見つかりません。`); return; }
-  if (sheet.getLastRow() > 0) { SpreadsheetApp.getUi().alert('ヘッダー行はすでに存在します。'); return; }
-  sheet.appendRow(HEADERS);
-  sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
-  applyColumnWidths(sheet);
-  SpreadsheetApp.getUi().alert('ヘッダー行を作成しました。');
 }
 
 /** すべてのメールテンプレートを Script Properties に保存する */
@@ -133,26 +123,6 @@ function repairTesagyouNow() {
   console.log('✅ 手作業ヘッダーを修正しました。対象: ' + sheet.getParent().getName());
 }
 
-function fixTesagyouHeaders() {
-  // Data spreadsheet → Active の順で手作業シートを探す
-  let sheet = null;
-  let ssName = '';
-  const candidates = [getDataSpreadsheet(), SpreadsheetApp.getActiveSpreadsheet()];
-  for (const ss of candidates) {
-    try {
-      const s = ss.getSheetByName(DEFAULT_SHEET_NAME2);
-      if (s) { sheet = s; ssName = ss.getName(); break; }
-    } catch (e) { /* skip */ }
-  }
-  if (!sheet) { SpreadsheetApp.getUi().alert('手作業シートが見つかりません。'); return; }
-  _applyTesagyouHeaders(sheet);
-  SpreadsheetApp.getUi().alert(`✅ 手作業ヘッダーを修正しました。\n対象: ${ssName}`);
-  if (!sheet) { SpreadsheetApp.getUi().alert('手作業シートが見つかりません。'); return; }
-
-  _applyTesagyouHeaders(sheet);
-  SpreadsheetApp.getUi().alert('✅ 手作業シートのヘッダーを修正しました。');
-}
-
 /** 手作業シートのヘッダー/サブヘッダーを書き込む共通処理 */
 function _applyTesagyouHeaders(sheet) {
   // 行1: ヘッダー
@@ -175,42 +145,68 @@ function _applyTesagyouHeaders(sheet) {
   sheet.setRowHeight(2, 36);
   sheet.setFrozenRows(2);
   applyTesagyouColumnWidths(sheet);
+  _ensureFilter(sheet, 1, TESAGYOU_HEADERS.length);
 }
 
-/** 手作業シートの既存行を修正（チェックボックス列の修正） */
-function fixTesagyouSheet() {
+/**
+ * 全シートにフィルターを設定する（既存シートへの一括適用）
+ * カスタムメニュー「フィルター設定」から実行
+ */
+function applyFiltersToAllSheets() {
+  const mainSs = SpreadsheetApp.getActiveSpreadsheet();
   const dataSs = getDataSpreadsheet();
-  const sheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
-  if (!sheet) return;
-  const lastRow = sheet.getLastRow();
-  if (lastRow < 3) return;
 
-  sheet.getRange(3, COL_UKETSUKE, lastRow - 2).insertCheckboxes();
-  sheet.getRange(3, COL_NYUKIN,   lastRow - 2).insertCheckboxes();
-  sheet.getRange(3, COL_ANNAIBUN, lastRow - 2).insertCheckboxes();
-  SpreadsheetApp.getUi().alert('✅ チェックボックスを修正しました。');
+  // ── Main スプレッドシート ──────────────────────────────────────────
+  // Info
+  const infoSheet = mainSs.getSheetByName(INFO_SHEET_NAME);
+  if (infoSheet && infoSheet.getLastRow() > 0) {
+    _ensureFilter(infoSheet, 1, 3);
+    _applyAlignment(infoSheet, 2, 3);
+  }
+
+  // CreateLog
+  const logSheet = mainSs.getSheetByName(CREATELOG_SHEET);
+  if (logSheet && logSheet.getLastRow() > 0) {
+    _ensureFilter(logSheet, 1, CREATELOG_HEADERS.length);
+    _applyAlignment(logSheet, 2, CREATELOG_HEADERS.length);
+  }
+
+  // ── データ スプレッドシート ────────────────────────────────────────
+  // 協賛申込み一覧
+  const sheet1 = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
+  if (sheet1 && sheet1.getLastRow() > 0) {
+    _ensureFilter(sheet1, 1, HEADERS.length);
+    _applyAlignment(sheet1, 2, HEADERS.length);
+  }
+
+  // 手作業
+  const sheet2 = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
+  if (sheet2 && sheet2.getLastRow() > 0) {
+    _ensureFilter(sheet2, 1, TESAGYOU_HEADERS.length);
+    _applyAlignment(sheet2, 3, TESAGYOU_HEADERS.length);
+  }
+
+  // ── 管理IDリスト スプレッドシート ─────────────────────────────────
+  try {
+    const kanriSs = SpreadsheetApp.openById(KANRI_SS_ID);
+
+    // 管理IDリスト
+    const kanriSheet = kanriSs.getSheetByName(KANRI_SHEET);
+    if (kanriSheet && kanriSheet.getLastRow() > 0) {
+      _ensureFilter(kanriSheet, 1, KANRI_HEADERS.length);
+      _applyAlignment(kanriSheet, 2, KANRI_HEADERS.length);
+    }
+
+    // Log
+    const kanriLogSheet = kanriSs.getSheetByName(KANRI_LOG_SHEET);
+    if (kanriLogSheet && kanriLogSheet.getLastRow() > 0) {
+      _ensureFilter(kanriLogSheet, 1, KANRI_LOG_HEADERS.length);
+      _applyAlignment(kanriLogSheet, 2, KANRI_LOG_HEADERS.length);
+    }
+  } catch (e) {
+    console.warn('管理IDリストへのフィルター設定エラー:', e.message);
+  }
+
+  SpreadsheetApp.getUi().alert('✅ 全シートにフィルターを設定しました。');
 }
 
-/** 手作業シートを保護する（オーナーのみ編集可） */
-function setupSheetProtection() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
-  if (!sheet) { SpreadsheetApp.getUi().alert('手作業シートが見つかりません。'); return; }
-
-  sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach(p => p.remove());
-  const protection = sheet.protect();
-  protection.setDescription('手作業シート保護 — オーナーのみ編集可');
-  const me = Session.getEffectiveUser();
-  protection.addEditor(me);
-  protection.removeEditors(protection.getEditors().filter(e => e.getEmail() !== me.getEmail()));
-  protection.setWarningOnly(false);
-  SpreadsheetApp.getUi().alert('✅ 手作業シートを保護しました。\nオーナー：' + me.getEmail());
-}
-
-function removeSheetProtection() {
-  const ss    = SpreadsheetApp.getActiveSpreadsheet();
-  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
-  if (!sheet) return;
-  sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET).forEach(p => p.remove());
-  SpreadsheetApp.getUi().alert('手作業シートの保護を解除しました。');
-}

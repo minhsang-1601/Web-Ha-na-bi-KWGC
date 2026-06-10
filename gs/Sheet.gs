@@ -16,13 +16,14 @@ function appendRow(data, sheetName) {
       sheet.getRange(1, 1, 1, HEADERS.length).setFontWeight('bold').setBackground('#d0e4f7');
       sheet.setFrozenRows(1);
       applyColumnWidths(sheet);
+      _ensureFilter(sheet, 1, HEADERS.length);
     }
 
     const now      = new Date();
     const receptNo = data.receipt_no ||
                      getReceiptNoPrefix() + Utilities.formatDate(now, 'Asia/Tokyo', 'MMddHHmmssSSS');
-    const newRow   = sheet.getLastRow() + 1;
 
+    const newRow  = sheet.getLastRow() + 1;
     const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
     sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([[
       _t(data.kanri_id),         // A: 管理ID番号
@@ -73,9 +74,10 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
     sheet.setRowHeight(2, 36);
     sheet.setFrozenRows(2);
     applyTesagyouColumnWidths(sheet);
+    _ensureFilter(sheet, 1, TESAGYOU_HEADERS.length);
   }
 
-  const newRow   = sheet.getLastRow() + 1;
+  const newRow = sheet.getLastRow() + 1;
   const kubun    = _t(data ? (data.category || '') : '').toUpperCase();
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
@@ -105,11 +107,47 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
   // M, N, P, Q は空（各トリガーが自動設定）
 }
 
+/**
+ * 指定行にフィルターを設定する（既存フィルターがあれば再作成しない）
+ * @param {Sheet} sheet
+ * @param {number} headerRow - フィルター基準行（1始まり）
+ * @param {number} numCols
+ */
+/**
+ * シート全体のデータ行を上揃え・左揃えに設定する
+ * @param {Sheet} sheet
+ * @param {number} firstDataRow - データ開始行（ヘッダー除く）
+ * @param {number} numCols
+ */
+function _applyAlignment(sheet, firstDataRow, numCols) {
+  try {
+    const lastRow = sheet.getMaxRows();
+    if (lastRow < firstDataRow) return;
+    sheet.getRange(firstDataRow, 1, lastRow - firstDataRow + 1, numCols)
+      .setVerticalAlignment('top')
+      .setHorizontalAlignment('left');
+  } catch (e) {
+    console.warn('アライメント設定エラー:', e.message);
+  }
+}
+
+function _ensureFilter(sheet, headerRow, numCols) {
+  try {
+    const existing = sheet.getFilter();
+    if (!existing) {
+      sheet.getRange(headerRow, 1, 1, numCols).createFilter();
+    }
+  } catch (e) {
+    console.warn('フィルター設定エラー:', e.message);
+  }
+}
+
 function applyColumnWidths(sheet) {
   // A=管理ID B=受付番号 C=受付日時 D=個人名 E=ふりがな F=代表者 G=ふりがな
   // H=担当者 I=ふりがな J=郵便番号 K=住所 L=電話番号 M=メール N=区分 O=URL
   [160, 150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+  _applyAlignment(sheet, 2, HEADERS.length);
 }
 
 function applyTesagyouColumnWidths(sheet) {
@@ -117,4 +155,5 @@ function applyTesagyouColumnWidths(sheet) {
   // J=受付完了 K=請求書日時 L=入金 M=座席日時 N=座席番号 O=案内 P=案内日時 Q=礼状日時
   [160, 150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150, 120, 70, 150, 150]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
+  _applyAlignment(sheet, 3, TESAGYOU_HEADERS.length);
 }

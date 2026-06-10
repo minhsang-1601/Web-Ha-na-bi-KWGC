@@ -25,7 +25,7 @@ const AUTO_SEND_KUBUN = ['B', 'C', 'D', 'E'];
 
 // フォールバック定数（Info シートで上書き可）
 const HANKO_FILE_ID_DEFAULT = '1Q5kBbhKKuIRSaNiSXfBbvTnO0W1niFyZ';
-const OFFICE_EMAIL_DEFAULT  = 'gioitre.kamifukuoka2023@gmail.com';
+const OFFICE_EMAIL_DEFAULT  = '';
 
 // ─── シートヘッダー ─────────────────────────────────────────────────────────────
 

@@ -27,6 +27,72 @@ const KANRI_HEADERS = [
   '郵便番号', '住所', '電話番号', 'メールアドレス', '会社HP URL',
 ];
 
+/**
+ * 管理IDリストシートを初期化する（初回セットアップ・復旧用）
+ * GAS エディタまたは initProject から呼び出す
+ */
+function initKanriSheet() {
+  try {
+    const ss = SpreadsheetApp.openById(KANRI_SS_ID);
+    let sheet = ss.getSheetByName(KANRI_SHEET);
+
+    if (sheet) {
+      // 既に存在する場合はヘッダーのみ確認・修正
+      const firstCell  = String(sheet.getRange(1, 1).getValue()).trim();
+      const secondCell = String(sheet.getRange(1, 2).getValue()).trim();
+      if (firstCell !== '管理ID番号' || secondCell !== '登録日時') {
+        sheet.insertRowBefore(1);
+        sheet.getRange(1, 1, 1, KANRI_HEADERS.length)
+          .setValues([KANRI_HEADERS])
+          .setFontWeight('bold').setBackground('#d0e4f7');
+        sheet.setFrozenRows(1);
+        _ensureFilter(sheet, 1, KANRI_HEADERS.length);
+        _applyAlignment(sheet, 2, KANRI_HEADERS.length);
+        console.log('✅ 管理IDリスト: ヘッダーを修正しました。');
+      } else {
+        console.log('✅ 管理IDリスト: シートは正常です。');
+      }
+    } else {
+      // シートが存在しない → 新規作成
+      sheet = ss.insertSheet(KANRI_SHEET);
+      sheet.appendRow(KANRI_HEADERS);
+      sheet.getRange(1, 1, 1, KANRI_HEADERS.length)
+        .setFontWeight('bold').setBackground('#d0e4f7');
+      sheet.setFrozenRows(1);
+      _ensureFilter(sheet, 1, KANRI_HEADERS.length);
+      _applyAlignment(sheet, 2, KANRI_HEADERS.length);
+      console.log('✅ 管理IDリスト: シートを新規作成しました。');
+    }
+
+    // Log シートも確認・作成
+    let logSheet = ss.getSheetByName(KANRI_LOG_SHEET);
+    if (!logSheet) {
+      logSheet = ss.insertSheet(KANRI_LOG_SHEET);
+      logSheet.appendRow(KANRI_LOG_HEADERS);
+      logSheet.getRange(1, 1, 1, KANRI_LOG_HEADERS.length)
+        .setFontWeight('bold').setBackground('#d9ead3');
+      [160, 100, 160, 220, 160].forEach((w, i) => logSheet.setColumnWidth(i + 1, w));
+      logSheet.setFrozenRows(1);
+      _ensureFilter(logSheet, 1, KANRI_LOG_HEADERS.length);
+      _applyAlignment(logSheet, 2, KANRI_LOG_HEADERS.length);
+      console.log('✅ 管理IDリスト Log: シートを新規作成しました。');
+    }
+
+    // メニューから実行された場合はアラート表示
+    try {
+      SpreadsheetApp.getUi().alert('✅ 管理IDリストシートの準備が完了しました。\nファイルID: ' + KANRI_SS_ID);
+    } catch (_) { /* GAS エディタから実行時は無視 */ }
+
+    return sheet;
+  } catch (e) {
+    console.error('initKanriSheet エラー:', e.message);
+    try {
+      SpreadsheetApp.getUi().alert('❌ エラー: ' + e.message);
+    } catch (_) {}
+    return null;
+  }
+}
+
 function getKanriSheet() {
   try {
     const ss    = SpreadsheetApp.openById(KANRI_SS_ID);
@@ -39,6 +105,8 @@ function getKanriSheet() {
       sheet.getRange(1, 1, 1, KANRI_HEADERS.length)
         .setFontWeight('bold').setBackground('#d0e4f7');
       sheet.setFrozenRows(1);
+      _ensureFilter(sheet, 1, KANRI_HEADERS.length);
+      _applyAlignment(sheet, 2, KANRI_HEADERS.length);
       return sheet;
     }
 
@@ -52,6 +120,7 @@ function getKanriSheet() {
         .setValues([KANRI_HEADERS])
         .setFontWeight('bold').setBackground('#d0e4f7');
       sheet.setFrozenRows(1);
+      _ensureFilter(sheet, 1, KANRI_HEADERS.length);
     }
 
     // ✅ 通常時はここで返す（書式操作なし）
@@ -284,30 +353,6 @@ function checkCompanyExists(companyName) {
   return { exists: false };
 }
 
-// ─── 既存IDの変更を検出（submitForm からの呼び出し用） ─────────────────────────
-
-function detectKanriChanges(kanriId, data) {
-  if (!kanriId) return [];
-  const existing = lookupKanriId(kanriId);
-  if (!existing.found) return [];
-
-  const fields = [
-    ['会社名',           'company_name'],
-    ['会社名フリガナ',   'company_furigana'],
-    ['役職・代表者名',   'rep_name'],
-    ['役職フリガナ',     'rep_furigana'],
-    ['担当者名',         'staff_name'],
-    ['担当者フリガナ',   'staff_furigana'],
-    ['郵便番号',         'zipcode'],
-    ['住所',             'address'],
-    ['電話番号',         'phone'],
-    ['メールアドレス',   'email'],
-    ['HP URL',           'website_url'],
-  ];
-  return fields
-    .filter(([, key]) => String(existing[key] || '').trim() !== String(data[key] || '').trim())
-    .map(([label, key]) => `${label}: 「${existing[key] || ''}」→「${data[key] || ''}」`);
-}
 
 // ─── 管理IDリスト Log シート書き込み ─────────────────────────────────────────────
 
@@ -337,6 +382,8 @@ function _writeKanriLog(ss, kanriId, action, companyName, repName) {
         .setFontWeight('bold').setBackground('#d9ead3');
       [160, 100, 160, 220, 160].forEach((w, i) => sheet.setColumnWidth(i + 1, w));
       sheet.setFrozenRows(1);
+      _ensureFilter(sheet, 1, KANRI_LOG_HEADERS.length);
+      _applyAlignment(sheet, 2, KANRI_LOG_HEADERS.length);
     }
 
     const now = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');

@@ -302,9 +302,6 @@ function sendOreijouFromMenu() {
 function onOpenEventSheet() {
   SpreadsheetApp.getUi()
     .createMenu('📋 協賛管理')
-    .addItem('お礼状送信',        'sendOreijouFromMenu')
-    .addSeparator()
-    .addItem('手作業ヘッダー修正', 'fixTesagyouHeaders')
     .addToUi();
 }
 
