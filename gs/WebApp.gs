@@ -29,6 +29,19 @@ function getConfig() {
  * クライアント(google.script.run)から呼ばれるフォーム送信
  */
 function submitForm(data) {
+  // ─── サーバー側バリデーション ────────────────────────────────────────────────
+  const zipcode = String(data.zipcode || '').trim().replace(/\D/g, '');
+  const phone   = String(data.phone   || '').trim().replace(/\D/g, '');
+  if (!/^\d{7}$/.test(zipcode)) {
+    throw new Error('郵便番号は7桁の数字で入力してください。（入力値: ' + (data.zipcode || '') + '）');
+  }
+  if (!/^\d{9,11}$/.test(phone)) {
+    throw new Error('電話番号は9〜11桁の数字で入力してください。（入力値: ' + (data.phone || '') + '）');
+  }
+  // バリデーション済みの値で上書き
+  data.zipcode = zipcode;
+  data.phone   = phone;
+
   const kubun    = (data.category || '').trim().toUpperCase();
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
