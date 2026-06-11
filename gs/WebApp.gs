@@ -328,6 +328,7 @@ function onOpen() {
       .addItem('プロジェクト初期化',      'initProject')
       .addItem('Info シート作成',         'setupInfoSheet')
       .addItem('管理ID番号シート生成',     'initKanriSheet')
+      .addItem('トリガー再登録',          'registerTriggers')
     )
     .addSeparator()
     .addItem('メールテンプレ保存', 'setupAllMailTemplates')

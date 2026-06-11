@@ -149,6 +149,66 @@ function _writeCreateLog(action, detail) {
 
 // ─── トリガー管理 ─────────────────────────────────────────────────────────────
 
+/**
+ * 既存のデータ用スプレッドシートにトリガーを（再）登録する
+ * ※ initProject を使わずチェックボックスのダイアログを復活させたいときに実行
+ *   メニュー「⚙️ 初期設定 → トリガー再登録」または GAS エディタから実行
+ */
+function registerTriggers() {
+  const ui = SpreadsheetApp.getUi();
+  const dataSsId = getConfigVal('DATA_SPREADSHEET_ID', '');
+  if (!dataSsId) {
+    ui.alert('⚠️ DATA_SPREADSHEET_ID が未設定です。\n先に「プロジェクト初期化」を実行してください。');
+    return;
+  }
+
+  let dataSs = null;
+  try { dataSs = SpreadsheetApp.openById(dataSsId); } catch (e) {
+    ui.alert('❌ データ用スプレッドシートを開けません: ' + dataSsId);
+    return;
+  }
+
+  _removeTriggersForFunction('onEditInstallable');
+  _removeTriggersForFunction('onOpenEventSheet');
+  ScriptApp.newTrigger('onEditInstallable').forSpreadsheet(dataSs).onEdit().create();
+  ScriptApp.newTrigger('onOpenEventSheet').forSpreadsheet(dataSs).onOpen().create();
+
+  ui.alert(`✅ トリガーを再登録しました。\n対象: ${dataSs.getName()}\n\nチェックボックス操作で確認ダイアログが表示されるようになります。`);
+}
+
+/**
+ * トリガーの状態を診断する（どのファイルに紐づいているか確認）
+ * GAS エディタから実行 → 実行ログを確認
+ */
+function diagnoseTriggers() {
+  const dataSsId = getConfigVal('DATA_SPREADSHEET_ID', '');
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('■ Info の DATA_SPREADSHEET_ID:');
+  console.log('   ' + (dataSsId || '（未設定）'));
+  let dataName = '';
+  try { dataName = SpreadsheetApp.openById(dataSsId).getName(); } catch (_) {}
+  console.log('   名前: ' + (dataName || '（開けません）'));
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━');
+  console.log('■ 登録済みトリガー:');
+
+  const triggers = ScriptApp.getProjectTriggers();
+  if (triggers.length === 0) {
+    console.log('   （トリガーなし）');
+  }
+  triggers.forEach((t, i) => {
+    const fn  = t.getHandlerFunction();
+    let srcId = '';
+    try { srcId = t.getTriggerSourceId(); } catch (_) {}
+    let srcName = '';
+    try { srcName = SpreadsheetApp.openById(srcId).getName(); } catch (_) {}
+    const match = (srcId === dataSsId) ? '✅一致' : '❌不一致';
+    console.log(`   [${i + 1}] ${fn}`);
+    console.log(`        紐付け先ID: ${srcId}`);
+    console.log(`        紐付け先名: ${srcName || '(開けません)'}  ${match}`);
+  });
+  console.log('━━━━━━━━━━━━━━━━━━━━━━━━');
+}
+
 function _removeTriggersForFunction(funcName) {
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === funcName)

@@ -76,6 +76,9 @@ function handleUketsuke(e, sheet, row) {
     return;
   }
 
+  // メール残数チェック
+  if (_blockSendIfLowQuota(e.range)) return;
+
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
   const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
   if (!mainSheet) {
@@ -158,6 +161,9 @@ function handleNyukin(e, sheet, row) {
     return;
   }
 
+  // メール残数チェック
+  if (_blockSendIfLowQuota(e.range)) return;
+
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
   const kubun     = sheet.getRange(row, 3).getValue(); // C列: 区分
   const seatNo    = generateSeatNo(kubun, sheet);      // 区分ごとの連番
@@ -230,6 +236,9 @@ function handleAnnaibun(e, sheet, row) {
     return;
   }
 
+  // メール残数チェック
+  if (_blockSendIfLowQuota(e.range)) return;
+
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
   const seatNo    = sheet.getRange(row, COL_SEAT_NO).getValue();
   const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
@@ -277,6 +286,9 @@ function sendOreijouFromMenu() {
     SpreadsheetApp.getUi().alert('⚠️ 案内がまだ送信されていません。\n先に「案内実施」をチェックして案内を送信してください。');
     return;
   }
+
+  // メール残数チェック
+  if (_blockSendIfLowQuota(null)) return;
 
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
   const mainSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
@@ -374,6 +386,38 @@ function sendOreijouConfirmed(row, receptNo) {
 
 function cancelOreijou(row) {
   // お礼状はメニューから起動のため checkbox なし → 何もしない
+}
+
+// ─── メール残数チェック（手作業シートの送信操作用） ──────────────────────────────
+
+/**
+ * メール残数が最低ラインを下回っていれば警告して送信をブロックする
+ * @param {Object} revertCell - 残数不足時に false に戻すチェックボックスセル（任意）
+ * @returns {boolean} true = ブロックした（送信中止）, false = 続行可
+ */
+function _blockSendIfLowQuota(revertCell) {
+  let quota = 0;
+  try { quota = MailApp.getRemainingDailyQuota(); } catch (_) { quota = 0; }
+
+  let minQuota = 5;
+  try { minQuota = getMinMailQuota(); } catch (_) {}
+
+  if (quota < minQuota) {
+    try { _notifyLowQuota(quota); } catch (_) {}
+    SpreadsheetApp.getUi().alert(
+      '⚠️ 送信できません',
+      `本日のメール送信残数が不足しています。\n\n` +
+      `　現在の残数：${quota} 通\n` +
+      `　最低ライン：${minQuota} 通\n\n` +
+      `残数は約1日で自動リセットされます。\n時間をおいて再度お試しください。`,
+      SpreadsheetApp.getUi().ButtonSet.OK
+    );
+    if (revertCell) {
+      try { revertCell.setValue(false); } catch (_) {}
+    }
+    return true;
+  }
+  return false;
 }
 
 // ─── ユーティリティ ─────────────────────────────────────────────────────────────
