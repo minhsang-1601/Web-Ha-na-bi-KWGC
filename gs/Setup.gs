@@ -43,6 +43,7 @@ function setupInfoSheet() {
     ['ORG_FAX',          '048-228-2221',                        '事務局FAX番号'],
     ['OFFICE_HOURS',     '平日 10:00 〜 17:00',                 '受付時間（メール文末に表示）'],
     ['RECEIPT_NO_PREFIX','KWGC',                                '受付番号プレフィックス'],
+    ['MIN_MAIL_QUOTA',   MIN_MAIL_QUOTA_DEFAULT,                'メール送信残数の最低ライン（これ未満はフォーム停止・最低5）'],
   ];
 
   sheet.getRange(1, 1, rows.length, 3).setValues(rows);

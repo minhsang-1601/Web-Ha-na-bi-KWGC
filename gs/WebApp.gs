@@ -2,6 +2,8 @@
 
 function doGet() {
   // ─── 必須シート存在チェック（Info + 管理IDリスト） ──────────────────────────
+  // ※ メール残数チェックは「申込期間内」のときだけ行うため、クライアント側
+  //   （onConfigLoaded）で getConfig の mailQuotaOk を見て判定する。
   const missing = [];
 
   const infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INFO_SHEET_NAME);
@@ -108,10 +110,77 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
+// ─── メール送信残数 関連ヘルパー ──────────────────────────────────────────────
+
+/** メール残数を安全に取得（取得失敗時は 0 = 不足扱い） */
+function _getMailQuotaSafe() {
+  try {
+    return MailApp.getRemainingDailyQuota();
+  } catch (e) {
+    console.error('メール残数取得失敗:', e.message);
+    return 0;
+  }
+}
+
+/**
+ * メール残数不足をオーナーへ通知する（30分に1通だけ・LockServiceで直列化）
+ * ※ 残数が枯渇していると通知メール自体も送れない可能性があるため try で保護
+ */
+function _notifyLowQuota(quota) {
+  const lock = LockService.getScriptLock();
+  try {
+    if (!lock.tryLock(5000)) return;
+
+    const props  = PropertiesService.getScriptProperties();
+    const propKey = 'LOW_QUOTA_ALERT';
+    const last    = Number(props.getProperty(propKey) || 0);
+    const nowMs   = Date.now();
+    if (nowMs - last < 1800000) return; // 30分以内は再送しない
+    props.setProperty(propKey, String(nowMs));
+
+    let owner = '';
+    try { owner = SpreadsheetApp.getActiveSpreadsheet().getOwner().getEmail(); } catch (_) {}
+    if (!owner) owner = Session.getEffectiveUser().getEmail();
+
+    let webUrl = '';
+    try { webUrl = ScriptApp.getService().getUrl(); } catch (_) {}
+
+    MailApp.sendEmail({
+      to:      owner,
+      subject: '【⚠️ 緊急】メール送信残数が不足しています（フォーム停止中）',
+      body: [
+        'メール送信の1日あたり残数が最低ラインを下回ったため、',
+        '協賛申込みフォームを一時停止しました。',
+        '',
+        `　現在の残数　：${quota} 通`,
+        `　最低ライン　：${getMinMailQuota()} 通（Info の MIN_MAIL_QUOTA）`,
+        `　検知日時　　：${nowStr()}`,
+        '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━',
+        '【ご確認ください】',
+        '・残数は太平洋時間の深夜に自動リセットされます（約1日）。',
+        '・リセット後は自動的にフォーム受付が再開されます。',
+        '・上限を増やすには Google Workspace アカウントが必要です。',
+        webUrl ? `\n■ フォームURL: ${webUrl}` : '',
+        '━━━━━━━━━━━━━━━━━━━━━━━━',
+      ].join('\n'),
+    });
+  } catch (e) {
+    console.error('残数不足通知の送信失敗:', e.message);
+  } finally {
+    try { lock.releaseLock(); } catch (_) {}
+  }
+}
+
 /**
  * クライアント(google.script.run)から呼ばれる設定取得
  */
 function getConfig() {
+  // メール残数チェック（不足時はオーナーへ通知）
+  const quota      = _getMailQuotaSafe();
+  const mailQuotaOk = quota >= getMinMailQuota();
+  if (!mailQuotaOk) _notifyLowQuota(quota);
+
   return {
     startDate:  String(getConfigVal('START_DATE',  '2025-01-01T00:00:00')),
     endDate:    String(getConfigVal('END_DATE',     '2026-10-01T23:59:59')),
@@ -119,6 +188,7 @@ function getConfig() {
     sheetName2: DEFAULT_SHEET_NAME2,
     eventName:        getEventName(),
     receiptNoPrefix:  getReceiptNoPrefix(),
+    mailQuotaOk:      mailQuotaOk,
   };
 }
 
@@ -126,6 +196,15 @@ function getConfig() {
  * クライアント(google.script.run)から呼ばれるフォーム送信
  */
 function submitForm(data) {
+  // ─── ① メール送信残数チェック（最優先・データ記録より前） ────────────────────
+  // 残数不足のままデータを記録すると「申込みは登録されたがメール未送信」になるため、
+  // 記録前に拒否する。
+  const _quota = _getMailQuotaSafe();
+  if (_quota < getMinMailQuota()) {
+    _notifyLowQuota(_quota);
+    throw new Error('ただいまお申し込みを受け付けできません。時間をおいて再度お試しください。');
+  }
+
   // ─── Info シート 存在確認（必須） ────────────────────────────────────────────
   const _infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INFO_SHEET_NAME);
   if (!_infoSheet) {

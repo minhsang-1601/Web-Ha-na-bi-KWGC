@@ -27,6 +27,9 @@ const AUTO_SEND_KUBUN = ['B', 'C', 'D', 'E'];
 const HANKO_FILE_ID_DEFAULT = '1Q5kBbhKKuIRSaNiSXfBbvTnO0W1niFyZ';
 const OFFICE_EMAIL_DEFAULT  = '';
 
+// メール送信残数の最低ライン（Info の MIN_MAIL_QUOTA で上書き可・既定5）
+const MIN_MAIL_QUOTA_DEFAULT = 5;
+
 // ─── シートヘッダー ─────────────────────────────────────────────────────────────
 
 const HEADERS = [
@@ -118,6 +121,12 @@ function getOrgTel()           { return getConfigVal('ORG_TEL',            '048-
 function getOrgFax()           { return getConfigVal('ORG_FAX',            '048-228-2221');                    }
 function getOfficeHours()      { return getConfigVal('OFFICE_HOURS',       '平日 10:00 〜 17:00');              }
 function getReceiptNoPrefix()  { return getConfigVal('RECEIPT_NO_PREFIX',  'KWGC');                            }
+
+/** メール送信残数の最低ライン（Info の MIN_MAIL_QUOTA。5未満は5に切り上げ） */
+function getMinMailQuota() {
+  const v = Number(getConfigVal('MIN_MAIL_QUOTA', MIN_MAIL_QUOTA_DEFAULT));
+  return (isNaN(v) || v < MIN_MAIL_QUOTA_DEFAULT) ? MIN_MAIL_QUOTA_DEFAULT : v;
+}
 
 function getCategoryPrice(category) {
   const key = `PRICE_${String(category || '').trim().toUpperCase()}`;

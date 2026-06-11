@@ -1,3 +1,14 @@
+// ─── メール送信残数の確認（GAS エディタから実行） ────────────────────────────────
+
+/** 本日あと何通メール送信できるかを確認する */
+function checkMailQuota() {
+  const remaining = MailApp.getRemainingDailyQuota();
+  const msg = `📧 本日のメール送信 残り回数: ${remaining} 通`;
+  console.log(msg);
+  try { SpreadsheetApp.getUi().alert(msg); } catch (_) {}
+  return remaining;
+}
+
 // ─── 申込確認メール ────────────────────────────────────────────────────────────
 
 /** B〜E: 受付確認 + 請求書PDF 添付 */

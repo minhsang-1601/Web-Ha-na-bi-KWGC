@@ -18,6 +18,14 @@
         ただいまの期間は、協賛申込みの受付時間外となっております。
     </div>
 
+    <div id="maintenance-message" style="display:none; text-align:center; padding:40px 30px; color:#c0392b;">
+        <div style="font-size:1.3em; font-weight:bold; margin-bottom:12px;">⚠️ システムメンテナンス中</div>
+        <div style="color:#555; line-height:1.7;">
+            ただいまお申し込みを受け付けできません。<br>
+            恐れ入りますが、時間をおいて再度お試しください。
+        </div>
+    </div>
+
     <!-- 確認画面 -->
     <div id="confirm-screen" style="display:none;">
         <h3 style="font-size:1.05em; border-bottom:2px solid #826ea0; padding-bottom:6px; color:#4a3b68; margin-top:0;">
@@ -440,6 +448,7 @@
 
         const form          = document.getElementById('registration-form');
         const closedMessage = document.getElementById('form-closed-message');
+        const maintenance   = document.getElementById('maintenance-message');
         const periodDisplay = document.getElementById('period-display');
 
         periodDisplay.innerText =
@@ -449,12 +458,20 @@
         const startDate = new Date(config.startDate);
         const endDate   = new Date(config.endDate);
 
-        if (now >= startDate && now <= endDate) {
-            form.style.display          = 'block';
-            closedMessage.style.display = 'none';
-        } else {
-            form.style.display          = 'none';
+        // 初期状態: すべて非表示
+        form.style.display          = 'none';
+        closedMessage.style.display = 'none';
+        maintenance.style.display   = 'none';
+
+        if (now < startDate || now > endDate) {
+            // ① 受付期間外 → 受付時間外メッセージ
             closedMessage.style.display = 'block';
+        } else if (config.mailQuotaOk === false) {
+            // ② 期間内だがメール残数不足 → メンテナンス表示
+            maintenance.style.display = 'block';
+        } else {
+            // ③ 期間内 & 残数OK → フォーム表示
+            form.style.display = 'block';
         }
     }
 
