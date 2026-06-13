@@ -26,21 +26,20 @@ function appendRow(data, sheetName) {
     const newRow  = sheet.getLastRow() + 1;
     const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
     sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([[
-      _t(data.kanri_id),         // A: 管理ID番号
-      receptNo,                   // B: 受付番号
-      dateStr,                    // C: 受付日時
-      _t(data.company_name),     // D
-      _t(data.company_furigana), // E
-      _t(data.rep_name),         // F
-      _t(data.rep_furigana),     // G
-      _t(data.staff_name),       // H
-      _t(data.staff_furigana),   // I
-      _t(data.zipcode),          // J
-      _t(data.address),          // K
-      _t(data.phone),            // L
-      _t(data.email),            // M
-      _t(data.category),         // N
-      _t(data.website_url),      // O
+      receptNo,                   // A: 受付番号
+      dateStr,                    // B: 受付日時
+      _t(data.company_name),     // C
+      _t(data.company_furigana), // D
+      _t(data.rep_name),         // E
+      _t(data.rep_furigana),     // F
+      _t(data.staff_name),       // G
+      _t(data.staff_furigana),   // H
+      _t(data.zipcode),          // I
+      _t(data.address),          // J
+      _t(data.phone),            // K
+      _t(data.email),            // L
+      _t(data.category),         // M
+      _t(data.website_url),      // N
     ]]);
 
     SpreadsheetApp.flush();
@@ -61,13 +60,12 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
       .setFontWeight('bold').setBackground('#fce8b2');
     // 2行目: サブヘッダー（操作種別メモ）
     sheet.appendRow([
-      'XLOOKUP\n自動',   // A: 管理ID番号
-      '直接入力',         // B: 受付番号
-      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // C-E
-      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // F-I
-      'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // J-L
-      'タイムスタンプ\n自動', '区分＋7桁\n自動',                             // M-N
-      'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',       // O-Q
+      '直接入力',         // A: 受付番号
+      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // B-D
+      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // E-H
+      'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // I-K
+      'タイムスタンプ\n自動', '区分＋7桁\n自動',                             // L-M
+      'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',       // N-P
     ]);
     sheet.getRange(2, 1, 1, TESAGYOU_HEADERS.length)
       .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
@@ -143,17 +141,17 @@ function _ensureFilter(sheet, headerRow, numCols) {
 }
 
 function applyColumnWidths(sheet) {
-  // A=管理ID B=受付番号 C=受付日時 D=個人名 E=ふりがな F=代表者 G=ふりがな
-  // H=担当者 I=ふりがな J=郵便番号 K=住所 L=電話番号 M=メール N=区分 O=URL
-  [160, 150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200]
+  // A=受付番号 B=受付日時 C=個人名 D=ふりがな E=代表者 F=ふりがな
+  // G=担当者 H=ふりがな I=郵便番号 J=住所 K=電話番号 L=メール M=区分 N=URL
+  [150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 2, HEADERS.length);
 }
 
 function applyTesagyouColumnWidths(sheet) {
-  // A=管理ID B=受付番号 C=区分 D=電話 E=個人名 F=住所 G=代表者 H=メール I=URL
-  // J=受付完了 K=請求書日時 L=入金 M=座席日時 N=座席番号 O=案内 P=案内日時 Q=礼状日時
-  [160, 150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150, 120, 70, 150, 150]
+  // A=受付番号 B=区分 C=電話 D=個人名 E=住所 F=代表者 G=メール H=URL
+  // I=受付完了 J=請求書日時 K=入金 L=座席日時 M=座席番号 N=案内 O=案内日時 P=礼状日時
+  [150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150, 120, 70, 150, 150]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 3, TESAGYOU_HEADERS.length);
 }

@@ -326,11 +326,6 @@ function sendInvoiceConfirmed(row, receptNo) {
   const data = findRowByReceptNo(mainSheet, receptNo);
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 
-  // 管理ID番号を手作業シートの A 列から取得して data に補完
-  if (!data.kanri_id) {
-    data.kanri_id = tetsuSheet.getRange(row, COL_KANRI_ID).getValue() || '';
-  }
-
   const pdf = generateInvoicePdf(data, receptNo);
   sendInvoiceEmail(data, receptNo, pdf);
   tetsuSheet.getRange(row, COL_INV_DATE).setValue(nowStr());
@@ -434,7 +429,6 @@ function sendInvoiceEmail(data, receptNo, pdf) {
     staff_name:   data.staff_name   || '',
     category:     data.category     || '',
     receipt_no:   receptNo          || '',
-    kanri_id:     data.kanri_id     || '',
     date:         nowStr(),
     event_name:   getEventName(),
     payment_due:  getPaymentDue(),
@@ -457,26 +451,25 @@ function sendInvoiceEmail(data, receptNo, pdf) {
 }
 
 function findRowByReceptNo(sheet, receptNo) {
-  // 協賛申込み一覧: A=管理ID B=受付番号 C=受付日時 D=個人名 E=個人名ふりがな
-  //                F=役職代表者 G=役職ふりがな H=担当者 I=担当者ふりがな
-  //                J=郵便番号 K=住所 L=電話番号 M=メール N=区分 O=会社HP URL
+  // 協賛申込み一覧: A=受付番号 B=受付日時 C=個人名 D=個人名ふりがな
+  //                E=役職代表者 F=役職ふりがな G=担当者 H=担当者ふりがな
+  //                I=郵便番号 J=住所 K=電話番号 L=メール M=区分 N=会社HP URL
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
-    if (String(rows[i][1]).trim() === String(receptNo).trim()) { // B列: 受付番号
+    if (String(rows[i][0]).trim() === String(receptNo).trim()) { // A列: 受付番号
       return {
-        kanri_id:         rows[i][0],   // A
-        company_name:     rows[i][3],   // D
-        company_furigana: rows[i][4],   // E
-        rep_name:         rows[i][5],   // F
-        rep_furigana:     rows[i][6],   // G
-        staff_name:       rows[i][7],   // H
-        staff_furigana:   rows[i][8],   // I
-        zipcode:          rows[i][9],   // J
-        address:          rows[i][10],  // K
-        phone:            rows[i][11],  // L
-        email:            rows[i][12],  // M
-        category:         rows[i][13],  // N
-        website_url:      rows[i][14],  // O
+        company_name:     rows[i][2],   // C
+        company_furigana: rows[i][3],   // D
+        rep_name:         rows[i][4],   // E
+        rep_furigana:     rows[i][5],   // F
+        staff_name:       rows[i][6],   // G
+        staff_furigana:   rows[i][7],   // H
+        zipcode:          rows[i][8],   // I
+        address:          rows[i][9],   // J
+        phone:            rows[i][10],  // K
+        email:            rows[i][11],  // L
+        category:         rows[i][12],  // M
+        website_url:      rows[i][13],  // N
       };
     }
   }

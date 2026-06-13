@@ -17,7 +17,7 @@ function setupInfoSheet() {
     ['キー', '値', '説明'],
     ['EVENT_NAME',        '第5回川口花火大会',              'イベント名'],
     ['EVENT_DATE',        '2026-09-20',                     '開催日'],
-    ['PAYMENT_DUE',       '9月12日（金）',                  '入金期限'],
+    ['PAYMENT_DUE',       '9月18日（金）',                  '入金期限'],
     ['OFFICE_EMAIL',      OFFICE_EMAIL_DEFAULT,              '事務局メールアドレス'],
     ['HANKO_FILE_ID',     HANKO_FILE_ID_DEFAULT,             '印影PNG の Google Drive ファイルID'],
     ['ROOT_FOLDER_ID',    '',                                'プロジェクト作成先のフォルダID（Drive）'],
@@ -44,6 +44,11 @@ function setupInfoSheet() {
     ['OFFICE_HOURS',     '平日 10:00 〜 17:00',                 '受付時間（メール文末に表示）'],
     ['RECEIPT_NO_PREFIX','KWGC',                                '受付番号プレフィックス'],
     ['MIN_MAIL_QUOTA',   MIN_MAIL_QUOTA_DEFAULT,                'メール送信残数の最低ライン（これ未満はフォーム停止・最低5）'],
+    // ─── 区分別申込み期間 ────────────────────────────────────────────────────────
+    ['KUBUN_SA_START',   '2026-06-01T00:00:00',                'S・A 区分 申込み受付開始日時'],
+    ['KUBUN_SA_END',     '2026-07-07T23:59:59',                'S・A 区分 申込み受付終了日時'],
+    ['KUBUN_BCDE_START', '2026-06-01T00:00:00',                'B〜E 区分 申込み受付開始日時'],
+    ['KUBUN_BCDE_END',   '2026-09-04T23:59:59',                'B〜E 区分 申込み受付終了日時'],
   ];
 
   sheet.getRange(1, 1, rows.length, 3).setValues(rows);
@@ -131,14 +136,14 @@ function _applyTesagyouHeaders(sheet) {
   sheet.getRange(1, 1, 1, TESAGYOU_HEADERS.length)
     .setFontWeight('bold').setBackground('#fce8b2');
 
-  // 行2: サブヘッダー（17列）
+  // 行2: サブヘッダー（16列）
   const sub = [
-    'XLOOKUP\n自動',  '直接入力',                                          // A,B
-    'XLOOKUP\n自動',  'XLOOKUP\n自動', 'XLOOKUP\n自動',                    // C,D,E
-    'XLOOKUP\n自動',  'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',   // F,G,H,I
-    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',              // J,K,L
-    'タイムスタンプ\n自動', '区分＋7桁\n自動',                               // M,N
-    'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',         // O,P,Q
+    '直接入力',                                                                    // A
+    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',                            // B,C,D
+    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',           // E,F,G,H
+    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',                    // I,J,K
+    'タイムスタンプ\n自動', '区分＋7桁\n自動',                                     // L,M
+    'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',               // N,O,P
   ];
   sheet.getRange(2, 1, 1, sub.length).setValues([sub]);
   sheet.getRange(2, 1, 1, sub.length)
@@ -147,6 +152,37 @@ function _applyTesagyouHeaders(sheet) {
   sheet.setFrozenRows(2);
   applyTesagyouColumnWidths(sheet);
   _ensureFilter(sheet, 1, TESAGYOU_HEADERS.length);
+}
+
+/**
+ * 既存シートのヘッダー行の列名を最新の名称に一括更新する
+ * GAS エディタから "renameHeaders" を実行してください
+ * ※ データ行はそのまま、ヘッダー行（行1）のみ書き換えます
+ */
+function renameHeaders() {
+  const dataSs = getDataSpreadsheet();
+
+  // ── 協賛申込み一覧 ─────────────────────────────────────────────────────────
+  const sheet1 = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
+  if (sheet1 && sheet1.getLastRow() > 0) {
+    sheet1.getRange(1, 1, 1, HEADERS.length).setValues([HEADERS]);
+    console.log('✅ 協賛申込み一覧: ヘッダーを更新しました。');
+  } else {
+    console.log('⚠️ 協賛申込み一覧: シートが見つからないかデータがありません。');
+  }
+
+  // ── 手作業 ─────────────────────────────────────────────────────────────────
+  const sheet2 = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
+  if (sheet2 && sheet2.getLastRow() > 0) {
+    sheet2.getRange(1, 1, 1, TESAGYOU_HEADERS.length).setValues([TESAGYOU_HEADERS]);
+    console.log('✅ 手作業: ヘッダーを更新しました。');
+  } else {
+    console.log('⚠️ 手作業: シートが見つからないかデータがありません。');
+  }
+
+  try {
+    SpreadsheetApp.getUi().alert('✅ ヘッダーを更新しました。\n・協賛申込み一覧\n・手作業');
+  } catch (_) {}
 }
 
 /**
@@ -185,27 +221,6 @@ function applyFiltersToAllSheets() {
   if (sheet2 && sheet2.getLastRow() > 0) {
     _ensureFilter(sheet2, 1, TESAGYOU_HEADERS.length);
     _applyAlignment(sheet2, 3, TESAGYOU_HEADERS.length);
-  }
-
-  // ── 管理IDリスト スプレッドシート ─────────────────────────────────
-  try {
-    const kanriSs = SpreadsheetApp.openById(KANRI_SS_ID);
-
-    // 管理IDリスト
-    const kanriSheet = kanriSs.getSheetByName(KANRI_SHEET);
-    if (kanriSheet && kanriSheet.getLastRow() > 0) {
-      _ensureFilter(kanriSheet, 1, KANRI_HEADERS.length);
-      _applyAlignment(kanriSheet, 2, KANRI_HEADERS.length);
-    }
-
-    // Log
-    const kanriLogSheet = kanriSs.getSheetByName(KANRI_LOG_SHEET);
-    if (kanriLogSheet && kanriLogSheet.getLastRow() > 0) {
-      _ensureFilter(kanriLogSheet, 1, KANRI_LOG_HEADERS.length);
-      _applyAlignment(kanriLogSheet, 2, KANRI_LOG_HEADERS.length);
-    }
-  } catch (e) {
-    console.warn('管理IDリストへのフィルター設定エラー:', e.message);
   }
 
   SpreadsheetApp.getUi().alert('✅ 全シートにフィルターを設定しました。');

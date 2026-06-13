@@ -8,12 +8,11 @@
 function initProject() {
   const ui = SpreadsheetApp.getUi();
 
-  // ── 1. Info シート確認 ────────────────────────────────────────────────────────
-  const mainSs    = SpreadsheetApp.getActiveSpreadsheet();
-  const infoSheet = mainSs.getSheetByName(INFO_SHEET_NAME);
-  if (!infoSheet) {
-    ui.alert('⚠️ Info シートが見つかりません。\n先に「Info シート作成」を実行してください。');
-    return;
+  // ── 1. Info シート確認（なければ自動作成） ───────────────────────────────────
+  const mainSs = SpreadsheetApp.getActiveSpreadsheet();
+  if (!mainSs.getSheetByName(INFO_SHEET_NAME)) {
+    setupInfoSheet();
+    ui.alert('ℹ️ Info シートが存在しなかったため自動作成しました。\n必要に応じて値を確認・編集してください。');
   }
 
   // ── 2. ROOT_FOLDER_ID 確認 ───────────────────────────────────────────────────
@@ -77,10 +76,7 @@ function initProject() {
   sheet2.getRange(3, 1, sheet2.getMaxRows() - 2, TESAGYOU_HEADERS.length)
     .setVerticalAlignment('top').setHorizontalAlignment('left');
 
-  // ── 9. 管理IDリストシート 初期化 ─────────────────────────────────────────────
-  initKanriSheet();
-
-  // ── 10. メールテンプレート保存 ───────────────────────────────────────────────
+  // ── 9. メールテンプレート保存 ───────────────────────────────────────────────
   setupMailTemplate();
   setupReceiptOnlyTemplate();
   setupOreijouTemplate();

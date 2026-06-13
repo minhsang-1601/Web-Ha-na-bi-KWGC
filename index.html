@@ -50,146 +50,18 @@
     <!-- メインフォーム（初期非表示、getConfig()後に表示） -->
     <form id="registration-form" style="display:none;">
 
-        <!-- ─── 管理ID番号 ─── -->
-        <div class="form-group" style="background:#f0f7ff; border:1px solid #b3d1f5; border-radius:6px; padding:14px 16px; margin-bottom:18px;">
-            <label style="font-weight:bold; color:#1a5fa8;">管理ID番号</label>
-
-            <!-- タブ切替ボタン -->
-            <div style="display:flex; gap:0; margin-top:10px; border:1px solid #b3d1f5; border-radius:6px; overflow:hidden;">
-                <button type="button" id="tab-kanri" onclick="showKanriTab('kanri')"
-                        style="flex:1; padding:7px; font-size:0.88em; cursor:pointer; border:none; background:#1a5fa8; color:#fff; font-weight:bold;">
-                    ▶ IDを入力する
-                </button>
-                <button type="button" id="tab-forgot" onclick="showKanriTab('forgot')"
-                        style="flex:1; padding:7px; font-size:0.88em; cursor:pointer; border:none; background:#e8f0fb; color:#1a5fa8;">
-                    IDを忘れた方はこちら
-                </button>
-            </div>
-
-            <!-- パネル: ID入力 -->
-            <div id="panel-kanri" style="margin-top:10px;">
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="kanri_id_input" name="kanri_id"
-                           placeholder="KRNO20260001（リピーターの方）"
-                           style="flex:2; padding:8px 10px; border:1px solid #b3d1f5; border-radius:4px;">
-                    <button type="button" onclick="lookupById()"
-                            style="flex:1; background:#1a5fa8; color:#fff; border:none; border-radius:4px; padding:8px 10px; cursor:pointer; white-space:nowrap; font-size:0.9em;">
-                        情報を呼び出す
-                    </button>
-                </div>
-                <p style="font-size:0.82em; color:#666; margin:6px 0 0;">
-                    初めての方は空白のままで送信してください。新しいIDが自動で発行されます。
-                </p>
-                <div id="kanri-lookup-msg" style="display:none; margin-top:8px; font-size:0.88em; padding:6px 10px; border-radius:4px;"></div>
-            </div>
-
-            <!-- パネル: ID忘れ -->
-            <div id="panel-forgot" style="display:none; margin-top:10px;">
-                <div style="display:flex; gap:8px;">
-                    <input type="text" id="forgot_company_input"
-                           placeholder="会社名・団体名を入力"
-                           style="flex:2; padding:8px 10px; border:1px solid #ccc; border-radius:4px; font-size:0.9em;">
-                    <button type="button" onclick="sendForgotId()"
-                            style="flex:1; background:#555; color:#fff; border:none; border-radius:4px; padding:8px 10px; cursor:pointer; font-size:0.9em; white-space:nowrap;">
-                        メールで受け取る
-                    </button>
-                </div>
-                <div id="forgot-msg" style="display:none; margin-top:6px; font-size:0.85em; padding:6px 10px; border-radius:4px;"></div>
-            </div>
-        </div>
-
-        <div class="form-group">
-            <label>個人名・会社名・団体名</label>
-            <input type="text" id="company_name_input" name="company_name"
-                   placeholder="川口商工会議所" required>
-            <div id="company-exists-msg" style="display:none; margin-top:6px; font-size:0.88em; padding:8px 12px; border-radius:4px; background:#fff3cd; color:#856404; border:1px solid #ffc107;"></div>
-        </div>
-
-        <div class="form-group">
-            <label class="furigana">個人名・会社名・団体名（フリガナ）</label>
-            <input type="text" id="company_furigana" name="company_furigana"
-                   placeholder="カワグチショウコウカイギショ"
-                   pattern="^[ァ-ヶー　\s）]+$"
-                   title="全角カタカナ、スペース、および全角閉じカッコのみで入力してください。" required>
-        </div>
-
-        <div class="form-group">
-            <label>役職・代表者名</label>
-            <input type="text" name="rep_name" placeholder="花火　太郎" required>
-        </div>
-
-        <div class="form-group">
-            <label class="furigana">役職・代表者名（フリガナ）</label>
-            <input type="text" id="rep_furigana" name="rep_furigana"
-                   placeholder="ハナビ　タロウ"
-                   pattern="^[ァ-ヶー\s　]+$"
-                   title="全角カタカナで入力してください。" required>
-        </div>
-
-        <div class="form-group">
-            <label>担当者名</label>
-            <input type="text" name="staff_name" placeholder="花火　花子" required>
-        </div>
-
-        <div class="form-group">
-            <label class="furigana">担当者名（フリガナ）</label>
-            <input type="text" id="staff_furigana" name="staff_furigana"
-                   placeholder="ハナビ　ハナコ"
-                   pattern="^[ァ-ヶー\s　]+$"
-                   title="全角カタカナで入力してください。" required>
-        </div>
-
-        <div class="form-group">
-            <label>郵便番号</label>
-            <input type="text" id="zipcode" name="zipcode"
-                   placeholder="3320015" maxlength="7" pattern="\d{7}" required>
-        </div>
-
-        <div class="form-group">
-            <label>住所</label>
-            <input type="text" name="address" placeholder="埼玉県川口市川口３丁目１－１総合文化センター・リリア内" required>
-        </div>
-
-        <div class="form-group">
-            <label>電話番号</label>
-            <input type="text" id="phone" name="phone"
-                   placeholder="0482282220" maxlength="11" pattern="\d{9,11}" required>
-            <span class="form-note"><i>「-」</i>なしでご入力ください。</span>
-        </div>
-
-        <div class="form-group">
-            <label>メールアドレス</label>
-            <input type="email" name="email"
-                   placeholder="example@kawaguchi.com" required>
-        </div>
-
-        <div class="form-group">
-            <label>会社HP URL</label>
-            <input type="text" name="website_url" placeholder="https://example.com">
-            <span class="form-note">ない場合は <i>「なし」</i> とご入力ください。</span>
-        </div>
-
-        <div class="form-group">
-            <label>区分</label>
-            <div class="radio-group-container">
-                <label class="radio-label"><input type="radio" name="category" value="S" required> S (200万)</label>
-                <label class="radio-label"><input type="radio" name="category" value="A"> A (100万)</label>
-                <label class="radio-label"><input type="radio" name="category" value="B"> B (70万)</label>
-                <label class="radio-label"><input type="radio" name="category" value="C"> C (30万)</label>
-                <label class="radio-label"><input type="radio" name="category" value="D"> D (20万)</label>
-                <label class="radio-label"><input type="radio" name="category" value="E"> E (10万)</label>
-            </div>
-        </div>
-
+        <!-- ═══ 誓約事項 ═══ -->
         <div class="form-group">
             <label>誓約事項</label>
             <div id="terms-box" class="terms-box">
-                <p><strong>【協賛に伴う誓約事項】</strong></p>
-                <p>1. 申込者は、川口花火大会の開催趣旨に賛同し 規約 を遵守することを誓約します。</p>
-                <p>2. 提供された協賛金は、大会の運営および安全対策の費用として正当に使用されます。</p>
-                <p>3. 荒天や不測の事態により大会が中止となった場合でも、原則として協賛金の返金は行われませんのでご了承ください。</p>
-                <p>4. 暴力団員、暴力団関係企業・団体、その他反社会的勢力に該当しないことを表明し、将来にわたっても該当しないことを誓約します。</p>
-                <p>5. 協賛のキャンセルや変更を希望する場合は、大会事務局が指定する期日までに書面にて連絡を行うものとします。</p>
+                <p>１. 以下の内容に該当する場合、協賛をお断りする場合があることに同意します。</p>
+                <p style="margin-left:1em;">・特定の政治・思想・宗教等に関する活動を目的とする団体またはその活動に利用するおそれのある者</p>
+                <p style="margin-left:1em;">・暴力団・暴力団関係者（反社会的勢力）に該当する者</p>
+                <p style="margin-left:1em;">・法令または公序良俗に反する行為を行った者</p>
+                <p style="margin-left:1em;">・その他、運営に著しい支障があると実行委員会が判断した者</p>
+                <p>２. 申込後であっても、上記のいずれかに該当すると判明した場合、実行委員会より協賛を取り消されることがあることを理解し、異議を申し立てません。</p>
+                <p>３. 協賛者側から協賛辞退の申し出を行った場合も、協賛金は返金されないことに同意します。</p>
+                <p>４. 大会の中止・延期・内容変更、または協賛特典の未実施があった場合も、協賛金の返金は一切行われないことに同意します。</p>
                 <p style="text-align:center; color:#d9534f; font-weight:bold; margin-top:15px;">
                     --- 以上、内容を最後までご確認いただくとチェックが可能になります ---
                 </p>
@@ -203,8 +75,97 @@
             </label>
         </div>
 
-        <div class="form-group">
-            <button type="submit">入力内容を確認する</button>
+        <!-- ═══ ② 区分（同意後に表示） ═══ -->
+        <div id="section-kubun" class="form-group" style="display:none;">
+            <label>区分</label>
+            <div class="radio-group-container">
+                <label class="radio-label" id="kubun-label-S"><input type="radio" name="category" value="S" required> S (200万)</label>
+                <label class="radio-label" id="kubun-label-A"><input type="radio" name="category" value="A"> A (100万)</label>
+                <label class="radio-label" id="kubun-label-B"><input type="radio" name="category" value="B"> B (70万)</label>
+                <label class="radio-label" id="kubun-label-C"><input type="radio" name="category" value="C"> C (30万)</label>
+                <label class="radio-label" id="kubun-label-D"><input type="radio" name="category" value="D"> D (20万)</label>
+                <label class="radio-label" id="kubun-label-E"><input type="radio" name="category" value="E"> E (10万)</label>
+            </div>
+            <div id="kubun-closed-msg" style="display:none; margin-top:8px; font-size:0.88em; color:#c0392b;"></div>
+        </div>
+
+        <!-- ═══ ③ 必要情報の記入（区分選択後に表示） ═══ -->
+        <div id="section-info" style="display:none;">
+
+            <div class="form-group">
+                <label>会社名・団体名</label>
+                <input type="text" id="company_name_input" name="company_name"
+                       placeholder="川口商工会議所" required>
+            </div>
+
+            <div class="form-group">
+                <label class="furigana">会社名・団体名（フリガナ）</label>
+                <input type="text" id="company_furigana" name="company_furigana"
+                       placeholder="カワグチショウコウカイギショ"
+                       pattern="^[ァ-ヶー　\s）]+$"
+                       title="全角カタカナ、スペース、および全角閉じカッコのみで入力してください。" required>
+            </div>
+
+            <div class="form-group">
+                <label>代表者役職・代表者名</label>
+                <input type="text" name="rep_name" placeholder="花火　太郎" required>
+            </div>
+
+            <div class="form-group">
+                <label class="furigana">代表者役職・代表者名（フリガナ）</label>
+                <input type="text" id="rep_furigana" name="rep_furigana"
+                       placeholder="ハナビ　タロウ"
+                       pattern="^[ァ-ヶー\s　]+$"
+                       title="全角カタカナで入力してください。" required>
+            </div>
+
+            <div class="form-group">
+                <label>担当者名</label>
+                <input type="text" name="staff_name" placeholder="花火　花子" required>
+            </div>
+
+            <div class="form-group">
+                <label class="furigana">担当者名（フリガナ）</label>
+                <input type="text" id="staff_furigana" name="staff_furigana"
+                       placeholder="ハナビ　ハナコ"
+                       pattern="^[ァ-ヶー\s　]+$"
+                       title="全角カタカナで入力してください。" required>
+            </div>
+
+            <div class="form-group">
+                <label>郵便番号</label>
+                <input type="text" id="zipcode" name="zipcode"
+                       placeholder="3320015" maxlength="7" pattern="\d{7}" required>
+                <span class="form-note"><i>「-」</i>なしでご入力ください。</span>
+            </div>
+
+            <div class="form-group">
+                <label>住所</label>
+                <input type="text" name="address" placeholder="埼玉県川口市川口３丁目１－１総合文化センター・リリア内" required>
+            </div>
+
+            <div class="form-group">
+                <label>電話番号</label>
+                <input type="text" id="phone" name="phone"
+                       placeholder="0482282220" maxlength="11" pattern="\d{9,11}" required>
+                <span class="form-note"><i>「-」</i>なしでご入力ください。</span>
+            </div>
+
+            <div class="form-group">
+                <label>メールアドレス</label>
+                <input type="email" name="email"
+                       placeholder="example@kawaguchi.com" required>
+            </div>
+
+            <div class="form-group">
+                <label>会社HP URL</label>
+                <input type="text" name="website_url" placeholder="https://example.com">
+                <span class="form-note">ない場合は <i>「なし」</i> とご入力ください。</span>
+            </div>
+
+            <div class="form-group">
+                <button type="submit">入力内容を確認する</button>
+            </div>
         </div>
 
     </form>
@@ -269,6 +230,29 @@
         }
     });
 
+    // ─── 段階表示: ① 同意 → ② 区分 → ③ 必要情報 ──────────────────────────────────
+    const sectionKubun = document.getElementById('section-kubun');
+    const sectionInfo  = document.getElementById('section-info');
+
+    // ① 同意チェック → ② 区分を表示／解除で以降を隠す
+    checkbox.addEventListener('change', () => {
+        if (checkbox.checked) {
+            sectionKubun.style.display = 'block';
+        } else {
+            sectionKubun.style.display = 'none';
+            sectionInfo.style.display  = 'none';
+            // 区分の選択も解除
+            document.querySelectorAll('[name="category"]').forEach(r => { r.checked = false; });
+        }
+    });
+
+    // ② 区分選択 → ③ 必要情報を表示
+    document.querySelectorAll('[name="category"]').forEach((radio) => {
+        radio.addEventListener('change', () => {
+            if (radio.checked) sectionInfo.style.display = 'block';
+        });
+    });
+
     // ─── Furigana validation ────────────────────────────────────────────────────
 
     document.getElementById('company_furigana').addEventListener('blur', (e) => {
@@ -282,154 +266,6 @@
             e.target.value = '';
         }
     });
-
-    // ─── 管理ID 自動入力 ────────────────────────────────────────────────────────────
-
-    let _originalKanriData = null; // 呼び出し時の元データ（変更検出用）
-    let _companyBlocked    = false; // 会社名重複によるブロックフラグ
-
-    // ─── 管理IDタブ切替 ──────────────────────────────────────────────────────────
-    function showKanriTab(tab) {
-        const isKanri = tab === 'kanri';
-        document.getElementById('panel-kanri').style.display  = isKanri ? 'block' : 'none';
-        document.getElementById('panel-forgot').style.display = isKanri ? 'none'  : 'block';
-        document.getElementById('tab-kanri').style.background  = isKanri ? '#1a5fa8' : '#e8f0fb';
-        document.getElementById('tab-kanri').style.color       = isKanri ? '#fff'    : '#1a5fa8';
-        document.getElementById('tab-kanri').style.fontWeight  = isKanri ? 'bold'    : 'normal';
-        document.getElementById('tab-forgot').style.background = isKanri ? '#e8f0fb' : '#1a5fa8';
-        document.getElementById('tab-forgot').style.color      = isKanri ? '#1a5fa8' : '#fff';
-        document.getElementById('tab-forgot').style.fontWeight = isKanri ? 'normal'  : 'bold';
-    }
-
-    // ─── 会社名リアルタイム重複チェック ──────────────────────────────────────────
-
-    function clearCompanyBlock() {
-        _companyBlocked = false;
-        const msg = document.getElementById('company-exists-msg');
-        msg.style.display = 'none';
-        msg.textContent   = '';
-        const input = document.getElementById('company_name_input');
-        if (input) input.style.borderColor = '';
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-        const companyInput = document.getElementById('company_name_input');
-        if (!companyInput) return;
-
-        companyInput.addEventListener('blur', () => {
-            const name = companyInput.value.trim();
-            if (!name) { clearCompanyBlock(); return; }
-
-            // 管理IDがすでに入力＆照合済みなら無視
-            const kanriIdVal = document.getElementById('kanri_id_input').value.trim();
-            if (kanriIdVal && _originalKanriData && _originalKanriData.company_name === name) {
-                clearCompanyBlock();
-                return;
-            }
-
-            google.script.run
-                .withSuccessHandler(function(res) {
-                    const msg = document.getElementById('company-exists-msg');
-                    if (res.exists) {
-                        _companyBlocked = true;
-                        companyInput.style.borderColor = '#dc3545';
-                        msg.style.display   = 'block';
-                        msg.innerHTML = `⚠️ <strong>この会社名はすでに登録されています（管理ID：${res.kanri_id_hint}）。</strong><br>
-                            上の「管理ID番号」欄にIDを入力して「情報を呼び出す」を押してください。<br>
-                            IDをお忘れの場合は「IDを忘れた方はこちら」からご確認ください。`;
-                    } else {
-                        clearCompanyBlock();
-                    }
-                })
-                .withFailureHandler(function() { clearCompanyBlock(); })
-                .checkCompanyExists(name);
-        });
-
-        // 管理IDが入力されたらブロック解除の可能性チェック
-        document.getElementById('kanri_id_input').addEventListener('input', () => {
-            if (_companyBlocked) clearCompanyBlock();
-        });
-    });
-
-    function lookupById() {
-        const kanriId = document.getElementById('kanri_id_input').value.trim();
-        if (!kanriId) { showKanriMsg('IDを入力してください。', 'warn'); return; }
-        showKanriMsg('検索中...', 'info');
-        google.script.run
-            .withSuccessHandler(function(res) {
-                if (!res.found) {
-                    showKanriMsg('IDが見つかりませんでした。', 'error');
-                    _originalKanriData = null;
-                    return;
-                }
-                // フィールドを自動入力（区分以外）
-                const map = {
-                    company_name:     res.company_name,
-                    company_furigana: res.company_furigana,
-                    rep_name:         res.rep_name,
-                    rep_furigana:     res.rep_furigana,
-                    staff_name:       res.staff_name,
-                    staff_furigana:   res.staff_furigana,
-                    zipcode:          res.zipcode,
-                    address:          res.address,
-                    phone:            res.phone,
-                    email:            res.email,
-                    website_url:      res.website_url,
-                };
-                Object.entries(map).forEach(([name, value]) => {
-                    const el = document.querySelector(`[name="${name}"]`);
-                    if (el) el.value = value || '';
-                });
-                _originalKanriData = { ...res };
-                clearCompanyBlock(); // 会社名ブロック解除
-                showKanriMsg('✅ 情報を自動入力しました。内容をご確認ください。', 'ok');
-            })
-            .withFailureHandler(function(err) {
-                showKanriMsg('エラー: ' + err.message, 'error');
-            })
-            .lookupKanriId(kanriId);
-    }
-
-    function sendForgotId() {
-        const company = document.getElementById('forgot_company_input').value.trim();
-        if (!company) { showForgotMsg('会社名・団体名を入力してください。', 'warn'); return; }
-        showForgotMsg('送信中...', 'info');
-        google.script.run
-            .withSuccessHandler(function(res) {
-                if (res.found) {
-                    const note = res.multipleHits
-                        ? `（同じ会社名で複数の登録が見つかりました。最新の登録IDをお送りしました）`
-                        : '';
-                    showForgotMsg(`管理IDを ${res.maskedEmail} に送信しました。${note}`, 'ok');
-                } else if (res.reason === 'no_email') {
-                    showForgotMsg('登録済みのメールアドレスが見つかりません。事務局にお問い合わせください。', 'error');
-                } else {
-                    showForgotMsg('該当する会社名が見つかりませんでした。', 'error');
-                }
-            })
-            .withFailureHandler(function(err) {
-                showForgotMsg('エラー: ' + err.message, 'error');
-            })
-            .sendForgottenId(company);
-    }
-
-    function showKanriMsg(msg, type) {
-        const el = document.getElementById('kanri-lookup-msg');
-        el.style.display = 'block';
-        el.textContent   = msg;
-        el.style.background = type === 'ok' ? '#e6f4ea' : type === 'error' ? '#fdecea' : type === 'warn' ? '#fff8e1' : '#e3f2fd';
-        el.style.color      = type === 'ok' ? '#2e7d32' : type === 'error' ? '#c62828' : type === 'warn' ? '#7a5800' : '#1565c0';
-        el.style.border     = `1px solid ${type === 'ok' ? '#a5d6a7' : type === 'error' ? '#ef9a9a' : type === 'warn' ? '#ffe082' : '#90caf9'}`;
-    }
-
-    function showForgotMsg(msg, type) {
-        const el = document.getElementById('forgot-msg');
-        el.style.display = 'block';
-        el.textContent   = msg;
-        el.style.background = type === 'ok' ? '#e6f4ea' : type === 'error' ? '#fdecea' : type === 'warn' ? '#fff8e1' : '#e3f2fd';
-        el.style.color      = type === 'ok' ? '#2e7d32' : type === 'error' ? '#c62828' : type === 'warn' ? '#7a5800' : '#1565c0';
-        el.style.border     = `1px solid ${type === 'ok' ? '#a5d6a7' : type === 'error' ? '#ef9a9a' : type === 'warn' ? '#ffe082' : '#90caf9'}`;
-    }
 
     // ─── Config & period check via google.script.run ────────────────────────────
 
@@ -472,7 +308,50 @@
         } else {
             // ③ 期間内 & 残数OK → フォーム表示
             form.style.display = 'block';
+            _applyKubunPeriod(config, now);
         }
+    }
+
+    function _applyKubunPeriod(config, now) {
+        const saStart   = new Date(config.kubunSaStart);
+        const saEnd     = new Date(config.kubunSaEnd);
+        const bcdeStart = new Date(config.kubunBcdeStart);
+        const bcdeEnd   = new Date(config.kubunBcdeEnd);
+
+        const saOpen   = now >= saStart   && now <= saEnd;
+        const bcdeOpen = now >= bcdeStart && now <= bcdeEnd;
+
+        // S・A の表示制御
+        ['S', 'A'].forEach(v => {
+            const el = document.getElementById(`kubun-label-${v}`);
+            if (el) el.style.display = saOpen ? '' : 'none';
+        });
+
+        // B〜E の表示制御
+        ['B', 'C', 'D', 'E'].forEach(v => {
+            const el = document.getElementById(`kubun-label-${v}`);
+            if (el) el.style.display = bcdeOpen ? '' : 'none';
+        });
+
+        // どの区分も受付中でない場合はメッセージ表示
+        const closedMsg = document.getElementById('kubun-closed-msg');
+        if (!saOpen && !bcdeOpen) {
+            closedMsg.style.display = 'block';
+            closedMsg.textContent   = 'ただいまいずれの区分も受付期間外です。';
+        } else {
+            const lines = [];
+            if (!saOpen) lines.push(`S・A 区分は受付期間外です（受付：${_fmt(config.kubunSaStart)} 〜 ${_fmt(config.kubunSaEnd)}）`);
+            if (!bcdeOpen) lines.push(`B〜E 区分は受付期間外です（受付：${_fmt(config.kubunBcdeStart)} 〜 ${_fmt(config.kubunBcdeEnd)}）`);
+            if (lines.length > 0) {
+                closedMsg.style.display = 'block';
+                closedMsg.textContent   = lines.join(' / ');
+            }
+        }
+    }
+
+    function _fmt(dateStr) {
+        const d = new Date(dateStr);
+        return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
     }
 
     function onConfigError(err) {
@@ -495,10 +374,11 @@
     const confirmTable  = document.getElementById('confirm-table');
 
     const FIELD_LABELS = {
-        company_name:     '個人名・会社名・団体名',
-        company_furigana: '個人名・会社名（フリガナ）',
-        rep_name:         '役職・代表者名',
-        rep_furigana:     '役職・代表者名（フリガナ）',
+        category:         '区分',
+        company_name:     '会社名・団体名',
+        company_furigana: '会社名・団体名（フリガナ）',
+        rep_name:         '代表者役職・代表者名',
+        rep_furigana:     '代表者役職・代表者名（フリガナ）',
         staff_name:       '担当者名',
         staff_furigana:   '担当者名（フリガナ）',
         zipcode:          '郵便番号',
@@ -506,7 +386,6 @@
         phone:            '電話番号',
         email:            'メールアドレス',
         website_url:      '会社HP URL',
-        category:         '区分',
     };
 
     form.addEventListener('submit', (e) => {
@@ -517,17 +396,10 @@
             return;
         }
 
-        if (_companyBlocked) {
-            alert('この会社名はすでに登録されています。\n管理ID番号を入力してから送信してください。');
-            document.getElementById('company_name_input').focus();
-            return;
-        }
-
         const formData = new FormData(form);
         confirmTable.innerHTML = '';
         Object.entries(FIELD_LABELS).forEach(([name, label]) => {
             let value = formData.get(name) || '―';
-            if (name === 'category') value += ' プラン';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding:8px 10px; border-bottom:1px solid #eee; color:#666; white-space:nowrap; width:44%; vertical-align:top;">${label}</td>
@@ -571,34 +443,9 @@
         data.sheetName  = appConfig.sheetName1 || '';
         data.sheetName2 = appConfig.sheetName2 || '';
 
-        // 管理IDの情報が変更されているか確認
-        if (_originalKanriData) {
-            const changedFields = [];
-            const checkMap = {
-                company_name: '会社名',
-                address:      '住所',
-                phone:        '電話番号',
-                rep_name:     '役職・代表者名',
-                email:        'メールアドレス',
-                website_url:  'HP URL',
-            };
-            Object.entries(checkMap).forEach(([key, label]) => {
-                const orig = String(_originalKanriData[key] || '').trim();
-                const curr = String(data[key] || '').trim();
-                if (orig !== curr) changedFields.push(`${label}: 「${orig}」→「${curr}」`);
-            });
-            if (changedFields.length > 0) {
-                const msg = `以下の情報が変更されています。\n\n${changedFields.join('\n')}\n\n管理IDリストの情報を更新しますか？`;
-                if (confirm(msg)) {
-                    data.update_kanri = 'yes';
-                }
-            }
-        }
-
         google.script.run
             .withSuccessHandler((res) => {
                 confirmScreen.style.display = 'none';
-                const kanriIdResult = (res && res.kanri_id) ? res.kanri_id : data.kanri_id || '';
                 const thanks = document.createElement('div');
                 thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
                 thanks.innerHTML = `
@@ -606,7 +453,7 @@
                     <span style="display:inline-block; margin-top:14px; font-size:0.88em; color:#555; background:#f0eaf8; border:1px solid #c9b8e0; border-radius:6px; padding:8px 20px; letter-spacing:0.05em;">
                         受付番号：${receptNo}
                     </span>
-                    <em style="font-size:0.88em; color:#555; display:block; margin-top:14px; text-align:center;">確認メールをお送りしました。管理ID番号を大切に保管してください。</em>
+                    <em style="font-size:0.88em; color:#555; display:block; margin-top:14px; text-align:center;">確認メールをお送りしました。</em>
                 `;
                 confirmScreen.parentNode.insertBefore(thanks, confirmScreen.nextSibling);
             })

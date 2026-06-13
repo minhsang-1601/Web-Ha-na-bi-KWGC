@@ -12,13 +12,13 @@ function checkMailQuota() {
 // ─── 申込確認メール ────────────────────────────────────────────────────────────
 
 /** B〜E: 受付確認 + 請求書PDF 添付 */
-function sendConfirmationEmail(data, receptNo, invoicePdf, kanriId) {
+function sendConfirmationEmail(data, receptNo, invoicePdf) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('MAIL_SUBJECT') ||
     `【${getEventName()}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）`;
   let body      = props.getProperty('MAIL_BODY') || _defaultConfirmBody();
 
-  const vars = _buildVars(data, receptNo, kanriId);
+  const vars = _buildVars(data, receptNo);
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
@@ -32,13 +32,13 @@ function sendConfirmationEmail(data, receptNo, invoicePdf, kanriId) {
 }
 
 /** S/A: 受付確認のみ（請求書は手動送信） */
-function sendReceiptOnlyEmail(data, receptNo, kanriId) {
+function sendReceiptOnlyEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('RECEIPT_ONLY_SUBJECT') ||
     `【${getEventName()}】お申し込みを受け付けました（受付番号：{{receipt_no}}）`;
   let body      = props.getProperty('RECEIPT_ONLY_BODY') || _defaultReceiptOnlyBody();
 
-  const vars = _buildVars(data, receptNo, kanriId);
+  const vars = _buildVars(data, receptNo);
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
@@ -158,63 +158,15 @@ function generateOreijouPdf(data) {
   }
 }
 
-// ─── 管理ID新規発行通知メール ────────────────────────────────────────────────────
-
-/**
- * 新規ユーザーに管理ID番号を通知するメールを送信する
- * submitForm() から isNew === true の場合のみ呼び出す
- */
-function sendKanriIdIssuedEmail(data, kanriId) {
-  if (!data.email) return;
-  const eventName  = getEventName();
-  const officeEmail = getOfficeEmail();
-  const subject = `【${eventName}】管理ID番号のご登録完了のお知らせ`;
-  const body = [
-    `${data.company_name || ''}`,
-    `${data.rep_name || ''} 様`,
-    '',
-    `このたびは【${eventName}】にご登録いただき、誠にありがとうございます。`,
-    '以下の管理ID番号が発行されました。',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    `　管理ID番号：${kanriId}`,
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '',
-    '次回以降のお申し込みの際は、上記IDをご入力いただくと',
-    '登録情報が自動的に入力されます。',
-    '大切に保管してください。',
-    '',
-    `━━━━━━━━━━━━━━━━━━━━━━━━`,
-    `${eventName} 実行委員会 事務局`,
-    `E-mail：${officeEmail}`,
-    `受付時間：${getOfficeHours()}`,
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
-  ].join('\n');
-
-  try {
-    MailApp.sendEmail({
-      to:      data.email,
-      cc:      officeEmail,
-      subject,
-      body,
-      replyTo: officeEmail,
-    });
-  } catch (e) {
-    console.warn('管理ID発行通知メール送信失敗:', e.message);
-  }
-}
-
 // ─── 内部ユーティリティ ────────────────────────────────────────────────────────
 
-function _buildVars(data, receptNo, kanriId) {
+function _buildVars(data, receptNo) {
   return {
     company_name: data.company_name || '',
     rep_name:     data.rep_name     || '',
     staff_name:   data.staff_name   || '',
     category:     data.category     || '',
     receipt_no:   receptNo          || '',
-    kanri_id:     kanriId || data.kanri_id || '',
     date:         nowStr(),
     event_name:   getEventName(),
     payment_due:  getPaymentDue(),
@@ -242,13 +194,10 @@ function _defaultConfirmBody() {
     '■ お申し込み内容',
     '　会社名・団体名　：{{company_name}}',
     '　ご担当者名　　　：{{staff_name}}',
-    '　区分　　　　　　：{{category}} プラン',
+    '　区分　　　　　　：{{category}}',
     '　お申し込み日時　：{{date}}',
     '　受付番号　　　　：{{receipt_no}}',
-    '　管理ID番号　　　：{{kanri_id}}',
     '─────────────────────────────',
-    '',
-    '※ 管理ID番号は次回以降のお申し込みでご利用いただけます。大切に保管してください。',
     '',
     '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
     'お振込期限（{{payment_due}}）までにお手続きくださいますようお願い申し上げます。',
@@ -274,13 +223,10 @@ function _defaultReceiptOnlyBody() {
     '■ お申し込み内容',
     '　会社名・団体名　：{{company_name}}',
     '　ご担当者名　　　：{{staff_name}}',
-    '　区分　　　　　　：{{category}} プラン',
+    '　区分　　　　　　：{{category}}',
     '　お申し込み日時　：{{date}}',
     '　受付番号　　　　：{{receipt_no}}',
-    '　管理ID番号　　　：{{kanri_id}}',
     '─────────────────────────────',
-    '',
-    '※ 管理ID番号は次回以降のお申し込みでご利用いただけます。大切に保管してください。',
     '',
     '請求書は改めてご送付いたします。',
     '',
