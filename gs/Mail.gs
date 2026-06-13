@@ -59,7 +59,16 @@ function generateInvoicePdf(data, receptNo) {
   const fmt        = n => n > 0 ? `¥${n.toLocaleString()}` : '―';
 
   let html = HtmlService.createHtmlOutputFromFile('invoice-template').getContent();
-  html = html.replace('src="hanko.png"', `src="https://drive.google.com/uc?id=${getHankoFileId()}"`);
+  // ── 印影画像をBase64埋め込みに変換（PDF生成時に外部URLは読み込めないため） ──
+  try {
+    const hankoBlob  = DriveApp.getFileById(getHankoFileId()).getBlob();
+    const hankoB64   = Utilities.base64Encode(hankoBlob.getBytes());
+    const hankoMime  = hankoBlob.getContentType() || 'image/png';
+    html = html.replace('src="hanko.png"', `src="data:${hankoMime};base64,${hankoB64}"`);
+  } catch (e) {
+    console.warn('印影画像の読み込み失敗:', e.message);
+    html = html.replace('src="hanko.png"', 'src=""');
+  }
 
   const replacements = {
     '{{company_name}}':  data.company_name || '',
@@ -131,7 +140,15 @@ function generateOreijouPdf(data) {
     const issueDate = `令和${reiwa}年${now.getMonth() + 1}月${now.getDate()}日`;
 
     let html = HtmlService.createHtmlOutputFromFile('oreijou-template').getContent();
-    html = html.replace('src="hanko.png"', `src="https://drive.google.com/uc?id=${getHankoFileId()}"`);
+    try {
+      const hankoBlob  = DriveApp.getFileById(getHankoFileId()).getBlob();
+      const hankoB64   = Utilities.base64Encode(hankoBlob.getBytes());
+      const hankoMime  = hankoBlob.getContentType() || 'image/png';
+      html = html.replace('src="hanko.png"', `src="data:${hankoMime};base64,${hankoB64}"`);
+    } catch (e) {
+      console.warn('印影画像の読み込み失敗:', e.message);
+      html = html.replace('src="hanko.png"', 'src=""');
+    }
 
     const replacements = {
       '{{company_name}}':  data.company_name || '',
