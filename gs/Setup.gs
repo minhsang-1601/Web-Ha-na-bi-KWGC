@@ -13,53 +13,63 @@ function setupInfoSheet() {
     sheet.clearContents();
   }
 
+  const O = '⭕️';
   const rows = [
-    ['キー', '値', '説明'],
-    ['EVENT_NAME',        '第5回川口花火大会',              'イベント名'],
-    ['EVENT_DATE',        '2026-09-20',                     '開催日'],
-    ['PAYMENT_DUE',       '9月18日（金）',                  '入金期限'],
-    ['OFFICE_EMAIL',      OFFICE_EMAIL_DEFAULT,              '事務局メールアドレス'],
-    ['HANKO_FILE_ID',     HANKO_FILE_ID_DEFAULT,             '印影PNG の Google Drive ファイルID'],
-    ['ROOT_FOLDER_ID',    '',                                'プロジェクト作成先のフォルダID（Drive）'],
-    ['START_DATE',        '2025-01-01T00:00:00',             'フォーム受付開始日時'],
-    ['END_DATE',          '2026-10-01T23:59:59',             'フォーム受付終了日時'],
-    ['PRICE_S',           2000000,                           'S協賛 金額（円）'],
-    ['PRICE_A',           1000000,                           'A協賛 金額（円）'],
-    ['PRICE_B',           500000,                            'B協賛 金額（円）'],
-    ['PRICE_C',           300000,                            'C協賛 金額（円）'],
-    ['PRICE_D',           200000,                            'D協賛 金額（円）'],
-    ['PRICE_E',           100000,                            'E協賛 金額（円）'],
-    ['DATA_SPREADSHEET_ID', '',                              'データシートID（initProject で自動設定）'],
+    ['キー', '値', '必須', '説明'],
+    ['EVENT_NAME',        '第5回川口花火大会',              O, 'イベント名'],
+    ['EVENT_DATE',        '2026-09-20',                     O, '開催日'],
+    ['PAYMENT_DUE',       '9月18日（金）',                  O, '入金期限'],
+    ['OFFICE_EMAIL',      OFFICE_EMAIL_DEFAULT,              O, '事務局メールアドレス'],
+    ['HANKO_FILE_ID',     HANKO_FILE_ID_DEFAULT,             O, '印影PNG の Google Drive ファイルID'],
+    ['ROOT_FOLDER_ID',    '',                                O, 'プロジェクト作成先のフォルダID（Drive）'],
+    ['START_DATE',        '2025-01-01T00:00:00',             O, 'フォーム受付開始日時'],
+    ['END_DATE',          '2026-10-01T23:59:59',             O, 'フォーム受付終了日時'],
+    ['PRICE_S',           2000000,                           O, 'S協賛 金額（円）'],
+    ['PRICE_A',           1000000,                           O, 'A協賛 金額（円）'],
+    ['PRICE_B',           500000,                            O, 'B協賛 金額（円）'],
+    ['PRICE_C',           300000,                            O, 'C協賛 金額（円）'],
+    ['PRICE_D',           200000,                            O, 'D協賛 金額（円）'],
+    ['PRICE_E',           100000,                            O, 'E協賛 金額（円）'],
+    ['DATA_SPREADSHEET_ID', '',                              O, 'データシートID（initProject で自動設定）'],
     // ─── 組織情報 ───────────────────────────────────────────────────────────────
-    ['ORG_NAME',         '川口花火大会実行委員会',              '発行者組織名（請求書・お礼状に使用）'],
-    ['ORG_REP',          '委員長　廣瀬 進治',                   '代表者名（請求書・お礼状に使用）'],
-    ['INVOICE_REG_NO',   'T9700150122003',                      'インボイス登録番号'],
-    ['BANK_NAME',        '埼玉りそな銀行　川口支店',            '振込先銀行名・支店名'],
-    ['BANK_NO',          '36216349',                            '口座番号（普通預金）'],
-    ['BANK_HOLDER',      '川口商工会議所',                      '口座名義（略称）'],
-    ['BANK_REP',         '川口花火大会実行委員会委員長　廣瀬 進治', '口座名義（正式）'],
-    ['ORG_LOCATION',     '（川口商工会議所内）',                '事務所所在表示'],
-    ['ORG_TEL',          '048-228-2220',                        '事務局電話番号'],
-    ['ORG_FAX',          '048-228-2221',                        '事務局FAX番号'],
-    ['OFFICE_HOURS',     '平日 10:00 〜 17:00',                 '受付時間（メール文末に表示）'],
-    ['RECEIPT_NO_PREFIX','KWGC',                                '受付番号プレフィックス'],
-    ['MIN_MAIL_QUOTA',   MIN_MAIL_QUOTA_DEFAULT,                'メール送信残数の最低ライン（これ未満はフォーム停止・最低5）'],
+    ['ORG_NAME',         '川口花火大会実行委員会',              O, '発行者組織名（請求書・お礼状に使用）'],
+    ['ORG_REP',          '委員長　廣瀬 進治',                   O, '代表者名（請求書・お礼状に使用）'],
+    ['INVOICE_REG_NO',   'T9700150122003',                      O, 'インボイス登録番号'],
+    ['BANK_NAME',        '埼玉りそな銀行　川口支店',            O, '振込先銀行名・支店名'],
+    ['BANK_NO',          '6216349',                            O, '口座番号（普通預金）'],
+    ['BANK_HOLDER',      '川口商工会議所',                      O, '口座名義（略称）'],
+    ['BANK_REP',         '川口花火大会実行委員会委員長　田中　？？', O, '口座名義（正式）'],
+    ['ORG_LOCATION',     '（川口商工会議所内）',                O, '事務所所在表示'],
+    ['ORG_TEL',          '048-228-2220',                        O, '事務局電話番号'],
+    ['ORG_FAX',          '048-228-2221',                        O, '事務局FAX番号'],
+    ['OFFICE_HOURS',     '平日 10:00 〜 17:00',                 O, '受付時間（メール文末に表示）'],
+    ['RECEIPT_NO_PREFIX','KWGC',                                O, '受付番号プレフィックス'],
+    ['MIN_MAIL_QUOTA',   MIN_MAIL_QUOTA_DEFAULT,                O, 'メール送信残数の最低ライン（これ未満はフォーム停止・最低5）'],
     // ─── 区分別申込み期間 ────────────────────────────────────────────────────────
-    ['KUBUN_SA_START',   '2026-06-01T00:00:00',                'S・A 区分 申込み受付開始日時'],
-    ['KUBUN_SA_END',     '2026-07-07T23:59:59',                'S・A 区分 申込み受付終了日時'],
-    ['KUBUN_BCDE_START', '2026-06-01T00:00:00',                'B〜E 区分 申込み受付開始日時'],
-    ['KUBUN_BCDE_END',   '2026-09-04T23:59:59',                'B〜E 区分 申込み受付終了日時'],
+    ['KUBUN_SA_START',   '2026-06-01T00:00:00',                O, 'S・A 区分 申込み受付開始日時'],
+    ['KUBUN_SA_END',     '2026-07-07T23:59:59',                O, 'S・A 区分 申込み受付終了日時'],
+    ['KUBUN_BCDE_START', '2026-06-01T00:00:00',                O, 'B〜E 区分 申込み受付開始日時'],
+    ['KUBUN_BCDE_END',   '2026-09-04T23:59:59',                O, 'B〜E 区分 申込み受付終了日時'],
   ];
 
-  sheet.getRange(1, 1, rows.length, 3).setValues(rows);
-  sheet.getRange(1, 1, 1, 3).setFontWeight('bold').setBackground('#d0e4f7');
+  sheet.getRange(1, 1, rows.length, 4).setValues(rows);
+  sheet.getRange(1, 1, 1, 4).setFontWeight('bold').setBackground('#d0e4f7');
   sheet.getRange(2, 1, rows.length - 1, 1).setBackground('#f8f8f8').setFontWeight('bold');
+  sheet.getRange(2, 3, rows.length - 1, 1).setHorizontalAlignment('center').setFontColor('#c0392b');
   sheet.setColumnWidth(1, 200);
   sheet.setColumnWidth(2, 260);
-  sheet.setColumnWidth(3, 300);
+  sheet.setColumnWidth(3, 60);
+  sheet.autoResizeColumn(4);
   sheet.setFrozenRows(1);
-  _ensureFilter(sheet, 1, 3);
-  _applyAlignment(sheet, 2, 3);
+  // フィルターを4列すべてに適用
+  const lastRow = sheet.getLastRow();
+  const filterRange = sheet.getRange(1, 1, lastRow, 4);
+  try {
+    const existing = sheet.getFilter();
+    if (existing) existing.remove();
+  } catch (_) {}
+  filterRange.createFilter();
+  _applyAlignment(sheet, 2, 4);
 
   _infoCache = null;
   SpreadsheetApp.getUi().alert('✅ Info シートを作成しました。\n各値を確認・編集してください。');
@@ -76,14 +86,14 @@ function setupAllMailTemplates() {
 
 function setupMailTemplate() {
   PropertiesService.getScriptProperties().setProperties({
-    MAIL_SUBJECT: '【{{event_name}}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）',
+    MAIL_SUBJECT: '【{{event_name}}】協賛お申込みを受け付けました。',
     MAIL_BODY:    _defaultConfirmBody(),
   });
 }
 
 function setupReceiptOnlyTemplate() {
   PropertiesService.getScriptProperties().setProperties({
-    RECEIPT_ONLY_SUBJECT: '【{{event_name}}】お申し込みを受け付けました（受付番号：{{receipt_no}}）',
+    RECEIPT_ONLY_SUBJECT: '【{{event_name}}】協賛お申込みを受け付けました。',
     RECEIPT_ONLY_BODY:    _defaultReceiptOnlyBody(),
   });
 }

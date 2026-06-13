@@ -15,7 +15,7 @@ function checkMailQuota() {
 function sendConfirmationEmail(data, receptNo, invoicePdf) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('MAIL_SUBJECT') ||
-    `【${getEventName()}】申込受理書兼請求書のご連絡（受付番号：{{receipt_no}}）`;
+    `【${getEventName()}】協賛お申込みを受け付けました。`;
   let body      = props.getProperty('MAIL_BODY') || _defaultConfirmBody();
 
   const vars = _buildVars(data, receptNo);
@@ -35,7 +35,7 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
 function sendReceiptOnlyEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('RECEIPT_ONLY_SUBJECT') ||
-    `【${getEventName()}】お申し込みを受け付けました（受付番号：{{receipt_no}}）`;
+    `【${getEventName()}】協賛お申込みを受け付けました。`;
   let body      = props.getProperty('RECEIPT_ONLY_BODY') || _defaultReceiptOnlyBody();
 
   const vars = _buildVars(data, receptNo);
@@ -185,57 +185,51 @@ function _replaceVars(str, vars) {
 function _defaultConfirmBody() {
   return [
     '{{company_name}}',
-    '{{rep_name}} 様',
+    '{{staff_name}} 様',
     '',
-    '{{event_name}} 実行委員会 事務局でございます。',
-    'このたびはご協賛のお申し込みをいただき、誠にありがとうございます。',
-    '',
-    '─────────────────────────────',
-    '■ お申し込み内容',
-    '　会社名・団体名　：{{company_name}}',
-    '　ご担当者名　　　：{{staff_name}}',
-    '　区分　　　　　　：{{category}}',
-    '　お申し込み日時　：{{date}}',
-    '　受付番号　　　　：{{receipt_no}}',
-    '─────────────────────────────',
-    '',
+    '川口花火大会実行委員会でございます。',
+    'このたびは、協賛にお申し込みいただき、誠にありがとうございます。',
     '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
-    'お振込期限（{{payment_due}}）までにお手続きくださいますようお願い申し上げます。',
+    'お振込み期限（{{payment_due}}）までに',
+    'お手続きくださいますようお願い申しあげます。',
     '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '{{event_name}} 実行委員会 事務局',
-    'E-mail：{{office_email}}',
-    '受付時間：{{office_hours}}',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
+    '■お申込み内容',
+    '　・会社名・団体名　：{{company_name}}',
+    '　・ご担当者名　　　：{{staff_name}}',
+    '　・区分　　　　　　：{{category}}',
+    '　・お申込み日時　　：{{date}}',
+    '　・受付番号　　　　：{{receipt_no}}',
+    '',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
+    'メールアドレス：{{office_email}}',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
   ].join('\n');
 }
 
 function _defaultReceiptOnlyBody() {
   return [
     '{{company_name}}',
-    '{{rep_name}} 様',
+    '{{staff_name}} 様',
     '',
-    '{{event_name}} 実行委員会 事務局でございます。',
-    'このたびはご協賛のお申し込みをいただき、誠にありがとうございます。',
+    '川口花火大会実行委員会でございます。',
+    'このたびは、協賛にお申し込みいただき、誠にありがとうございます。',
     '',
-    '─────────────────────────────',
-    '■ お申し込み内容',
-    '　会社名・団体名　：{{company_name}}',
-    '　ご担当者名　　　：{{staff_name}}',
-    '　区分　　　　　　：{{category}}',
-    '　お申し込み日時　：{{date}}',
-    '　受付番号　　　　：{{receipt_no}}',
-    '─────────────────────────────',
+    'S・A協賛につきましては、募集枠を超えるお申し込みがあった場合、締切後に抽選を実施いたします。',
+    '協賛の可否につきましては、締切後に改めてメールにてご連絡いたします。',
+    '限られた募集枠となり恐縮ですが、何卒ご理解・ご協力のほどよろしくお願い申しあげます。',
+    'ご不明な点がございましたら、お気軽にお問い合わせください。',
+    'よろしくお願い申しあげます。',
     '',
-    '請求書は改めてご送付いたします。',
+    '■ お申込み内容',
+    '　・会社名・団体名　：{{company_name}}',
+    '　・ご担当者名　　　：{{staff_name}}',
+    '　・区分　　　　　　：{{category}}',
+    '　・お申込み日時　　：{{date}}',
+    '　・受付番号　　　　：{{receipt_no}}',
     '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '{{event_name}} 実行委員会 事務局',
-    'E-mail：{{office_email}}',
-    '受付時間：{{office_hours}}',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
+    'メールアドレス：{{office_email}}',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
   ].join('\n');
 }
 

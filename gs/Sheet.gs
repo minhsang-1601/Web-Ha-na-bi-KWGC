@@ -82,10 +82,10 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
   // B: 受付番号（直接入力）
   sheet.getRange(newRow, COL_RECEPT_NO).setValue(receptNo);
 
-  // XLOOKUP: 受付番号（$B）をキーに協賛申込み一覧から各列を参照
+  // XLOOKUP: 受付番号（$A）をキーに協賛申込み一覧から各列を参照
   Object.entries(TESAGYOU_LOOKUP_COLS).forEach(([col, srcCol]) => {
     const formula =
-      `=IFERROR(XLOOKUP($B${newRow},'${DEFAULT_SHEET_NAME}'!$B:$B,'${DEFAULT_SHEET_NAME}'!$${srcCol}:$${srcCol}),"見つかりません")`;
+      `=IFERROR(XLOOKUP($A${newRow},'${DEFAULT_SHEET_NAME}'!$A:$A,'${DEFAULT_SHEET_NAME}'!$${srcCol}:$${srcCol}),"見つかりません")`;
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 

@@ -48,10 +48,88 @@ function doGet() {
     `).setTitle('エラー').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
+  // ─── 必須値の未入力チェック ───────────────────────────────────────────────────
+  const missingKeys = _checkRequiredInfoKeys();
+  if (missingKeys.length > 0) {
+    _sendInfoIncompleteAlert(missingKeys);
+    return HtmlService.createHtmlOutput(`
+      <html><body style="font-family:sans-serif;text-align:center;padding:60px;color:#c0392b;">
+        <h2>⚠️ システムエラー</h2>
+        <p>設定が完了していないため、フォームを表示できません。<br>管理者にお問い合わせください。</p>
+      </body></html>
+    `).setTitle('エラー').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
+
   return HtmlService.createTemplateFromFile('Index')
     .evaluate()
     .setTitle(`【${getEventName()}】協賛申込み`)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+/** 必須 Info キーが空でないか確認し、未入力のキー一覧を返す */
+function _checkRequiredInfoKeys() {
+  const REQUIRED = [
+    'EVENT_NAME',
+    'OFFICE_EMAIL',
+    'START_DATE',
+    'END_DATE',
+    'PAYMENT_DUE',
+    'ORG_NAME',
+    'ORG_REP',
+    'BANK_NAME',
+    'BANK_NO',
+    'BANK_HOLDER',
+  ];
+  const missing = [];
+  REQUIRED.forEach(key => {
+    const v = String(getConfigVal(key, '') || '').trim();
+    if (!v) missing.push(key);
+  });
+  return missing;
+}
+
+/** Info 未入力をオーナーへ通知（30分に1通） */
+function _sendInfoIncompleteAlert(missingKeys) {
+  const lock = LockService.getScriptLock();
+  try {
+    if (!lock.tryLock(5000)) return;
+    const props  = PropertiesService.getScriptProperties();
+    const propKey = 'INFO_INCOMPLETE_ALERT';
+    const last   = Number(props.getProperty(propKey) || 0);
+    const nowMs  = Date.now();
+    if (nowMs - last < 1800000) return;
+    props.setProperty(propKey, String(nowMs));
+
+    let owner = '';
+    try { owner = SpreadsheetApp.getActiveSpreadsheet().getOwner().getEmail(); } catch (_) {}
+    if (!owner) owner = Session.getEffectiveUser().getEmail();
+
+    let webUrl = '';
+    try { webUrl = ScriptApp.getService().getUrl(); } catch (_) {}
+    let mainUrl = '';
+    try { mainUrl = SpreadsheetApp.getActiveSpreadsheet().getUrl(); } catch (_) {}
+
+    MailApp.sendEmail({
+      to:      owner,
+      subject: '【⚠️ 設定未完了】Info シートの必須項目が未入力です（フォームアクセス時）',
+      body: [
+        '協賛申込みフォームにアクセスがありましたが、Info シートの必須項目が未入力のためエラーページを表示しました。',
+        '',
+        '■ 未入力の項目:',
+        ...missingKeys.map(k => `　・${k}`),
+        '',
+        `アクセス日時：${nowStr()}`,
+        webUrl  ? `フォームURL：${webUrl}`  : '',
+        mainUrl ? `スプレッドシート：${mainUrl}` : '',
+        '',
+        '【対応】Info シートを開き、上記の項目に値を入力してください。',
+      ].filter(Boolean).join('\n'),
+    });
+  } catch (e) {
+    console.error('Info未入力通知メール送信失敗:', e.message);
+  } finally {
+    try { lock.releaseLock(); } catch (_) {}
+  }
 }
 
 function include(filename) {
