@@ -79,25 +79,9 @@ let _infoCache = null;
 function getInfoConfig() {
   if (_infoCache) return _infoCache;
   try {
-    // まずアクティブなスプレッドシートで Info シートを探す
-    let sheet = null;
-    try {
-      const ss = SpreadsheetApp.getActiveSpreadsheet();
-      sheet = ss.getSheetByName(INFO_SHEET_NAME);
-    } catch (_) {}
-
-    // 見つからない場合（DATA スプレッドシートのコンテキスト等）は
-    // Script Properties に保存された MAIN_SS_ID から探す
-    if (!sheet) {
-      const mainSsId = PropertiesService.getScriptProperties().getProperty('MAIN_SS_ID');
-      if (mainSsId) {
-        try {
-          sheet = SpreadsheetApp.openById(mainSsId).getSheetByName(INFO_SHEET_NAME);
-        } catch (_) {}
-      }
-    }
-
-    const cfg = {};
+    const ss    = SpreadsheetApp.getActiveSpreadsheet();
+    const sheet = ss.getSheetByName(INFO_SHEET_NAME);
+    const cfg   = {};
     if (sheet && sheet.getLastRow() > 0) {
       sheet.getDataRange().getValues().forEach(row => {
         if (row[0]) cfg[String(row[0]).trim()] = row[1];
