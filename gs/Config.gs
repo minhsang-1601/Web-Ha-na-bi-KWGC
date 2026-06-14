@@ -23,8 +23,8 @@ const DEFAULT_PRICES = { S: 2000000, A: 1000000, B: 500000, C: 300000, D: 200000
 const AUTO_SEND_KUBUN = ['B', 'C', 'D', 'E'];
 
 // フォールバック定数（Info シートで上書き可）
-const HANKO_FILE_ID_DEFAULT = '1Q5kBbhKKuIRSaNiSXfBbvTnO0W1niFyZ';
-const OFFICE_EMAIL_DEFAULT  = '';
+const HANKO_FILE_ID_DEFAULT = 'Default-Default-Default';
+const OFFICE_EMAIL_DEFAULT  = 'Default-Default-Default';
 
 // メール送信残数の最低ライン（Info の MIN_MAIL_QUOTA で上書き可・既定5）
 const MIN_MAIL_QUOTA_DEFAULT = 5;
@@ -100,27 +100,27 @@ function getConfigVal(key, fallback) {
   return (v !== undefined && v !== '') ? v : fallback;
 }
 
-function getOfficeEmail()      { return getConfigVal('OFFICE_EMAIL',       OFFICE_EMAIL_DEFAULT);              }
-function getHankoFileId()      { return getConfigVal('HANKO_FILE_ID',      HANKO_FILE_ID_DEFAULT);             }
-function getEventName()        { return getConfigVal('EVENT_NAME',         '第5回川口花火大会');                }
-function getPaymentDue()       { return getConfigVal('PAYMENT_DUE',        '9月12日（金）');                   }
-function getRootFolderId()     { return getConfigVal('ROOT_FOLDER_ID',     '');                                }
-function getOrgName()          { return getConfigVal('ORG_NAME',           '川口花火大会実行委員会');           }
-function getOrgRep()           { return getConfigVal('ORG_REP',            '委員長　廣瀬 進治');                }
-function getInvoiceRegNo()     { return getConfigVal('INVOICE_REG_NO',     'T9700150122003');                  }
-function getBankName()         { return getConfigVal('BANK_NAME',          '埼玉りそな銀行　川口支店');         }
-function getBankNo()           { return getConfigVal('BANK_NO',            '36216349');                        }
-function getBankHolder()       { return getConfigVal('BANK_HOLDER',        '川口商工会議所');                   }
-function getBankRep()          { return getConfigVal('BANK_REP',           '川口花火大会実行委員会委員長　廣瀬 進治'); }
-function getOrgLocation()      { return getConfigVal('ORG_LOCATION',       '（川口商工会議所内）');             }
-function getOrgTel()           { return getConfigVal('ORG_TEL',            '048-228-2220');                    }
-function getOrgFax()           { return getConfigVal('ORG_FAX',            '048-228-2221');                    }
-function getOfficeHours()      { return getConfigVal('OFFICE_HOURS',       '平日 10:00 〜 17:00');              }
-function getReceiptNoPrefix()  { return getConfigVal('RECEIPT_NO_PREFIX',  'KWGC');                            }
-function getKubunSaStart()     { return getConfigVal('KUBUN_SA_START',     '2026-06-01T00:00:00');              }
-function getKubunSaEnd()       { return getConfigVal('KUBUN_SA_END',       '2026-07-07T23:59:59');              }
-function getKubunBcdeStart()   { return getConfigVal('KUBUN_BCDE_START',   '2026-06-01T00:00:00');              }
-function getKubunBcdeEnd()     { return getConfigVal('KUBUN_BCDE_END',     '2026-09-04T23:59:59');              }
+function getOfficeEmail()      { return getConfigVal('OFFICE_EMAIL',       'Default-Default-Default');         }
+function getHankoFileId()      { return getConfigVal('HANKO_FILE_ID',      'Default-Default-Default');         }
+function getEventName()        { return getConfigVal('EVENT_NAME',         'Default-Default-Default');         }
+function getPaymentDue()       { return getConfigVal('PAYMENT_DUE',        '9999年99月99日（金）');            }
+function getRootFolderId()     { return getConfigVal('ROOT_FOLDER_ID',     'Default-Default-Default');         }
+function getOrgName()          { return getConfigVal('ORG_NAME',           'Default-Default-Default');         }
+function getOrgRep()           { return getConfigVal('ORG_REP',            'Default-Default-Default');         }
+function getInvoiceRegNo()     { return getConfigVal('INVOICE_REG_NO',     'Default-Default-Default');         }
+function getBankName()         { return getConfigVal('BANK_NAME',          'Default-Default-Default');         }
+function getBankNo()           { return getConfigVal('BANK_NO',            '9999999999999999');                }
+function getBankHolder()       { return getConfigVal('BANK_HOLDER',        'Default-Default-Default');         }
+function getBankRep()          { return getConfigVal('BANK_REP',           'Default-Default-Default');         }
+function getOrgLocation()      { return getConfigVal('ORG_LOCATION',       'Default-Default-Default');         }
+function getOrgTel()           { return getConfigVal('ORG_TEL',            'Default-Default-Default');         }
+function getOrgFax()           { return getConfigVal('ORG_FAX',            'Default-Default-Default');         }
+function getOfficeHours()      { return getConfigVal('OFFICE_HOURS',       'Default-Default-Default');         }
+function getReceiptNoPrefix()  { return getConfigVal('RECEIPT_NO_PREFIX',  'Default-Default-Default');         }
+function getKubunSaStart()     { return getConfigVal('KUBUN_SA_START',     '9999-99-99T99:99:99');            }
+function getKubunSaEnd()       { return getConfigVal('KUBUN_SA_END',       '9999-99-99T99:99:99');            }
+function getKubunBcdeStart()   { return getConfigVal('KUBUN_BCDE_START',   '9999-99-99T99:99:99');            }
+function getKubunBcdeEnd()     { return getConfigVal('KUBUN_BCDE_END',     '9999-99-99T99:99:99');            }
 
 /** メール送信残数の最低ライン（Info の MIN_MAIL_QUOTA。5未満は5に切り上げ） */
 function getMinMailQuota() {
