@@ -320,6 +320,12 @@ function onOpenEventSheet() {
 // ─── ダイアログからのコールバック ─────────────────────────────────────────────
 
 function sendInvoiceConfirmed(row, receptNo) {
+  console.log('DEBUG sendInvoiceConfirmed row:', row, 'receptNo:', receptNo);
+  console.log('DEBUG sendInvoiceConfirmed EVENT_NAME:', getEventName());
+  console.log('DEBUG sendInvoiceConfirmed ORG_NAME:', getOrgName());
+  console.log('DEBUG sendInvoiceConfirmed BANK_NAME:', getBankName());
+  console.log('DEBUG sendInvoiceConfirmed PAYMENT_DUE:', getPaymentDue());
+
   const dataSs     = getDataSpreadsheet();
   const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
   const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);

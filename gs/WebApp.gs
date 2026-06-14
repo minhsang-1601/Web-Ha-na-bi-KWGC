@@ -301,6 +301,14 @@ function submitForm(data) {
 
 /** カスタムメニュー登録 */
 function onOpen() {
+  // Info シートの場所（Main SS）を Script Properties に保存
+  // → DATA スプレッドシートのコンテキストからでも Info を参照できるようにする
+  try {
+    PropertiesService.getScriptProperties().setProperty(
+      'MAIN_SS_ID', SpreadsheetApp.getActiveSpreadsheet().getId()
+    );
+  } catch (_) {}
+
   SpreadsheetApp.getUi()
     .createMenu('📋 協賛管理')
     .addSubMenu(SpreadsheetApp.getUi().createMenu('⚙️ 初期設定')
