@@ -327,7 +327,17 @@ function sendInvoiceConfirmed(row, receptNo) {
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 
   const pdf = generateInvoicePdf(data, receptNo);
-  sendInvoiceEmail(data, receptNo, pdf);
+
+  // 区分を取得して、S/A と B~E で異なるテンプレートで送信
+  const kubun = String(tetsuSheet.getRange(row, 2).getValue()).trim().toUpperCase();
+  if (['S', 'A'].includes(kubun)) {
+    // S/A: 受付確認メール + PDF
+    sendReceiptOnlyEmail(data, receptNo, pdf);
+  } else {
+    // B~E: 確認メール + PDF
+    sendConfirmationEmail(data, receptNo, pdf);
+  }
+
   tetsuSheet.getRange(row, COL_INV_DATE).setValue(nowStr());
 }
 

@@ -31,8 +31,8 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
   MailApp.sendEmail(mailOptions);
 }
 
-/** S/A: 受付確認のみ（請求書は手動送信） */
-function sendReceiptOnlyEmail(data, receptNo) {
+/** S/A: 受付確認のみ（請求書は手動送信、またはPDF添付可能） */
+function sendReceiptOnlyEmail(data, receptNo, invoicePdf) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('RECEIPT_ONLY_SUBJECT') ||
     `【${getEventName()}】協賛お申込みを受け付けました。`;
@@ -42,7 +42,13 @@ function sendReceiptOnlyEmail(data, receptNo) {
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  MailApp.sendEmail({ to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() });
+  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
+  if (invoicePdf) {
+    mailOptions.attachments = [
+      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
+    ];
+  }
+  MailApp.sendEmail(mailOptions);
 }
 
 // ─── 請求書PDF生成 ─────────────────────────────────────────────────────────────
