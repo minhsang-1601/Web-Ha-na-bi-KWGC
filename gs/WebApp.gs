@@ -293,7 +293,7 @@ function submitForm(data) {
     } else {
       sendReceiptOnlyEmail(data, receptNo);
     }
-    _notifyOffice(data, receptNo, autoSend);
+    // _notifyOffice(data, receptNo, autoSend);  // 事務局通知メールを無効化
   }
 
   return { result: 'success', receipt_no: receptNo };
