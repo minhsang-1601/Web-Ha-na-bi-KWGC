@@ -451,7 +451,9 @@ function sendInvoiceEmail(data, receptNo, pdf) {
     body     = body.replace(re, val);
   });
 
-  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
+  const officeEmail = getOfficeEmail();
+  const mailOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (pdf) {
     mailOptions.attachments = [
       pdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)

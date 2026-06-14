@@ -22,7 +22,9 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
+  const officeEmail = getOfficeEmail();
+  const mailOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
       invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
@@ -42,7 +44,9 @@ function sendReceiptOnlyEmail(data, receptNo, invoicePdf) {
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
+  const officeEmail = getOfficeEmail();
+  const mailOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
       invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
@@ -116,7 +120,10 @@ function sendAnnaibunEmail(data, receptNo) {
   subject = _replaceVars(subject, vars);
   body    = _replaceVars(body,    vars);
 
-  MailApp.sendEmail({ to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() });
+  const officeEmail2 = getOfficeEmail();
+  const annaiOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail2)) { annaiOptions.cc = officeEmail2; annaiOptions.replyTo = officeEmail2; }
+  MailApp.sendEmail(annaiOptions);
 }
 
 // ─── お礼状メール ──────────────────────────────────────────────────────────────
@@ -132,7 +139,9 @@ function sendOreijouEmail(data, receptNo) {
   body    = _replaceVars(body,    vars);
 
   const pdf = generateOreijouPdf(data);
-  const mailOptions = { to: data.email, cc: getOfficeEmail(), subject, body, replyTo: getOfficeEmail() };
+  const officeEmail3 = getOfficeEmail();
+  const mailOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail3)) { mailOptions.cc = officeEmail3; mailOptions.replyTo = officeEmail3; }
   if (pdf) mailOptions.attachments = [pdf.setName(`お礼状_${data.company_name || ''}.pdf`)];
   MailApp.sendEmail(mailOptions);
 }
@@ -182,6 +191,12 @@ function generateOreijouPdf(data) {
 }
 
 // ─── 内部ユーティリティ ────────────────────────────────────────────────────────
+
+/** メールアドレスとして有効な文字列かチェック（プレースホルダーは無効） */
+function _validEmail(email) {
+  const s = String(email || '').trim();
+  return s.includes('@') && !s.includes('Default');
+}
 
 function _buildVars(data, receptNo) {
   return {
