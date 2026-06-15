@@ -425,10 +425,13 @@
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        savedFormData = new FormData(form);
+        const formDataObj = new FormData(form);
+        savedFormData = {};
+        formDataObj.forEach((value, key) => { savedFormData[key] = value; });
+
         confirmTable.innerHTML = '';
         Object.entries(FIELD_LABELS).forEach(([name, label]) => {
-            let value = savedFormData.get(name) || '―';
+            let value = savedFormData[name] || '―';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding:8px 10px; border-bottom:1px solid #eee; color:#666; white-space:nowrap; width:44%; vertical-align:top;">${label}</td>
@@ -455,6 +458,14 @@
         submitBtn.textContent = '送信中...';
         backBtn.disabled      = true;
 
+        if (!savedFormData) {
+            alert('フォームデータが保存されていません。修正から再度送信してください。');
+            submitBtn.disabled = false;
+            submitBtn.textContent = '送信する';
+            backBtn.disabled = false;
+            return;
+        }
+
         const now = new Date();
         const pad = (n, len = 2) => String(n).padStart(len, '0');
         const receptNo = (appConfig.receiptNoPrefix || 'KWGC')
@@ -465,8 +476,7 @@
             + pad(now.getSeconds())
             + pad(now.getMilliseconds(), 3);
 
-        const data = {};
-        savedFormData.forEach((value, key) => { data[key] = value; });
+        const data = Object.assign({}, savedFormData);
         data.receipt_no = receptNo;
         data.sheetName  = appConfig.sheetName1 || '';
         data.sheetName2 = appConfig.sheetName2 || '';
