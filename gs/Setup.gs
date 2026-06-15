@@ -112,42 +112,42 @@ function setupAllMailTemplates() {
 function setupMailTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     MAIL_SUBJECT: '【{{event_name}}】協賛お申込みを受け付けました。',
-    MAIL_BODY:    _defaultConfirmBody(),
+    MAIL_BODY:    defaultConfirmBody(),
   });
 }
 
 function setupReceiptOnlyTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     RECEIPT_ONLY_SUBJECT: '【{{event_name}}】協賛お申込みを受け付けました。',
-    RECEIPT_ONLY_BODY:    _defaultReceiptOnlyBody(),
+    RECEIPT_ONLY_BODY:    defaultReceiptOnlyBody(),
   });
 }
 
 function setupSaInvoiceTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     SA_INVOICE_SUBJECT: '【{{event_name}}】協賛金のご請求書送付のご案内',
-    SA_INVOICE_BODY:    _defaultSaInvoiceBody(),
+    SA_INVOICE_BODY:    defaultSaInvoiceBody(),
   });
 }
 
 function setupNyukinTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     NYUKIN_SUBJECT: '【{{event_name}}】座席割当のご案内（受付番号：{{receipt_no}}）',
-    NYUKIN_BODY:    _defaultNyukinBody(),
+    NYUKIN_BODY:    defaultNyukinBody(),
   });
 }
 
 function setupOreijouTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     OREIJOU_SUBJECT: '【{{event_name}}】ご協賛へのお礼（受付番号：{{receipt_no}}）',
-    OREIJOU_BODY:    _defaultOreijouBody(),
+    OREIJOU_BODY:    defaultOreijouBody(),
   });
 }
 
 function setupAnnaiTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     ANNAI_SUBJECT: '【{{event_name}}】ご案内（受付番号：{{receipt_no}}）',
-    ANNAI_BODY:    _defaultAnnaiBody(),
+    ANNAI_BODY:    defaultAnnaiBody(),
   });
 }
 

@@ -16,7 +16,7 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('MAIL_SUBJECT') ||
     `【${getEventName()}】協賛お申込みを受け付けました。`;
-  let body      = props.getProperty('MAIL_BODY') || _defaultConfirmBody();
+  let body      = props.getProperty('MAIL_BODY') || defaultConfirmBody();
 
   const vars = _buildVars(data, receptNo);
   subject = _replaceVars(subject, vars);
@@ -38,7 +38,7 @@ function sendReceiptOnlyEmail(data, receptNo, invoicePdf) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('RECEIPT_ONLY_SUBJECT') ||
     `【${getEventName()}】協賛お申込みを受け付けました。`;
-  let body      = props.getProperty('RECEIPT_ONLY_BODY') || _defaultReceiptOnlyBody();
+  let body      = props.getProperty('RECEIPT_ONLY_BODY') || defaultReceiptOnlyBody();
 
   const vars = _buildVars(data, receptNo);
   subject = _replaceVars(subject, vars);
@@ -115,7 +115,7 @@ function sendNyukinEmail(data, receptNo, seatNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('NYUKIN_SUBJECT') ||
     `【${getEventName()}】座席割当のご案内（受付番号：{{receipt_no}}）`;
-  let body      = props.getProperty('NYUKIN_BODY') || _defaultNyukinBody();
+  let body      = props.getProperty('NYUKIN_BODY') || defaultNyukinBody();
 
   const vars = _buildVars(data, receptNo);
   vars.seat_no = seatNo || '';
@@ -128,7 +128,7 @@ function sendNyukinEmail(data, receptNo, seatNo) {
   MailApp.sendEmail(mailOptions);
 }
 
-function _defaultNyukinBody() {
+function defaultNyukinBody() {
   return [
     '{{company_name}}',
     '{{staff_name}} 様',
@@ -159,7 +159,7 @@ function sendSaInvoiceEmail(data, receptNo, invoicePdf) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('SA_INVOICE_SUBJECT') ||
     `【{{event_name}}】協賛金のご請求書送付のご案内`;
-  let body      = props.getProperty('SA_INVOICE_BODY') || _defaultSaInvoiceBody();
+  let body      = props.getProperty('SA_INVOICE_BODY') || defaultSaInvoiceBody();
 
   const vars = _buildSaInvoiceVars(data, receptNo);
   subject = _replaceVars(subject, vars);
@@ -191,7 +191,7 @@ function _buildSaInvoiceVars(data, receptNo) {
   };
 }
 
-function _defaultSaInvoiceBody() {
+function defaultSaInvoiceBody() {
   return [
     '{{company_name}}',
     '{{staff_name}} 様',
@@ -226,7 +226,7 @@ function sendAnnaibunEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('ANNAI_SUBJECT') ||
     `【${getEventName()}】ご案内（受付番号：{{receipt_no}}）`;
-  let body      = props.getProperty('ANNAI_BODY') || _defaultAnnaiBody();
+  let body      = props.getProperty('ANNAI_BODY') || defaultAnnaiBody();
 
   const vars = _buildVars(data, receptNo);
   subject = _replaceVars(subject, vars);
@@ -244,7 +244,7 @@ function sendOreijouEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('OREIJOU_SUBJECT') ||
     `【${getEventName()}】ご協賛へのお礼（受付番号：{{receipt_no}}）`;
-  let body      = props.getProperty('OREIJOU_BODY') || _defaultOreijouBody();
+  let body      = props.getProperty('OREIJOU_BODY') || defaultOreijouBody();
 
   const vars = _buildVars(data, receptNo);
   subject = _replaceVars(subject, vars);
@@ -332,7 +332,7 @@ function _replaceVars(str, vars) {
   return str;
 }
 
-function _defaultConfirmBody() {
+function defaultConfirmBody() {
   return [
     '{{company_name}}',
     '{{staff_name}} 様',
@@ -356,7 +356,7 @@ function _defaultConfirmBody() {
   ].join('\n');
 }
 
-function _defaultReceiptOnlyBody() {
+function defaultReceiptOnlyBody() {
   return [
     '{{company_name}}',
     '{{staff_name}} 様',
@@ -383,7 +383,7 @@ function _defaultReceiptOnlyBody() {
   ].join('\n');
 }
 
-function _defaultAnnaiBody() {
+function defaultAnnaiBody() {
   return [
     '{{company_name}}',
     '{{rep_name}} 様',
@@ -400,7 +400,7 @@ function _defaultAnnaiBody() {
   ].join('\n');
 }
 
-function _defaultOreijouBody() {
+function defaultOreijouBody() {
   return [
     '{{company_name}}',
     '{{rep_name}} 様',
