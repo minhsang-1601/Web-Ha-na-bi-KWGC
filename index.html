@@ -428,6 +428,7 @@
         const formDataObj = new FormData(form);
         savedFormData = {};
         formDataObj.forEach((value, key) => { savedFormData[key] = value; });
+        console.log('Form submitted, savedFormData:', savedFormData);
 
         confirmTable.innerHTML = '';
         Object.entries(FIELD_LABELS).forEach(([name, label]) => {
@@ -480,6 +481,9 @@
         data.receipt_no = receptNo;
         data.sheetName  = appConfig.sheetName1 || '';
         data.sheetName2 = appConfig.sheetName2 || '';
+
+        console.log('Client: about to call submitForm with data:', data);
+        console.log('Client: savedFormData was:', savedFormData);
 
         google.script.run
             .withSuccessHandler((res) => {
