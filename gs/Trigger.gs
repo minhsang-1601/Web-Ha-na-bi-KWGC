@@ -165,7 +165,7 @@ function handleNyukin(e, sheet, row) {
   if (_blockSendIfLowQuota(e.range)) return;
 
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
-  const kubun     = sheet.getRange(row, 3).getValue(); // C列: 区分
+  const kubun     = sheet.getRange(row, 2).getValue(); // B列: 区分
   const seatNo    = generateSeatNo(kubun, sheet);      // 区分ごとの連番
   const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
   const data      = findRowByReceptNo(mainSheet, receptNo);
