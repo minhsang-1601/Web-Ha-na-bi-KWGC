@@ -485,16 +485,17 @@
         ];
         const data = {};
         fieldsToSend.forEach(field => {
-            if (savedFormData[field] !== undefined) {
-                data[field] = savedFormData[field];
+            const val = savedFormData[field];
+            if (val !== undefined && val !== null && val !== '') {
+                data[field] = String(val);
             }
         });
-        data.receipt_no = receptNo;
-        data.sheetName  = appConfig.sheetName1 || '';
-        data.sheetName2 = appConfig.sheetName2 || '';
+        data.receipt_no = String(receptNo);
+        data.sheetName  = String(appConfig.sheetName1 || '');
+        data.sheetName2 = String(appConfig.sheetName2 || '');
 
-        console.log('Client: about to call submitForm with data:', data);
-        console.log('Client: savedFormData was:', savedFormData);
+        console.log('Client: about to call submitForm with data:', JSON.stringify(data));
+        console.log('Client: data keys:', Object.keys(data));
 
         google.script.run
             .withSuccessHandler((res) => {
