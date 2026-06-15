@@ -477,7 +477,18 @@
             + pad(now.getSeconds())
             + pad(now.getMilliseconds(), 3);
 
-        const data = Object.assign({}, savedFormData);
+        // Lọc ra chỉ các field cần thiết (loại bỏ agreement checkbox)
+        const fieldsToSend = [
+            'category', 'company_name', 'company_furigana', 'rep_name', 'rep_furigana',
+            'staff_name', 'staff_furigana', 'zipcode', 'address', 'phone',
+            'email', 'website_url', 'alt_name'
+        ];
+        const data = {};
+        fieldsToSend.forEach(field => {
+            if (savedFormData[field] !== undefined) {
+                data[field] = savedFormData[field];
+            }
+        });
         data.receipt_no = receptNo;
         data.sheetName  = appConfig.sheetName1 || '';
         data.sheetName2 = appConfig.sheetName2 || '';
