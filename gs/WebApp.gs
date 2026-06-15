@@ -267,6 +267,7 @@ function getConfig() {
  * クライアント(google.script.run)から呼ばれるフォーム送信
  */
 function submitForm(data) {
+  console.log('DEBUG submitForm called with data:', JSON.stringify(data));
   // ─── ① メール送信残数チェック（最優先・データ記録より前） ────────────────────
   // 残数不足のままデータを記録すると「申込みは登録されたがメール未送信」になるため、
   // 記録前に拒否する。
@@ -324,19 +325,25 @@ function submitForm(data) {
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
   // ─── スプレッドシート登録 ─────────────────────────────────────────────────
+  console.log('DEBUG about to call appendRow');
   const receptNo = appendRow(data, DEFAULT_SHEET_NAME);
+  console.log('DEBUG appendRow returned receptNo:', receptNo);
   appendToTesagyouSheet(receptNo, DEFAULT_SHEET_NAME2, data);
+  console.log('DEBUG appendToTesagyouSheet completed');
 
   if (data.email) {
+    console.log('DEBUG about to send email, autoSend:', autoSend);
     if (autoSend) {
       const pdf = generateInvoicePdf(data, receptNo);
       sendConfirmationEmail(data, receptNo, pdf);
     } else {
       sendReceiptOnlyEmail(data, receptNo);
     }
+    console.log('DEBUG email sent');
     // _notifyOffice(data, receptNo, autoSend);  // 事務局通知メールを無効化
   }
 
+  console.log('DEBUG submitForm returning success');
   return { result: 'success', receipt_no: receptNo };
 }
 
