@@ -494,8 +494,9 @@
         data.sheetName  = String(appConfig.sheetName1 || '');
         data.sheetName2 = String(appConfig.sheetName2 || '');
 
-        console.log('Client: about to call submitForm with data:', JSON.stringify(data));
-        console.log('Client: data keys:', Object.keys(data));
+        // JSON文字列として送信（オブジェクト直接渡しの問題を回避）
+        const dataJson = JSON.stringify(data);
+        console.log('Client: about to send dataJson:', dataJson);
 
         google.script.run
             .withSuccessHandler((res) => {
@@ -517,7 +518,7 @@
                 backBtn.disabled      = false;
                 alert('送信中にエラーが発生しました。\n' + err.message);
             })
-            .submitForm(data);
+            .submitFormJson(dataJson);
     });
 </script>
 

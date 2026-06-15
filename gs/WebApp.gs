@@ -266,6 +266,18 @@ function getConfig() {
 /**
  * クライアント(google.script.run)から呼ばれるフォーム送信
  */
+/** JSON文字列形式でデータを受け取る（serialization問題の回避） */
+function submitFormJson(dataJson) {
+  console.log('DEBUG submitFormJson called with dataJson:', dataJson);
+  let data;
+  try {
+    data = JSON.parse(dataJson);
+  } catch (e) {
+    throw new Error('データの解析に失敗しました: ' + e.message);
+  }
+  return submitForm(data);
+}
+
 function submitForm(data) {
   console.log('DEBUG submitForm called with data:', JSON.stringify(data));
   // ─── ① メール送信残数チェック（最優先・データ記録より前） ────────────────────
