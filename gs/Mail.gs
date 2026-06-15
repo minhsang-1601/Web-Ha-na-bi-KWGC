@@ -116,7 +116,7 @@ function sendNyukinEmail(data, receptNo, seatNo) {
 
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('NYUKIN_SUBJECT') ||
-    `【${getEventName()}】座席割当のご案内（受付番号：{{receipt_no}}）`;
+    `【${getEventName()}】座席割当のご案内`;
   let body      = props.getProperty('NYUKIN_BODY') || defaultNyukinBody();
 
   const vars = _buildVars(data, receptNo);
@@ -230,7 +230,7 @@ function defaultSaInvoiceBody() {
 function sendAnnaibunEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('ANNAI_SUBJECT') ||
-    `【${getEventName()}】ご案内（受付番号：{{receipt_no}}）`;
+    `【${getEventName()}】ご案内`;
   let body      = props.getProperty('ANNAI_BODY') || defaultAnnaiBody();
 
   const vars = _buildVars(data, receptNo);
@@ -248,7 +248,7 @@ function sendAnnaibunEmail(data, receptNo) {
 function sendOreijouEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('OREIJOU_SUBJECT') ||
-    `【${getEventName()}】ご協賛へのお礼（受付番号：{{receipt_no}}）`;
+    `【${getEventName()}】ご協賛へのお礼`;
   let body      = props.getProperty('OREIJOU_BODY') || defaultOreijouBody();
 
   const vars = _buildVars(data, receptNo);

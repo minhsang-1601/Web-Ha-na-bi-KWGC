@@ -132,21 +132,21 @@ function setupSaInvoiceTemplate() {
 
 function setupNyukinTemplate() {
   PropertiesService.getScriptProperties().setProperties({
-    NYUKIN_SUBJECT: '【{{event_name}}】座席割当のご案内（受付番号：{{receipt_no}}）',
+    NYUKIN_SUBJECT: '【{{event_name}}】座席割当のご案内',
     NYUKIN_BODY:    defaultNyukinBody(),
   });
 }
 
 function setupOreijouTemplate() {
   PropertiesService.getScriptProperties().setProperties({
-    OREIJOU_SUBJECT: '【{{event_name}}】ご協賛へのお礼（受付番号：{{receipt_no}}）',
+    OREIJOU_SUBJECT: '【{{event_name}}】ご協賛へのお礼',
     OREIJOU_BODY:    defaultOreijouBody(),
   });
 }
 
 function setupAnnaiTemplate() {
   PropertiesService.getScriptProperties().setProperties({
-    ANNAI_SUBJECT: '【{{event_name}}】ご案内（受付番号：{{receipt_no}}）',
+    ANNAI_SUBJECT: '【{{event_name}}】ご案内',
     ANNAI_BODY:    defaultAnnaiBody(),
   });
 }
