@@ -79,6 +79,7 @@ function _checkRequiredInfoKeys() {
     'BANK_NAME',
     'BANK_NO',
     'BANK_HOLDER',
+    'BG_IMAGE_ID',
   ];
   const missing = [];
   REQUIRED.forEach(key => {
