@@ -103,6 +103,7 @@ function getConfigVal(key, fallback) {
 
 function getOfficeEmail()      { return getConfigVal('OFFICE_EMAIL',       'Default-Default-Default');         }
 function getHankoFileId()      { return getConfigVal('HANKO_FILE_ID',      'Default-Default-Default');         }
+function getBgImageId()        { return getConfigVal('BG_IMAGE_ID',        '');                                }
 function getEventName()        { return getConfigVal('EVENT_NAME',         'Default-Default-Default');         }
 function getPaymentDue()       { return getConfigVal('PAYMENT_DUE',        '9999年99月99日（金）');            }
 function getRootFolderId()     { return getConfigVal('ROOT_FOLDER_ID',     'Default-Default-Default');         }

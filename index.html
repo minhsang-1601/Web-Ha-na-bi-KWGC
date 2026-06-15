@@ -378,6 +378,19 @@
             .withSuccessHandler(onConfigLoaded)
             .withFailureHandler(onConfigError)
             .getConfig();
+
+        // 背景画像を非同期で読み込む
+        google.script.run
+            .withSuccessHandler((dataUrl) => {
+                if (dataUrl) {
+                    document.body.style.backgroundImage  = `url("${dataUrl}")`;
+                    document.body.style.backgroundSize   = 'cover';
+                    document.body.style.backgroundAttachment = 'fixed';
+                    document.body.style.backgroundPosition   = 'center';
+                }
+            })
+            .withFailureHandler(() => {})
+            .getBgImageDataUrl();
     });
 
     // ─── Form → 確認画面 ────────────────────────────────────────────────────────

@@ -21,6 +21,7 @@ function setupInfoSheet() {
     ['PAYMENT_DUE',       '9月18日（金）',                  O, '入金期限'],
     ['OFFICE_EMAIL',      OFFICE_EMAIL_DEFAULT,              O, '事務局メールアドレス'],
     ['HANKO_FILE_ID',     HANKO_FILE_ID_DEFAULT,             O, '印影PNG の Google Drive ファイルID'],
+    ['BG_IMAGE_ID',      '',                                '', 'フォーム背景画像の Google Drive ファイルID（任意）'],
     ['ROOT_FOLDER_ID',    '',                                O, 'プロジェクト作成先のフォルダID（Drive）'],
     ['START_DATE',        '2025-01-01T00:00:00',             O, 'フォーム受付開始日時'],
     ['END_DATE',          '2026-10-01T23:59:59',             O, 'フォーム受付終了日時'],

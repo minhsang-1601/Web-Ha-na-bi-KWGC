@@ -136,6 +136,21 @@ function include(filename) {
   return HtmlService.createHtmlOutputFromFile(filename).getContent();
 }
 
+/** フォーム背景画像を Base64 データURLで返す（クライアントから呼ぶ） */
+function getBgImageDataUrl() {
+  const id = getBgImageId();
+  if (!id) return '';
+  try {
+    const blob = DriveApp.getFileById(id).getBlob();
+    const b64  = Utilities.base64Encode(blob.getBytes());
+    const mime = blob.getContentType() || 'image/jpeg';
+    return `data:${mime};base64,${b64}`;
+  } catch (e) {
+    console.warn('背景画像の読み込み失敗:', e.message);
+    return '';
+  }
+}
+
 // ─── メール送信残数 関連ヘルパー ──────────────────────────────────────────────
 
 /** メール残数を安全に取得（取得失敗時は 0 = 不足扱い） */
