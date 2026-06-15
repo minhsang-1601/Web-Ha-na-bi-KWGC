@@ -350,8 +350,9 @@ function onOpen() {
       .addItem('トリガー再登録',          'registerTriggers')
     )
     .addSeparator()
-    .addItem('メールテンプレ保存', 'setupAllMailTemplates')
-    .addItem('列名を最新に更新',   'renameHeaders')
+    .addItem('メールテンプレ保存',       'setupAllMailTemplates')
+    .addItem('Info設定をキャッシュ更新', 'syncInfoToScriptProperties')
+    .addItem('列名を最新に更新',         'renameHeaders')
     .addToUi();
 }
 

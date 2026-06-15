@@ -97,8 +97,13 @@ function getInfoConfig() {
 }
 
 function getConfigVal(key, fallback) {
+  // 1. Info シートキャッシュから取得
   const v = getInfoConfig()[key];
-  return (v !== undefined && v !== '') ? v : fallback;
+  if (v !== undefined && v !== '') return v;
+  // 2. Script Properties キャッシュから取得（トリガーコンテキスト用）
+  const sp = PropertiesService.getScriptProperties().getProperty('INFO_' + key);
+  if (sp !== null && sp !== '') return sp;
+  return fallback;
 }
 
 function getOfficeEmail()      { return getConfigVal('OFFICE_EMAIL',       'Default-Default-Default');         }

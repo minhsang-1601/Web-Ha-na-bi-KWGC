@@ -72,13 +72,30 @@ function setupInfoSheet() {
   filterRange.createFilter();
   _applyAlignment(sheet, 2, 4);
 
-  // MAIN_SS_ID を Script Properties に保存（トリガーコンテキストからの Info 参照用）
-  PropertiesService.getScriptProperties().setProperty(
-    'MAIN_SS_ID', SpreadsheetApp.getActiveSpreadsheet().getId()
-  );
-
   _infoCache = null;
+  syncInfoToScriptProperties();
   SpreadsheetApp.getUi().alert('✅ Info シートを作成しました。\n各値を確認・編集してください。');
+}
+
+/** Info シートの値を Script Properties にキャッシュ（トリガーコンテキストからも参照可能にする） */
+function syncInfoToScriptProperties() {
+  const ss    = SpreadsheetApp.getActiveSpreadsheet();
+  const sheet = ss.getSheetByName(INFO_SHEET_NAME);
+  if (!sheet) {
+    SpreadsheetApp.getUi().alert('⚠️ Info シートが見つかりません。');
+    return;
+  }
+  const props = {};
+  sheet.getDataRange().getValues().forEach(row => {
+    const key = String(row[0] || '').trim();
+    const val = String(row[1] !== undefined ? row[1] : '');
+    if (key && key !== 'キー' && val !== '') {
+      props['INFO_' + key] = val;
+    }
+  });
+  PropertiesService.getScriptProperties().setProperties(props);
+  _infoCache = null;
+  try { SpreadsheetApp.getUi().alert('✅ Info 設定を Script Properties にキャッシュしました。'); } catch (_) {}
 }
 
 /** すべてのメールテンプレートを Script Properties に保存する */
