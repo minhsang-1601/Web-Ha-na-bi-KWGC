@@ -404,6 +404,7 @@
     const form          = document.getElementById('registration-form');
     const confirmScreen = document.getElementById('confirm-screen');
     const confirmTable  = document.getElementById('confirm-table');
+    let savedFormData   = null; // 送信時のデータを保存
 
     const FIELD_LABELS = {
         category:         '区分',
@@ -424,10 +425,10 @@
     form.addEventListener('submit', (e) => {
         e.preventDefault();
 
-        const formData = new FormData(form);
+        savedFormData = new FormData(form);
         confirmTable.innerHTML = '';
         Object.entries(FIELD_LABELS).forEach(([name, label]) => {
-            let value = formData.get(name) || '―';
+            let value = savedFormData.get(name) || '―';
             const tr = document.createElement('tr');
             tr.innerHTML = `
                 <td style="padding:8px 10px; border-bottom:1px solid #eee; color:#666; white-space:nowrap; width:44%; vertical-align:top;">${label}</td>
@@ -464,9 +465,8 @@
             + pad(now.getSeconds())
             + pad(now.getMilliseconds(), 3);
 
-        const formData = new FormData(form);
         const data = {};
-        formData.forEach((value, key) => { data[key] = value; });
+        savedFormData.forEach((value, key) => { data[key] = value; });
         data.receipt_no = receptNo;
         data.sheetName  = appConfig.sheetName1 || '';
         data.sheetName2 = appConfig.sheetName2 || '';
