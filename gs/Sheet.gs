@@ -45,6 +45,10 @@ function appendRow(data, sheetName) {
       _t(data.alt_name),         // O: 会社名・団体名と異なる名
     ]]);
 
+    // Set zipcode (I) and phone (K) columns to Text format to preserve leading zeros
+    sheet.getRange(newRow, 9).setNumberFormat('@');   // I: zipcode
+    sheet.getRange(newRow, 11).setNumberFormat('@');  // K: phone
+
     SpreadsheetApp.flush();
     console.log('DEBUG appendRow success receptNo:', receptNo);
     return receptNo;
