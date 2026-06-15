@@ -280,6 +280,7 @@ function submitFormJson(dataJson) {
 
 function submitForm(data) {
   console.log('DEBUG submitForm called with data:', JSON.stringify(data));
+  console.log('DEBUG data.zipcode:', data.zipcode, 'data.phone:', data.phone);
   // ─── ① メール送信残数チェック（最優先・データ記録より前） ────────────────────
   // 残数不足のままデータを記録すると「申込みは登録されたがメール未送信」になるため、
   // 記録前に拒否する。
