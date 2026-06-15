@@ -259,15 +259,12 @@
             btnConfirm.style.background  = '#aaa';
             btnConfirm.style.cursor      = 'not-allowed';
             btnConfirm.style.opacity     = '0.7';
-            // 警告はフォームが表示されている時のみ表示
-            agreementWarn.style.display  = sectionInfo.style.display === 'block' ? 'block' : 'none';
+            agreementWarn.style.display  = 'block';
         }
     }
 
     checkbox.addEventListener('change', _updateConfirmBtn);
-
-    // 同意未チェック状態で警告を初期表示
-    agreementWarn.style.display = 'block';
+    _updateConfirmBtn(); // 初期状態を反映
 
     // ─── Furigana validation ────────────────────────────────────────────────────
 
