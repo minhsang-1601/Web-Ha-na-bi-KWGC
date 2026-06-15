@@ -72,6 +72,11 @@ function setupInfoSheet() {
   filterRange.createFilter();
   _applyAlignment(sheet, 2, 4);
 
+  // MAIN_SS_ID を Script Properties に保存（トリガーコンテキストからの Info 参照用）
+  PropertiesService.getScriptProperties().setProperty(
+    'MAIN_SS_ID', SpreadsheetApp.getActiveSpreadsheet().getId()
+  );
+
   _infoCache = null;
   SpreadsheetApp.getUi().alert('✅ Info シートを作成しました。\n各値を確認・編集してください。');
 }
