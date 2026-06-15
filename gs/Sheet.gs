@@ -27,7 +27,9 @@ function appendRow(data, sheetName) {
 
     const newRow  = sheet.getLastRow() + 1;
     const dateStr = Utilities.formatDate(now, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
-    sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([[
+
+    // Build row data
+    const rowData = [
       receptNo,                   // A: 受付番号
       dateStr,                    // B: 受付日時
       _t(data.company_name),     // C
@@ -43,11 +45,13 @@ function appendRow(data, sheetName) {
       _t(data.category),         // M
       _t(data.website_url),      // N
       _t(data.alt_name),         // O: 会社名・団体名と異なる名
-    ]]);
+    ];
 
-    // Set zipcode (I) and phone (K) columns to Text format to preserve leading zeros
-    sheet.getRange(newRow, 9).setNumberFormat('@');   // I: zipcode
-    sheet.getRange(newRow, 11).setNumberFormat('@');  // K: phone
+    sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([rowData]);
+
+    // Set text format for zipcode (I) and phone (K) to preserve leading zeros
+    sheet.getRange(newRow, 9).setNumberFormat('@').setValue(_t(data.zipcode));
+    sheet.getRange(newRow, 11).setNumberFormat('@').setValue(_t(data.phone));
 
     SpreadsheetApp.flush();
     console.log('DEBUG appendRow success receptNo:', receptNo);
