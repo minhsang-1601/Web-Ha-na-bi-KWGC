@@ -347,7 +347,15 @@ function cancelInvoiceSend(row) {
 }
 
 function sendNyukinConfirmed(row, receptNo, seatNo) {
-  const tetsuSheet = getDataSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME2);
+  const dataSs     = getDataSpreadsheet();
+  const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
+  const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
+  const data = findRowByReceptNo(mainSheet, receptNo);
+  if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
+
+  // 座席割当メール送信
+  sendNyukinEmail(data, receptNo, seatNo);
+
   tetsuSheet.getRange(row, COL_SEAT_DATE).setValue(nowStr());
   tetsuSheet.getRange(row, COL_SEAT_NO).setValue(seatNo);
 }

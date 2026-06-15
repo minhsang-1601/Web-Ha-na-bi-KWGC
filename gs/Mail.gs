@@ -108,6 +108,50 @@ function generateInvoicePdf(data, receptNo) {
   return pdf;
 }
 
+// ─── 座席割当確定メール（column K チェック時） ────────────────────────────────────
+
+/** 座席割当完了通知メール（入金確認時に送信） */
+function sendNyukinEmail(data, receptNo, seatNo) {
+  const props   = PropertiesService.getScriptProperties();
+  let subject   = props.getProperty('NYUKIN_SUBJECT') ||
+    `【${getEventName()}】座席割当のご案内（受付番号：{{receipt_no}}）`;
+  let body      = props.getProperty('NYUKIN_BODY') || _defaultNyukinBody();
+
+  const vars = _buildVars(data, receptNo);
+  vars.seat_no = seatNo || '';
+  subject = _replaceVars(subject, vars);
+  body    = _replaceVars(body,    vars);
+
+  const officeEmail = getOfficeEmail();
+  const mailOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
+  MailApp.sendEmail(mailOptions);
+}
+
+function _defaultNyukinBody() {
+  return [
+    '{{company_name}}',
+    '{{staff_name}} 様',
+    '',
+    '川口花火大会実行委員会でございます。',
+    '',
+    'このたびはご入金いただき、誠にありがとうございます。',
+    'ご入金を確認させていただきました。',
+    '',
+    '■座席割当情報',
+    '　・受付番号　　　　：{{receipt_no}}',
+    '　・座席番号　　　　：{{seat_no}}',
+    '　・区分　　　　　　：{{category}}',
+    '',
+    '当日のご来場をお待ちしております。',
+    'ご不明な点がございましたら、お気軽にお問い合わせください。',
+    '',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
+    'メールアドレス：{{office_email}}',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
+  ].join('\n');
+}
+
 // ─── S/A 当選通知 + 請求書メール（column I チェック時） ─────────────────────────
 
 /** S/A: 抽選確定・請求書送付メール（column I チェック時に送信） */
