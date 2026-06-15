@@ -103,6 +103,7 @@ function setupAllMailTemplates() {
   setupMailTemplate();
   setupReceiptOnlyTemplate();
   setupSaInvoiceTemplate();
+  setupNyukinTemplate();
   setupOreijouTemplate();
   setupAnnaiTemplate();
   SpreadsheetApp.getUi().alert('✅ 全メールテンプレートを保存しました。');
@@ -126,6 +127,13 @@ function setupSaInvoiceTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     SA_INVOICE_SUBJECT: '【{{event_name}}】協賛金のご請求書送付のご案内',
     SA_INVOICE_BODY:    _defaultSaInvoiceBody(),
+  });
+}
+
+function setupNyukinTemplate() {
+  PropertiesService.getScriptProperties().setProperties({
+    NYUKIN_SUBJECT: '【{{event_name}}】座席割当のご案内（受付番号：{{receipt_no}}）',
+    NYUKIN_BODY:    _defaultNyukinBody(),
   });
 }
 
