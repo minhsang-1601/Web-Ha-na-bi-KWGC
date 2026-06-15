@@ -60,8 +60,25 @@ function doGet() {
     `).setTitle('エラー').setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
   }
 
-  return HtmlService.createTemplateFromFile('Index')
-    .evaluate()
+  const tpl = HtmlService.createTemplateFromFile('Index');
+
+  // 背景画像を Base64 でテンプレートに渡す
+  try {
+    const bgId = getBgImageId();
+    if (bgId) {
+      const blob = DriveApp.getFileById(bgId).getBlob();
+      const b64  = Utilities.base64Encode(blob.getBytes());
+      const mime = blob.getContentType() || 'image/jpeg';
+      tpl.bgImageDataUrl = `data:${mime};base64,${b64}`;
+    } else {
+      tpl.bgImageDataUrl = '';
+    }
+  } catch (e) {
+    console.warn('背景画像読み込み失敗:', e.message);
+    tpl.bgImageDataUrl = '';
+  }
+
+  return tpl.evaluate()
     .setTitle(`【${getEventName()}】協賛申込み`)
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
@@ -140,11 +157,13 @@ function include(filename) {
 /** フォーム背景画像を Base64 データURLで返す（クライアントから呼ぶ） */
 function getBgImageDataUrl() {
   const id = getBgImageId();
+  console.log('DEBUG getBgImageDataUrl id:', id);
   if (!id) return '';
   try {
     const blob = DriveApp.getFileById(id).getBlob();
     const b64  = Utilities.base64Encode(blob.getBytes());
     const mime = blob.getContentType() || 'image/jpeg';
+    console.log('DEBUG getBgImageDataUrl mime:', mime, 'b64 length:', b64.length);
     return `data:${mime};base64,${b64}`;
   } catch (e) {
     console.warn('背景画像の読み込み失敗:', e.message);
