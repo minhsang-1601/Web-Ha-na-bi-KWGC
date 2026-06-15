@@ -3,6 +3,8 @@
 const _t = v => String(v || '').trim(); // TRIM ヘルパー
 
 function appendRow(data, sheetName) {
+  console.log('DEBUG appendRow data:', JSON.stringify(data));
+  console.log('DEBUG appendRow sheetName:', sheetName);
   const lock = LockService.getScriptLock();
   lock.waitLock(10000);
 
@@ -44,6 +46,7 @@ function appendRow(data, sheetName) {
     ]]);
 
     SpreadsheetApp.flush();
+    console.log('DEBUG appendRow success receptNo:', receptNo);
     return receptNo;
   } finally {
     lock.releaseLock();
@@ -51,6 +54,7 @@ function appendRow(data, sheetName) {
 }
 
 function appendToTesagyouSheet(receptNo, sheetName2, data) {
+  console.log('DEBUG appendToTesagyouSheet receptNo:', receptNo, 'sheetName2:', sheetName2);
   const ss    = getDataSpreadsheet();
   let sheet   = ss.getSheetByName(sheetName2);
   if (!sheet) sheet = ss.insertSheet(sheetName2);
