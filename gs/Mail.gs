@@ -108,6 +108,74 @@ function generateInvoicePdf(data, receptNo) {
   return pdf;
 }
 
+// ─── S/A 当選通知 + 請求書メール（column I チェック時） ─────────────────────────
+
+/** S/A: 抽選確定・請求書送付メール（column I チェック時に送信） */
+function sendSaInvoiceEmail(data, receptNo, invoicePdf) {
+  const props   = PropertiesService.getScriptProperties();
+  let subject   = props.getProperty('SA_INVOICE_SUBJECT') ||
+    `【{{event_name}}】協賛金のご請求書送付のご案内`;
+  let body      = props.getProperty('SA_INVOICE_BODY') || _defaultSaInvoiceBody();
+
+  const vars = _buildSaInvoiceVars(data, receptNo);
+  subject = _replaceVars(subject, vars);
+  body    = _replaceVars(body,    vars);
+
+  const officeEmail = getOfficeEmail();
+  const mailOptions = { to: data.email, subject, body };
+  if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
+  if (invoicePdf) {
+    mailOptions.attachments = [
+      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
+    ];
+  }
+  MailApp.sendEmail(mailOptions);
+}
+
+function _buildSaInvoiceVars(data, receptNo) {
+  const category   = String(data.category || '').trim().toUpperCase();
+  const totalPrice = getCategoryPrice(category);
+  return {
+    company_name: data.company_name || '',
+    staff_name:   data.staff_name   || '',
+    category:     category,
+    receipt_no:   receptNo          || '',
+    event_name:   getEventName(),
+    payment_due:  getPaymentDue(),
+    office_email: getOfficeEmail(),
+    amount:       totalPrice > 0 ? totalPrice.toLocaleString() : '―',
+  };
+}
+
+function _defaultSaInvoiceBody() {
+  return [
+    '{{company_name}}',
+    '{{staff_name}} 様',
+    '',
+    '川口花火大会実行委員会でございます。',
+    '',
+    'このたびは、{{event_name}}の協賛にお申し込みいただき、誠にありがとうございます。',
+    '厳正なる選考（抽選）の結果、このたび貴社（貴団体）の協賛が確定いたしましたので、ご連絡申しあげます。',
+    '',
+    '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
+    'お振込み期限（{{payment_due}}）までにお手続きくださいますようお願い申しあげます。',
+    '',
+    '■ご請求内容',
+    '　・会社名・団体名　：{{company_name}}',
+    '　・ご担当者名　　　：{{staff_name}}',
+    '　・区分　　　　　　：{{category}}',
+    '　・受付番号　　　　：{{receipt_no}}',
+    '　・協賛金額　　　　：{{amount}}円（税込）',
+    '',
+    'ご不明な点がございましたら、お気軽にお問い合わせください。',
+    '何卒よろしくお願い申しあげます。',
+    '',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
+    'メールアドレス：{{office_email}}',
+    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
+  ].join('\n');
+}
+
 // ─── 案内文メール ──────────────────────────────────────────────────────────────
 
 function sendAnnaibunEmail(data, receptNo) {

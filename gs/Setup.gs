@@ -80,6 +80,7 @@ function setupInfoSheet() {
 function setupAllMailTemplates() {
   setupMailTemplate();
   setupReceiptOnlyTemplate();
+  setupSaInvoiceTemplate();
   setupOreijouTemplate();
   setupAnnaiTemplate();
   SpreadsheetApp.getUi().alert('✅ 全メールテンプレートを保存しました。');
@@ -96,6 +97,13 @@ function setupReceiptOnlyTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     RECEIPT_ONLY_SUBJECT: '【{{event_name}}】協賛お申込みを受け付けました。',
     RECEIPT_ONLY_BODY:    _defaultReceiptOnlyBody(),
+  });
+}
+
+function setupSaInvoiceTemplate() {
+  PropertiesService.getScriptProperties().setProperties({
+    SA_INVOICE_SUBJECT: '【{{event_name}}】協賛金のご請求書送付のご案内',
+    SA_INVOICE_BODY:    _defaultSaInvoiceBody(),
   });
 }
 
