@@ -40,6 +40,7 @@ function appendRow(data, sheetName) {
       _t(data.email),            // L
       _t(data.category),         // M
       _t(data.website_url),      // N
+      _t(data.alt_name),         // O: 会社名・団体名と異なる名
     ]]);
 
     SpreadsheetApp.flush();
@@ -142,8 +143,8 @@ function _ensureFilter(sheet, headerRow, numCols) {
 
 function applyColumnWidths(sheet) {
   // A=受付番号 B=受付日時 C=個人名 D=ふりがな E=代表者 F=ふりがな
-  // G=担当者 H=ふりがな I=郵便番号 J=住所 K=電話番号 L=メール M=区分 N=URL
-  [150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200]
+  // G=担当者 H=ふりがな I=郵便番号 J=住所 K=電話番号 L=メール M=区分 N=URL O=異なる名
+  [150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200, 200]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 2, HEADERS.length);
 }
