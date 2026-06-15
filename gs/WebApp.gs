@@ -345,15 +345,26 @@ function submitForm(data) {
   console.log('DEBUG appendToTesagyouSheet completed');
 
   if (data.email) {
-    console.log('DEBUG about to send email, autoSend:', autoSend);
-    if (autoSend) {
-      const pdf = generateInvoicePdf(data, receptNo);
-      sendConfirmationEmail(data, receptNo, pdf);
-    } else {
-      sendReceiptOnlyEmail(data, receptNo);
+    console.log('DEBUG about to send email, autoSend:', autoSend, 'category:', data.category);
+    try {
+      console.log('DEBUG data.email:', data.email);
+      if (autoSend) {
+        console.log('DEBUG generating PDF...');
+        const pdf = generateInvoicePdf(data, receptNo);
+        console.log('DEBUG PDF generated, sending confirmation email...');
+        sendConfirmationEmail(data, receptNo, pdf);
+      } else {
+        console.log('DEBUG sending receipt only email...');
+        sendReceiptOnlyEmail(data, receptNo);
+      }
+      console.log('DEBUG email sent successfully');
+    } catch (e) {
+      console.error('DEBUG email send error:', e.message);
+      console.error('DEBUG error stack:', e.stack);
     }
-    console.log('DEBUG email sent');
     // _notifyOffice(data, receptNo, autoSend);  // 事務局通知メールを無効化
+  } else {
+    console.warn('DEBUG data.email is empty or falsy:', data.email);
   }
 
   console.log('DEBUG submitForm returning success');
