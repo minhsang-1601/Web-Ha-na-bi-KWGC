@@ -1,6 +1,12 @@
 // ─── Web App エントリーポイント ────────────────────────────────────────────────
 
 function doGet() {
+  // ─── MAIN_SS_ID を Script Properties に保存（他コンテキストからの Info 参照用） ──
+  try {
+    const mainSs = SpreadsheetApp.getActiveSpreadsheet();
+    PropertiesService.getScriptProperties().setProperty('MAIN_SS_ID', mainSs.getId());
+  } catch (_) {}
+
   // ─── 必須シート存在チェック（Info） ──────────────────────────
   const infoSheet = SpreadsheetApp.getActiveSpreadsheet().getSheetByName(INFO_SHEET_NAME);
   if (!infoSheet) {
