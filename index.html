@@ -381,6 +381,14 @@
             document.body.style.backgroundSize       = 'cover';
             document.body.style.backgroundAttachment = 'fixed';
             document.body.style.backgroundPosition   = 'center';
+            // 背景を半透明の白でオーバーレイして明度を下げる
+            const overlay = document.createElement('div');
+            overlay.style.cssText = [
+                'position:fixed', 'inset:0', 'z-index:-1',
+                'background:rgba(255,255,255,0.55)',
+                'pointer-events:none',
+            ].join(';');
+            document.body.appendChild(overlay);
         }
     })();
 
