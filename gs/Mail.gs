@@ -112,6 +112,8 @@ function generateInvoicePdf(data, receptNo) {
 
 /** 座席割当完了通知メール（入金確認時に送信） */
 function sendNyukinEmail(data, receptNo, seatNo) {
+  console.log('DEBUG sendNyukinEmail: receptNo=', receptNo, 'email=', data.email);
+
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('NYUKIN_SUBJECT') ||
     `【${getEventName()}】座席割当のご案内（受付番号：{{receipt_no}}）`;
@@ -125,7 +127,10 @@ function sendNyukinEmail(data, receptNo, seatNo) {
   const officeEmail = getOfficeEmail();
   const mailOptions = { to: data.email, subject, body };
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
+
+  console.log('DEBUG about to call MailApp.sendEmail to:', data.email);
   MailApp.sendEmail(mailOptions);
+  console.log('DEBUG MailApp.sendEmail completed');
 }
 
 function defaultNyukinBody() {

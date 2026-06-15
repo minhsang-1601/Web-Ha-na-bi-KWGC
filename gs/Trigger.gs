@@ -353,8 +353,18 @@ function sendNyukinConfirmed(row, receptNo, seatNo) {
   const data = findRowByReceptNo(mainSheet, receptNo);
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 
+  console.log('DEBUG sendNyukinConfirmed: receptNo=', receptNo, 'seatNo=', seatNo);
+  console.log('DEBUG data.email=', data.email);
+
   // 座席割当メール送信
-  sendNyukinEmail(data, receptNo, seatNo);
+  try {
+    console.log('DEBUG about to send nyukin email');
+    sendNyukinEmail(data, receptNo, seatNo);
+    console.log('DEBUG nyukin email sent successfully');
+  } catch (e) {
+    console.error('DEBUG nyukin email error:', e.message, e.stack);
+    throw e;
+  }
 
   tetsuSheet.getRange(row, COL_SEAT_DATE).setValue(nowStr());
   tetsuSheet.getRange(row, COL_SEAT_NO).setValue(seatNo);
