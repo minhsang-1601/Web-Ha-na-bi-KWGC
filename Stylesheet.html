@@ -9,6 +9,7 @@ body {
     color: #333;
 
     background-color: #f3effa;
+    /* Desktop background - hidden on mobile */
     background-image:
         radial-gradient(circle, rgba(160, 130, 200, 0.08) 1.5px, transparent 1.5px),
         radial-gradient(circle, rgba(230, 150, 180, 0.06)   2px,   transparent 2px),
@@ -163,7 +164,12 @@ button:hover {
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
 
 @media (max-width: 640px) {
-    body { padding: 15px 10px; }
+    body {
+        padding: 15px 10px;
+        /* Remove background image on tablet */
+        background-image: none;
+        background-color: #f3effa;
+    }
     .form-container { padding: 20px 15px; border-radius: 8px; }
     h2 { font-size: 1.05em; margin-bottom: 10px; }
     .form-group { margin-bottom: 12px; }
