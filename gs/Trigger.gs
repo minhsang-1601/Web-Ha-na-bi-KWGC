@@ -1,16 +1,11 @@
 // ─── チェックボックストリガー（手作業シート） ──────────────────────────────────
 // ⚠️ GAS エディタ「トリガー」→ onEditInstallable → スプレッドシート → 編集時 で登録
 //
-// 手作業 列構成（I〜P）:
+// 手作業 列構成（I〜L）:
 //   I (9)  受付完了         checkbox  手動  → 請求書送信確認ダイアログ
 //   J (10) 請求書送信日時   timestamp 自動  ← sendInvoiceConfirmed でセット
-//   K (11) 入金完了         checkbox  手動  → 座席割当確認ダイアログ ※J が必須
-//   L (12) 座席割当送信日時 timestamp 自動  ← sendNyukinConfirmed でセット
-//   M (13) 座席番号         text      自動  ← sendNyukinConfirmed でセット
-//   N (14) 案内実施         checkbox  手動  → 案内送信確認ダイアログ ※L が必須
-//   O (15) 案内送信日時     timestamp 自動  ← sendAnnaibunConfirmed でセット
-//   P (16) お礼状送信日時   timestamp 自動  ← sendOreijouConfirmed でセット ※O が必須
-//         お礼状はカスタムメニュー「お礼状送信」から起動
+//   K (11) 入金完了         checkbox  手動  → お礼状送信確認ダイアログ ※J が必須
+//   L (12) お礼状送信日時   timestamp 自動  ← sendNyukinConfirmed でセット
 
 function onEditInstallable(e) {
   const sheet = e.range.getSheet();
