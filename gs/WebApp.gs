@@ -384,6 +384,7 @@ function onOpen() {
     .addItem('メールテンプレ保存',       'setupAllMailTemplates')
     .addItem('Info設定をキャッシュ更新', 'syncInfoToScriptProperties')
     .addItem('列名を最新に更新',         'renameHeaders')
+    .addItem('手作業シート列をリセット', 'resetTesagyouSheetHeaders')
     .addToUi();
 }
 

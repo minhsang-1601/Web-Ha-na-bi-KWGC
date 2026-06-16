@@ -2,6 +2,43 @@
 
 const _t = v => String(v || '').trim(); // TRIM ヘルパー
 
+/** 手作業シートのヘッダーをリセット（古いシートの列を削除） */
+function resetTesagyouSheetHeaders() {
+  const ss = getDataSpreadsheet();
+  const sheet = ss.getSheetByName(DEFAULT_SHEET_NAME2);
+  if (!sheet) return;
+
+  // 最大列数を取得
+  const maxCol = sheet.getLastColumn();
+  const headerCount = TESAGYOU_HEADERS.length;
+
+  // 古い列を削除
+  if (maxCol > headerCount) {
+    sheet.deleteColumns(headerCount + 1, maxCol - headerCount);
+  }
+
+  // ヘッダーを再設定
+  sheet.getRange(1, 1, 1, headerCount)
+    .setValues([TESAGYOU_HEADERS])
+    .setFontWeight('bold').setBackground('#fce8b2');
+
+  // サブヘッダー（2行目）を再設定
+  const subheaders = [
+    '直接入力',         // A: 受付番号
+    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // B-D
+    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // E-H
+    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // I-K
+    'タイムスタンプ\n自動',                             // L
+  ];
+
+  sheet.getRange(2, 1, 1, headerCount)
+    .setValues([subheaders])
+    .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
+
+  sheet.setRowHeight(2, 36);
+  applyTesagyouColumnWidths(sheet);
+}
+
 function appendRow(data, sheetName) {
   console.log('DEBUG appendRow data:', JSON.stringify(data));
   console.log('DEBUG appendRow sheetName:', sheetName);
