@@ -164,6 +164,7 @@ button:hover {
     body { padding: 20px 12px; }
     .form-container { padding: 20px 16px; border-radius: 8px; }
     h2 { font-size: 1.05em; }
+    .radio-group-container { grid-template-columns: 1fr; gap: 8px; }
 }
 
 @media (max-width: 400px) {
@@ -173,8 +174,9 @@ button:hover {
     input[type="text"],
     input[type="email"] { font-size: 1em; padding: 10px 8px; }
     button { padding: 13px 15px; font-size: 1em; }
-    .radio-group-container { flex-direction: column; gap: 10px; }
-    .terms-box { height: 180px; }
-    .registration-period { font-size: 0.85em; }
+    .radio-group-container { grid-template-columns: 1fr; gap: 8px; }
+    .radio-label { font-size: 0.9em; }
+    .terms-box { height: 120px; }
+    .registration-period { font-size: 0.85em; padding: 8px 12px; }
 }
 </style>
