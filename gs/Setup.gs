@@ -103,7 +103,6 @@ function setupAllMailTemplates() {
   setupMailTemplate();
   setupReceiptOnlyTemplate();
   setupSaInvoiceTemplate();
-  setupNyukinTemplate();
   setupOreijouTemplate();
   SpreadsheetApp.getUi().alert('✅ 全メールテンプレートを保存しました。');
 }
