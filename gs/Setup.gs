@@ -105,7 +105,6 @@ function setupAllMailTemplates() {
   setupSaInvoiceTemplate();
   setupNyukinTemplate();
   setupOreijouTemplate();
-  setupAnnaiTemplate();
   SpreadsheetApp.getUi().alert('✅ 全メールテンプレートを保存しました。');
 }
 
@@ -130,24 +129,10 @@ function setupSaInvoiceTemplate() {
   });
 }
 
-function setupNyukinTemplate() {
-  PropertiesService.getScriptProperties().setProperties({
-    NYUKIN_SUBJECT: '【{{event_name}}】座席割当のご案内',
-    NYUKIN_BODY:    defaultNyukinBody(),
-  });
-}
-
 function setupOreijouTemplate() {
   PropertiesService.getScriptProperties().setProperties({
     OREIJOU_SUBJECT: '【{{event_name}}】ご協賛へのお礼',
     OREIJOU_BODY:    defaultOreijouBody(),
-  });
-}
-
-function setupAnnaiTemplate() {
-  PropertiesService.getScriptProperties().setProperties({
-    ANNAI_SUBJECT: '【{{event_name}}】ご案内',
-    ANNAI_BODY:    defaultAnnaiBody(),
   });
 }
 

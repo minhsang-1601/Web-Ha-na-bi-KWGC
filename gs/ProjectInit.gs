@@ -80,7 +80,6 @@ function initProject() {
   setupMailTemplate();
   setupReceiptOnlyTemplate();
   setupOreijouTemplate();
-  setupAnnaiTemplate();
 
   // ── 11. Info シートに ID を保存 ──────────────────────────────────────────────
   setInfoValue('DATA_SPREADSHEET_ID', newSs.getId());

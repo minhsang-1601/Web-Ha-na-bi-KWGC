@@ -111,52 +111,6 @@ function generateInvoicePdf(data, receptNo) {
 // ─── 座席割当確定メール（column K チェック時） ────────────────────────────────────
 
 /** 座席割当完了通知メール（入金確認時に送信） */
-function sendNyukinEmail(data, receptNo, seatNo) {
-  console.log('DEBUG sendNyukinEmail: receptNo=', receptNo, 'email=', data.email);
-
-  const props   = PropertiesService.getScriptProperties();
-  let subject   = props.getProperty('NYUKIN_SUBJECT') ||
-    `【${getEventName()}】座席割当のご案内`;
-  let body      = props.getProperty('NYUKIN_BODY') || defaultNyukinBody();
-
-  const vars = _buildVars(data, receptNo);
-  vars.seat_no = seatNo || '';
-  subject = _replaceVars(subject, vars);
-  body    = _replaceVars(body,    vars);
-
-  const officeEmail = getOfficeEmail();
-  const mailOptions = { to: data.email, subject, body };
-  if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
-
-  console.log('DEBUG about to call MailApp.sendEmail to:', data.email);
-  MailApp.sendEmail(mailOptions);
-  console.log('DEBUG MailApp.sendEmail completed');
-}
-
-function defaultNyukinBody() {
-  return [
-    '{{company_name}}',
-    '{{staff_name}} 様',
-    '',
-    '川口花火大会実行委員会でございます。',
-    '',
-    'このたびはご入金いただき、誠にありがとうございます。',
-    'ご入金を確認させていただきました。',
-    '',
-    '■座席割当情報',
-    '　・受付番号　　　　：{{receipt_no}}',
-    '　・座席番号　　　　：{{seat_no}}',
-    '　・区分　　　　　　：{{category}}',
-    '',
-    '当日のご来場をお待ちしております。',
-    'ご不明な点がございましたら、お気軽にお問い合わせください。',
-    '',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-    'メールアドレス：{{office_email}}',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-  ].join('\n');
-}
-
 // ─── S/A 当選通知 + 請求書メール（column I チェック時） ─────────────────────────
 
 /** S/A: 抽選確定・請求書送付メール（column I チェック時に送信） */
@@ -226,22 +180,6 @@ function defaultSaInvoiceBody() {
 }
 
 // ─── 案内文メール ──────────────────────────────────────────────────────────────
-
-function sendAnnaibunEmail(data, receptNo) {
-  const props   = PropertiesService.getScriptProperties();
-  let subject   = props.getProperty('ANNAI_SUBJECT') ||
-    `【${getEventName()}】ご案内`;
-  let body      = props.getProperty('ANNAI_BODY') || defaultAnnaiBody();
-
-  const vars = _buildVars(data, receptNo);
-  subject = _replaceVars(subject, vars);
-  body    = _replaceVars(body,    vars);
-
-  const officeEmail2 = getOfficeEmail();
-  const annaiOptions = { to: data.email, subject, body };
-  if (_validEmail(officeEmail2)) { annaiOptions.cc = officeEmail2; annaiOptions.replyTo = officeEmail2; }
-  MailApp.sendEmail(annaiOptions);
-}
 
 // ─── お礼状メール ──────────────────────────────────────────────────────────────
 
@@ -385,23 +323,6 @@ function defaultReceiptOnlyBody() {
     'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
     'メールアドレス：{{office_email}}',
     'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-  ].join('\n');
-}
-
-function defaultAnnaiBody() {
-  return [
-    '{{company_name}}',
-    '{{rep_name}} 様',
-    '',
-    '{{event_name}} 実行委員会 事務局でございます。',
-    'このたびはご協賛いただき、誠にありがとうございます。',
-    '',
-    '当日のご案内をお送りいたします。',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '{{event_name}} 実行委員会 事務局',
-    'E-mail：{{office_email}}',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
   ].join('\n');
 }
 
