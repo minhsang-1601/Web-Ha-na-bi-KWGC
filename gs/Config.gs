@@ -10,11 +10,7 @@ const COL_RECEPT_NO    =  1; // A: 受付番号
 const COL_UKETSUKE     =  9; // I: 受付完了         checkbox  手動
 const COL_INV_DATE     = 10; // J: 請求書送信日時    timestamp 自動
 const COL_NYUKIN       = 11; // K: 入金完了          checkbox  手動
-const COL_SEAT_DATE    = 12; // L: 座席割当送信日時  timestamp 自動
-const COL_SEAT_NO      = 13; // M: 座席番号          text      自動（区分＋7桁）
-const COL_ANNAIBUN     = 14; // N: 案内実施          checkbox  手動
-const COL_ANNAI_DATE   = 15; // O: 案内送信日時      timestamp 自動
-const COL_OREIJOU_DATE = 16; // P: お礼状送信日時    timestamp 自動
+const COL_OREIJOU_DATE = 12; // L: お礼状送信日時    timestamp 自動
 
 // ─── デフォルト価格（Info シートの PRICE_X で上書き可） ────────────────────────
 const DEFAULT_PRICES = { S: 2000000, A: 1000000, B: 500000, C: 300000, D: 200000, E: 100000 };
@@ -46,17 +42,13 @@ const TESAGYOU_HEADERS = [
   '電話番号',               // C (3)  XLOOKUP
   '会社名・団体名',         // D (4)  XLOOKUP
   '住所',                   // E (5)  XLOOKUP
-  '代表者役職・代表者名',         // F (6)  XLOOKUP
+  '代表者役職・代表者名',   // F (6)  XLOOKUP
   'メールアドレス',         // G (7)  XLOOKUP
   '会社HP URL',             // H (8)  XLOOKUP
   '受付完了',               // I (9)  checkbox 手動
   '請求書送信日時',         // J (10) timestamp 自動
   '入金完了',               // K (11) checkbox 手動
-  '座席割当送信日時',       // L (12) timestamp 自動
-  '座席番号',               // M (13) text 自動（区分＋7桁）
-  '案内実施',               // N (14) checkbox 手動
-  '案内送信日時',           // O (15) timestamp 自動
-  'お礼状送信日時',         // P (16) timestamp 自動
+  'お礼状送信日時',         // L (12) timestamp 自動
 ];
 
 // 手作業の列番号 → 協賛申込み一覧の列アルファベット（XLOOKUP）
@@ -172,28 +164,6 @@ function formatTs(value) {
   if (!value) return '';
   if (value instanceof Date) return Utilities.formatDate(value, 'Asia/Tokyo', 'yyyy/MM/dd HH:mm');
   return String(value);
-}
-
-/**
- * 座席番号を発行する（区分ごとに 1 から連番）
- * @param {string} kubun - 区分（B/C/D/E など）
- * @param {Sheet}  tesagyouSheet - 手作業シート（既存の座席番号を数えるため）
- */
-function generateSeatNo(kubun, tesagyouSheet) {
-  const k = String(kubun || 'X').trim().toUpperCase();
-  let count = 0;
-  if (tesagyouSheet) {
-    const lastRow = tesagyouSheet.getLastRow();
-    if (lastRow > 2) {
-      const vals = tesagyouSheet
-        .getRange(3, COL_SEAT_NO, lastRow - 2, 1)
-        .getValues();
-      vals.forEach(([v]) => {
-        if (String(v).startsWith(k + '-')) count++;
-      });
-    }
-  }
-  return `${k}-${String(count + 1).padStart(7, '0')}`;
 }
 
 function nowStr() {

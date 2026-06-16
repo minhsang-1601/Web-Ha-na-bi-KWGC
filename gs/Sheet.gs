@@ -77,8 +77,7 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
       'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // B-D
       'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // E-H
       'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // I-K
-      'タイムスタンプ\n自動', '区分＋7桁\n自動',                             // L-M
-      'checkbox\n手動', 'タイムスタンプ\n自動', 'タイムスタンプ\n自動',       // N-P
+      'タイムスタンプ\n自動',                             // L
     ]);
     sheet.getRange(2, 1, 1, TESAGYOU_HEADERS.length)
       .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
@@ -92,7 +91,7 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
   const kubun    = _t(data ? (data.category || '') : '').toUpperCase();
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
-  // B: 受付番号（直接入力）
+  // A: 受付番号（直接入力）
   sheet.getRange(newRow, COL_RECEPT_NO).setValue(receptNo);
 
   // XLOOKUP: 受付番号（$A）をキーに協賛申込み一覧から各列を参照
@@ -102,20 +101,17 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 
-  // J: 受付完了 checkbox — B〜E は申込時に自動完了
+  // I: 受付完了 checkbox — B〜E は申込時に自動完了
   sheet.getRange(newRow, COL_UKETSUKE).insertCheckboxes();
   if (autoSend) sheet.getRange(newRow, COL_UKETSUKE).setValue(true);
 
-  // K: 請求書送信日時 — B〜E は申込時に自動送信済みのため現在日時
+  // J: 請求書送信日時 — B〜E は申込時に自動送信済みのため現在日時
   if (autoSend) sheet.getRange(newRow, COL_INV_DATE).setValue(nowStr());
 
-  // L: 入金完了 checkbox
+  // K: 入金完了 checkbox
   sheet.getRange(newRow, COL_NYUKIN).insertCheckboxes();
 
-  // O: 案内実施 checkbox
-  sheet.getRange(newRow, COL_ANNAIBUN).insertCheckboxes();
-
-  // M, N, P, Q は空（各トリガーが自動設定）
+  // L: お礼状送信日時 は空（トリガーが自動設定）
 }
 
 /**
@@ -163,8 +159,8 @@ function applyColumnWidths(sheet) {
 
 function applyTesagyouColumnWidths(sheet) {
   // A=受付番号 B=区分 C=電話 D=個人名 E=住所 F=代表者 G=メール H=URL
-  // I=受付完了 J=請求書日時 K=入金 L=座席日時 M=座席番号 N=案内 O=案内日時 P=礼状日時
-  [150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150, 120, 70, 150, 150]
+  // I=受付完了 J=請求書日時 K=入金 L=礼状日時
+  [150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 3, TESAGYOU_HEADERS.length);
 }

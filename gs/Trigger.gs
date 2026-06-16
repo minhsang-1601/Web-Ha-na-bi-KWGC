@@ -21,7 +21,6 @@ function onEditInstallable(e) {
 
   if (col === COL_UKETSUKE)  handleUketsuke(e, sheet, row);
   if (col === COL_NYUKIN)    handleNyukin(e, sheet, row);
-  if (col === COL_ANNAIBUN)  handleAnnaibun(e, sheet, row);
 }
 
 // ─── I列: 受付完了 → 請求書送信 ────────────────────────────────────────────────
@@ -31,24 +30,17 @@ function handleUketsuke(e, sheet, row) {
   const invDate     = invDateCell.getValue();
 
   if (e.range.getValue() === false) {
-    // ── クリア順序チェック: 下流（L→O→P→Q）を先に解除しないと外せない ──
+    // ── クリア順序チェック: 下流（K→L）を先に解除しないと外せない ──
     const oreijouDate = sheet.getRange(row, COL_OREIJOU_DATE).getValue();
-    const annaiDate   = sheet.getRange(row, COL_ANNAI_DATE).getValue();
-    const annaibun    = sheet.getRange(row, COL_ANNAIBUN).getValue();
-    const seatDate    = sheet.getRange(row, COL_SEAT_DATE).getValue();
     const nyukin      = sheet.getRange(row, COL_NYUKIN).getValue();
 
-    // J を外す → 全下流（L・O・P・Q・M・N・K）を自動クリア
-    const hasDownstream = nyukin || seatDate || annaibun || annaiDate || oreijouDate || invDate;
+    // I を外す → 全下流（K・L）を自動クリア
+    const hasDownstream = nyukin || oreijouDate || invDate;
     if (hasDownstream) {
       const detail = [
-        oreijouDate ? `　お礼状送信日時（Q）：${formatTs(oreijouDate)}` : null,
-        annaiDate   ? `　案内送信日時（P）：${formatTs(annaiDate)}`      : null,
-        annaibun    ? `　案内実施（O）：チェック済み`                    : null,
-        seatDate    ? `　座席割当送信日時（M）：${formatTs(seatDate)}`   : null,
-        seatDate    ? `　座席番号（N）`                                  : null,
-        nyukin      ? `　入金完了（L）：チェック済み`                    : null,
-        invDate     ? `　請求書送信日時（K）：${formatTs(invDate)}`      : null,
+        oreijouDate ? `　お礼状送信日時（L）：${formatTs(oreijouDate)}` : null,
+        nyukin      ? `　入金完了（K）：チェック済み`                    : null,
+        invDate     ? `　請求書送信日時（J）：${formatTs(invDate)}`      : null,
       ].filter(Boolean).join('\n');
       const res = SpreadsheetApp.getUi().alert(
         '⚠️ チェックを外しますか？',
@@ -57,10 +49,6 @@ function handleUketsuke(e, sheet, row) {
       );
       if (res === SpreadsheetApp.getUi().Button.YES) {
         sheet.getRange(row, COL_NYUKIN).setValue(false);
-        sheet.getRange(row, COL_SEAT_DATE).clearContent();
-        sheet.getRange(row, COL_SEAT_NO).clearContent();
-        sheet.getRange(row, COL_ANNAIBUN).setValue(false);
-        sheet.getRange(row, COL_ANNAI_DATE).clearContent();
         sheet.getRange(row, COL_OREIJOU_DATE).clearContent();
         invDateCell.clearContent();
       } else {
@@ -105,39 +93,23 @@ function handleUketsuke(e, sheet, row) {
   );
 }
 
-// ─── K列: 入金完了 → 座席割当 ──────────────────────────────────────────────────
+// ─── K列: 入金完了 → お礼状送信 ──────────────────────────────────────────────────
 
 function handleNyukin(e, sheet, row) {
-  const seatDateCell = sheet.getRange(row, COL_SEAT_DATE);
-  const seatDate     = seatDateCell.getValue();
+  const oreijouDateCell = sheet.getRange(row, COL_OREIJOU_DATE);
+  const oreijouDate     = oreijouDateCell.getValue();
 
   if (e.range.getValue() === false) {
-    // ── クリア順序チェック: 下流（O→P→Q）を先に解除しないと外せない ──
-    const oreijouDate = sheet.getRange(row, COL_OREIJOU_DATE).getValue();
-    const annaiDate   = sheet.getRange(row, COL_ANNAI_DATE).getValue();
-    const annaibun    = sheet.getRange(row, COL_ANNAIBUN).getValue();
-
-    // L を外す → O・P・Q・M・N を自動クリア（値がある場合は確認）
-    const hasDownstream = annaibun || annaiDate || oreijouDate || seatDate;
-    if (hasDownstream) {
-      const detail = [
-        oreijouDate ? `　お礼状送信日時（Q）：${formatTs(oreijouDate)}` : null,
-        annaiDate   ? `　案内送信日時（P）：${formatTs(annaiDate)}`      : null,
-        annaibun    ? `　案内実施（O）：チェック済み`                    : null,
-        seatDate    ? `　座席割当送信日時（M）：${formatTs(seatDate)}`   : null,
-        seatDate    ? `　座席番号（N）`                                  : null,
-      ].filter(Boolean).join('\n');
+    // K を外す → L を自動クリア（値がある場合は確認）
+    if (oreijouDate) {
+      const detail = `　お礼状送信日時（L）：${formatTs(oreijouDate)}`;
       const res = SpreadsheetApp.getUi().alert(
         '⚠️ チェックを外しますか？',
         `以下の値が自動でクリアされます。\n\n${detail}\n\nよろしいですか？`,
         SpreadsheetApp.getUi().ButtonSet.YES_NO
       );
       if (res === SpreadsheetApp.getUi().Button.YES) {
-        sheet.getRange(row, COL_ANNAIBUN).setValue(false);
-        sheet.getRange(row, COL_ANNAI_DATE).clearContent();
-        sheet.getRange(row, COL_OREIJOU_DATE).clearContent();
-        seatDateCell.clearContent();
-        sheet.getRange(row, COL_SEAT_NO).clearContent();
+        oreijouDateCell.clearContent();
       } else {
         e.range.setValue(true);
       }
@@ -155,8 +127,8 @@ function handleNyukin(e, sheet, row) {
     return;
   }
 
-  if (seatDate) {
-    SpreadsheetApp.getUi().alert(`⚠️ 座席割当はすでに完了しています。\n割当日時：${formatTs(seatDate)}`);
+  if (oreijouDate) {
+    SpreadsheetApp.getUi().alert(`⚠️ お礼状はすでに送信済みです。\n送信日時：${formatTs(oreijouDate)}`);
     e.range.setValue(false);
     return;
   }
@@ -165,12 +137,10 @@ function handleNyukin(e, sheet, row) {
   if (_blockSendIfLowQuota(e.range)) return;
 
   const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
-  const kubun     = sheet.getRange(row, 2).getValue(); // B列: 区分
-  const seatNo    = generateSeatNo(kubun, sheet);      // 区分ごとの連番
   const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
   const data      = findRowByReceptNo(mainSheet, receptNo);
-  if (!data) {
-    SpreadsheetApp.getUi().alert('申込みデータが見つかりません。');
+  if (!data || !data.email) {
+    SpreadsheetApp.getUi().alert('メールアドレスが見つかりません。');
     e.range.setValue(false);
     return;
   }
@@ -178,137 +148,14 @@ function handleNyukin(e, sheet, row) {
   const tpl = HtmlService.createTemplateFromFile('ConfirmNyukinDialog');
   tpl.receptNo     = receptNo;
   tpl.company_name = data.company_name || '';
-  tpl.kubun        = kubun             || '';
-  tpl.seatNo       = seatNo;
   tpl.email        = data.email        || '';
   tpl.row          = row;
   SpreadsheetApp.getUi().showModalDialog(
-    tpl.evaluate().setWidth(420).setHeight(300), '入金確認・座席番号発行'
+    tpl.evaluate().setWidth(420).setHeight(250), '入金確認・お礼状送信'
   );
 }
 
-// ─── N列: 案内実施 → 案内文送信 ───────────────────────────────────────────────
-// 送信順序:  O(案内実施✔) → P(案内送信日時) → Q(お礼状送信日時)
-// クリア順序: Q → P → O の順で削除が必要（逆順強制）
 
-function handleAnnaibun(e, sheet, row) {
-  const annaiDateCell  = sheet.getRange(row, COL_ANNAI_DATE);
-  const oreijouDateCell = sheet.getRange(row, COL_OREIJOU_DATE);
-  const annaiDate      = annaiDateCell.getValue();
-  const oreijouDate    = oreijouDateCell.getValue();
-
-  if (e.range.getValue() === false) {
-    // O を外す → P・Q を自動クリア（値がある場合は確認）
-    const hasData = annaiDate || oreijouDate;
-    if (hasData) {
-      const detail = [
-        annaiDate   ? `　案内送信日時（P）：${formatTs(annaiDate)}`   : null,
-        oreijouDate ? `　お礼状送信日時（Q）：${formatTs(oreijouDate)}` : null,
-      ].filter(Boolean).join('\n');
-      const res = SpreadsheetApp.getUi().alert(
-        '⚠️ チェックを外しますか？',
-        `以下の値が自動でクリアされます。\n\n${detail}\n\nよろしいですか？`,
-        SpreadsheetApp.getUi().ButtonSet.YES_NO
-      );
-      if (res === SpreadsheetApp.getUi().Button.YES) {
-        annaiDateCell.clearContent();
-        oreijouDateCell.clearContent();
-      } else {
-        e.range.setValue(true);
-      }
-    }
-    return;
-  }
-
-  // 前提条件: 座席割当済み（L に日時あり）
-  const seatDate = sheet.getRange(row, COL_SEAT_DATE).getValue();
-  if (!seatDate) {
-    SpreadsheetApp.getUi().alert(
-      '⚠️ 座席割当がまだ完了していません。\n先に「入金完了」をチェックして座席を割り当ててください。'
-    );
-    e.range.setValue(false);
-    return;
-  }
-
-  if (annaiDate) {
-    SpreadsheetApp.getUi().alert(`⚠️ 案内はすでに送信済みです。\n送信日時：${formatTs(annaiDate)}`);
-    e.range.setValue(false);
-    return;
-  }
-
-  // メール残数チェック
-  if (_blockSendIfLowQuota(e.range)) return;
-
-  const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
-  const seatNo    = sheet.getRange(row, COL_SEAT_NO).getValue();
-  const mainSheet = e.source.getSheetByName(DEFAULT_SHEET_NAME);
-  const data      = findRowByReceptNo(mainSheet, receptNo);
-  if (!data || !data.email) {
-    SpreadsheetApp.getUi().alert('メールアドレスが見つかりません。');
-    e.range.setValue(false);
-    return;
-  }
-
-  const tpl = HtmlService.createTemplateFromFile('ConfirmAnnaibunDialog');
-  tpl.receptNo     = receptNo;
-  tpl.company_name = data.company_name || '';
-  tpl.rep_name     = data.rep_name     || '';
-  tpl.seatNo       = seatNo            || '';
-  tpl.email        = data.email        || '';
-  tpl.row          = row;
-  SpreadsheetApp.getUi().showModalDialog(
-    tpl.evaluate().setWidth(420).setHeight(300), '案内送信の確認'
-  );
-}
-
-// ─── お礼状送信（カスタムメニュー「お礼状送信」から起動） ────────────────────────
-
-function sendOreijouFromMenu() {
-  const dataSs  = getDataSpreadsheet();
-  const sheet   = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
-  if (!sheet) { SpreadsheetApp.getUi().alert('手作業シートが見つかりません。'); return; }
-
-  const activeRange = SpreadsheetApp.getActiveRange();
-  const row = activeRange ? activeRange.getRow() : 0;
-  if (!row || row <= 2) {
-    SpreadsheetApp.getUi().alert('手作業シートで対象の行を選択してから実行してください。');
-    return;
-  }
-
-  const oreijouDate = sheet.getRange(row, COL_OREIJOU_DATE).getValue();
-  if (oreijouDate) {
-    SpreadsheetApp.getUi().alert(`⚠️ お礼状はすでに送信済みです。\n送信日時：${formatTs(oreijouDate)}`);
-    return;
-  }
-
-  const annaiDate = sheet.getRange(row, COL_ANNAI_DATE).getValue();
-  if (!annaiDate) {
-    SpreadsheetApp.getUi().alert('⚠️ 案内がまだ送信されていません。\n先に「案内実施」をチェックして案内を送信してください。');
-    return;
-  }
-
-  // メール残数チェック
-  if (_blockSendIfLowQuota(null)) return;
-
-  const receptNo  = sheet.getRange(row, COL_RECEPT_NO).getValue();
-  const mainSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
-  const data      = findRowByReceptNo(mainSheet, receptNo);
-  if (!data || !data.email) {
-    SpreadsheetApp.getUi().alert('メールアドレスが見つかりません。');
-    return;
-  }
-
-  const tpl = HtmlService.createTemplateFromFile('ConfirmOreijouDialog');
-  tpl.receptNo     = receptNo;
-  tpl.company_name = data.company_name || '';
-  tpl.rep_name     = data.rep_name     || '';
-  tpl.category     = data.category     || '';
-  tpl.email        = data.email        || '';
-  tpl.row          = row;
-  SpreadsheetApp.getUi().showModalDialog(
-    tpl.evaluate().setWidth(420).setHeight(310), 'お礼状送付の確認'
-  );
-}
 
 /** データ用スプレッドシートにも同じメニューを表示（onOpen trigger として登録） */
 function onOpenEventSheet() {
@@ -346,69 +193,32 @@ function cancelInvoiceSend(row) {
   if (sheet) sheet.getRange(row, COL_UKETSUKE).setValue(false);
 }
 
-function sendNyukinConfirmed(row, receptNo, seatNo) {
+function sendNyukinConfirmed(row, receptNo) {
   const dataSs     = getDataSpreadsheet();
   const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
   const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
   const data = findRowByReceptNo(mainSheet, receptNo);
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 
-  console.log('DEBUG sendNyukinConfirmed: receptNo=', receptNo, 'seatNo=', seatNo);
+  console.log('DEBUG sendNyukinConfirmed: receptNo=', receptNo);
   console.log('DEBUG data.email=', data.email);
 
-  // 座席割当メール送信
+  // お礼状メール送信
   try {
-    console.log('DEBUG about to send nyukin email');
-    sendNyukinEmail(data, receptNo, seatNo);
-    console.log('DEBUG nyukin email sent successfully');
+    console.log('DEBUG about to send oreijou email');
+    sendOreijouEmail(data, receptNo);
+    console.log('DEBUG oreijou email sent successfully');
   } catch (e) {
-    console.error('DEBUG nyukin email error:', e.message, e.stack);
+    console.error('DEBUG oreijou email error:', e.message, e.stack);
     throw e;
   }
 
-  tetsuSheet.getRange(row, COL_SEAT_DATE).setValue(nowStr());
-  tetsuSheet.getRange(row, COL_SEAT_NO).setValue(seatNo);
+  tetsuSheet.getRange(row, COL_OREIJOU_DATE).setValue(nowStr());
 }
 
 function cancelNyukin(row) {
   const sheet = getDataSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME2);
   if (sheet) sheet.getRange(row, COL_NYUKIN).setValue(false);
-}
-
-function sendAnnaibunConfirmed(row, receptNo) {
-  const dataSs     = getDataSpreadsheet();
-  const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
-  const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
-  const data = findRowByReceptNo(mainSheet, receptNo);
-  if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
-
-  // 案内文送信 → O列にタイムスタンプ
-  sendAnnaibunEmail(data, receptNo);
-  tetsuSheet.getRange(row, COL_ANNAI_DATE).setValue(nowStr());
-
-  // お礼状を自動送信 → P列にタイムスタンプ
-  sendOreijouEmail(data, receptNo);
-  tetsuSheet.getRange(row, COL_OREIJOU_DATE).setValue(nowStr());
-}
-
-function cancelAnnaibun(row) {
-  const sheet = getDataSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME2);
-  if (sheet) sheet.getRange(row, COL_ANNAIBUN).setValue(false);
-}
-
-function sendOreijouConfirmed(row, receptNo) {
-  const dataSs     = getDataSpreadsheet();
-  const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
-  const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
-  const data = findRowByReceptNo(mainSheet, receptNo);
-  if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
-
-  sendOreijouEmail(data, receptNo);
-  tetsuSheet.getRange(row, COL_OREIJOU_DATE).setValue(nowStr());
-}
-
-function cancelOreijou(row) {
-  // お礼状はメニューから起動のため checkbox なし → 何もしない
 }
 
 // ─── メール残数チェック（手作業シートの送信操作用） ──────────────────────────────

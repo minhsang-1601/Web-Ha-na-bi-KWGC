@@ -24,16 +24,14 @@
 </style>
 </head>
 <body>
-<h3>入金確認・座席番号発行</h3>
+<h3>入金確認・お礼状送信</h3>
 <table>
   <tr><td>受付番号</td><td><?= receptNo ?></td></tr>
   <tr><td>会社名・団体名</td><td><?= company_name ?></td></tr>
-  <tr><td>区分</td><td><?= kubun ?></td></tr>
   <tr><td>送信先メール</td><td><?= email ?></td></tr>
 </table>
-<div class="seat-box">座席番号：<?= seatNo ?></div>
 <div class="warning">
-  ⚠️ 確定すると座席割当送信日時と座席番号がセットされます。<br>
+  ⚠️ 確定するとお礼状が送信され、送信日時がセットされます。<br>
   入金が確認できていない場合はキャンセルしてください。
 </div>
 <div class="buttons">
@@ -52,7 +50,7 @@
         document.getElementById('okBtn').disabled = false;
         document.getElementById('okBtn').textContent = '確定する';
       })
-      .sendNyukinConfirmed(<?= row ?>, '<?= receptNo ?>', '<?= seatNo ?>');
+      .sendNyukinConfirmed(<?= row ?>, '<?= receptNo ?>');
   }
   function cancel() {
     google.script.run
