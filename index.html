@@ -79,12 +79,12 @@
         <div id="section-kubun" class="form-group">
             <label>区分</label>
             <div class="radio-group-container">
-                <label class="radio-label" id="kubun-label-S"><input type="radio" name="category" value="S" required> S (200万)</label>
-                <label class="radio-label" id="kubun-label-A"><input type="radio" name="category" value="A"> A (100万)</label>
-                <label class="radio-label" id="kubun-label-B"><input type="radio" name="category" value="B"> B (70万)</label>
-                <label class="radio-label" id="kubun-label-C"><input type="radio" name="category" value="C"> C (30万)</label>
-                <label class="radio-label" id="kubun-label-D"><input type="radio" name="category" value="D"> D (20万)</label>
-                <label class="radio-label" id="kubun-label-E"><input type="radio" name="category" value="E"> E (10万)</label>
+                <label class="radio-label" id="kubun-label-S"><input type="radio" name="category" value="S" required> S (<?= Math.round(getCategoryPrice('S') / 10000) ?>万)</label>
+                <label class="radio-label" id="kubun-label-A"><input type="radio" name="category" value="A"> A (<?= Math.round(getCategoryPrice('A') / 10000) ?>万)</label>
+                <label class="radio-label" id="kubun-label-B"><input type="radio" name="category" value="B"> B (<?= Math.round(getCategoryPrice('B') / 10000) ?>万)</label>
+                <label class="radio-label" id="kubun-label-C"><input type="radio" name="category" value="C"> C (<?= Math.round(getCategoryPrice('C') / 10000) ?>万)</label>
+                <label class="radio-label" id="kubun-label-D"><input type="radio" name="category" value="D"> D (<?= Math.round(getCategoryPrice('D') / 10000) ?>万)</label>
+                <label class="radio-label" id="kubun-label-E"><input type="radio" name="category" value="E"> E (<?= Math.round(getCategoryPrice('E') / 10000) ?>万)</label>
             </div>
             <div id="kubun-closed-msg" style="display:none; margin-top:8px; font-size:0.88em; color:#c0392b;"></div>
         </div>
