@@ -184,7 +184,7 @@ function defaultSaInvoiceBody() {
 function sendOreijouEmail(data, receptNo) {
   const props   = PropertiesService.getScriptProperties();
   let subject   = props.getProperty('OREIJOU_SUBJECT') ||
-    `【${getEventName()}】ご協賛へのお礼`;
+    `【${getEventName()}】ご協賛のお礼`;
   let body      = props.getProperty('OREIJOU_BODY') || defaultOreijouBody();
 
   const vars = _buildVars(data, receptNo);
@@ -328,15 +328,20 @@ function defaultOreijouBody() {
 {{company_name}}<br>
 {{rep_name}} 様<br>
 <br>
-{{event_name}} 実行委員会 事務局でございます。<br>
-このたびはご協賛ならびにご入金いただき、誠にありがとうございます。<br>
+平素より大変お世話になっております。<br>
 <br>
-なお、お礼状をPDFにて添付しておりますのでご確認ください。<br>
+川口花火大会 実行委員会 事務局でございます。<br>
+このたびは、ご多忙の折にもかかわらず、<br>
+ご協賛およびご入金を賜りまして、誠にありがとうございます。<br>
+皆様のあたたかいご支援は、大会の開催に向けた大きな力となっております。<br>
 <br>
-━━━━━━━━━━━━━━━━━━━━━━━━<br>
-{{event_name}} 実行委員会 事務局<br>
-E-mail：{{office_email}}<br>
-━━━━━━━━━━━━━━━━━━━━━━━━<br>
-※ このメールは自動送信されています。
+心より厚く御礼申し上げます。<br>
+つきましては、感謝の気持ちを込めまして、<br>
+お礼状をPDFファイルにて添付させていただきましたので、<br>
+ご確認いただけますと幸いでございます。<br>
+<br>
+今後とも、川口花火大会へのご支援・ご協力を賜りますよう、<br>
+何卒よろしくお願い申し上げます。<br>
+<br>
 </div>`;
 }
