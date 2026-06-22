@@ -10,7 +10,7 @@
 
 <div class="form-container">
     <h2 id="form-title">【<?= getEventName() ?>】協賛申込みフォーム</h2>
-    <p id="form-desc">【<?= getEventName() ?>】HPから協賛申込みがあります。<br>以下の内容を入力してください。</p>
+    <p id="form-desc" style="display:none;">下記の内容をご記入ください。</p>
 
     <div id="period-display" class="registration-period">Loading...</div>
 
@@ -95,24 +95,37 @@
             <div class="form-group">
                 <label>会社名・団体名</label>
                 <input type="text" id="company_name_input" name="company_name"
-                       placeholder="川口商工会議所" required>
+                       placeholder="ABC株式会社" required>
             </div>
 
             <div class="form-group">
                 <label class="furigana">会社名・団体名（フリガナ）</label>
                 <input type="text" id="company_furigana" name="company_furigana"
-                       placeholder="カワグチショウコウカイギショ"
+                       placeholder="ABCカブシキガイシャ"
                        pattern="^[ァ-ヶー　\s）]+$"
                        title="全角カタカナ、スペース、および全角閉じカッコのみで入力してください。" required>
             </div>
 
             <div class="form-group">
-                <label>代表者役職・代表者名</label>
+                <label>代表者役職</label>
+                <input type="text" name="rep_position" placeholder="副社長" required>
+            </div>
+
+            <div class="form-group">
+                <label class="furigana">代表者役職（フリガナ）</label>
+                <input type="text" id="rep_position_furigana" name="rep_position_furigana"
+                       placeholder="フクシャチョウ"
+                       pattern="^[ァ-ヶー\s　]+$"
+                       title="全角カタカナで入力してください。" required>
+            </div>
+
+                        <div class="form-group">
+                <label>代表者名</label>
                 <input type="text" name="rep_name" placeholder="花火　太郎" required>
             </div>
 
             <div class="form-group">
-                <label class="furigana">代表者役職・代表者名（フリガナ）</label>
+                <label class="furigana">代表者名（フリガナ）</label>
                 <input type="text" id="rep_furigana" name="rep_furigana"
                        placeholder="ハナビ　タロウ"
                        pattern="^[ァ-ヶー\s　]+$"
@@ -141,7 +154,7 @@
 
             <div class="form-group">
                 <label>住所</label>
-                <input type="text" name="address" placeholder="埼玉県川口市川口３丁目１－１総合文化センター・リリア内" required>
+                <input type="text" name="address" placeholder="埼玉県川口市川口３丁目１－１ABCビル" required>
             </div>
 
             <div class="form-group">
@@ -188,8 +201,10 @@
     const validationMessages = {
         company_name:      'こちらは入力必須項目です。',
         company_furigana:  'こちらは入力必須項目です。',
-        rep_name:          'こちらは入力必須項目です。',
-        rep_furigana:      'こちらは入力必須項目です。',
+        rep_position:          'こちらは入力必須項目です。',
+        rep_position_furigana: 'こちらは入力必須項目です。',
+        rep_name:              'こちらは入力必須項目です。',
+        rep_furigana:          'こちらは入力必須項目です。',
         staff_name:        'こちらは入力必須項目です。',
         staff_furigana:    'こちらは入力必須項目です。',
         zipcode:           '郵便番号を7桁の数字で入力してください。',
@@ -268,17 +283,31 @@
 
     // ─── Furigana validation ────────────────────────────────────────────────────
 
-    document.getElementById('company_furigana').addEventListener('blur', (e) => {
-        let value = e.target.value;
-        if (value === '') return;
-        value = value.replace(/\)/g, '）');
-        e.target.value = value;
-        const isValid = /^[ァ-ヶー　\s）]+$/.test(value);
-        if (!isValid) {
-            alert('フリガナは全角カタカナ、スペース、および全角閉じカッコ「）」のみで入力してください。');
-            e.target.value = '';
-        }
-    });
+    function attachFuriganaValidation(id, allowParen) {
+        const el = document.getElementById(id);
+        if (!el) return;
+        el.addEventListener('blur', (e) => {
+            let value = e.target.value;
+            if (value === '') return;
+            const re = allowParen ? /^[ァ-ヶー　\s）]+$/ : /^[ァ-ヶー　\s]+$/;
+            if (allowParen) {
+                value = value.replace(/\)/g, '）');
+                e.target.value = value;
+            }
+            if (!re.test(value)) {
+                const msg = allowParen
+                    ? 'フリガナは全角カタカナ、スペース、および全角閉じカッコ「）」のみで入力してください。'
+                    : 'フリガナは全角カタカナおよびスペースのみで入力してください。';
+                alert(msg);
+                e.target.value = '';
+            }
+        });
+    }
+
+    attachFuriganaValidation('company_furigana', true);
+    attachFuriganaValidation('rep_position_furigana', false);
+    attachFuriganaValidation('rep_furigana', false);
+    attachFuriganaValidation('staff_furigana', false);
 
     // ─── Config & period check via google.script.run ────────────────────────────
 
@@ -311,6 +340,7 @@
         form.style.display          = 'none';
         closedMessage.style.display = 'none';
         maintenance.style.display   = 'none';
+        document.getElementById('form-desc').style.display = 'none';
 
         if (now < startDate || now > endDate) {
             // ① 受付期間外 → 受付時間外メッセージ
@@ -321,6 +351,7 @@
         } else {
             // ③ 期間内 & 残数OK → フォーム表示
             form.style.display = 'block';
+            document.getElementById('form-desc').style.display = '';
             _applyKubunPeriod(config, now);
         }
     }
@@ -370,6 +401,7 @@
     function onConfigError(err) {
         document.getElementById('period-display').innerText = '申し込み時間：設定エラー';
         document.getElementById('form-closed-message').style.display = 'block';
+        document.getElementById('form-desc').style.display = 'none';
         console.error('getConfig error:', err);
     }
 
@@ -410,8 +442,10 @@
         category:         '区分',
         company_name:     '会社名・団体名',
         company_furigana: '会社名・団体名（フリガナ）',
-        rep_name:         '代表者役職・代表者名',
-        rep_furigana:     '代表者役職・代表者名（フリガナ）',
+        rep_position:          '代表者役職',
+        rep_position_furigana: '代表者役職（フリガナ）',
+        rep_name:              '代表者名',
+        rep_furigana:          '代表者名（フリガナ）',
         staff_name:       '担当者名',
         staff_furigana:   '担当者名（フリガナ）',
         zipcode:          '郵便番号',
@@ -443,11 +477,13 @@
 
         form.style.display          = 'none';
         confirmScreen.style.display = 'block';
+        document.getElementById('form-desc').style.display = 'none';
     });
 
     document.getElementById('btn-back').addEventListener('click', () => {
         confirmScreen.style.display = 'none';
         form.style.display          = 'block';
+        document.getElementById('form-desc').style.display = '';
     });
 
     // ─── 送信 → google.script.run.submitForm() ──────────────────────────────────
@@ -479,7 +515,7 @@
 
         // Gửi tất cả các field cần thiết (loại bỏ agreement checkbox)
         const fieldsToSend = [
-            'category', 'company_name', 'company_furigana', 'rep_name', 'rep_furigana',
+            'category', 'company_name', 'company_furigana', 'rep_position', 'rep_position_furigana', 'rep_name', 'rep_furigana',
             'staff_name', 'staff_furigana', 'zipcode', 'address', 'phone',
             'email', 'website_url', 'alt_name'
         ];
@@ -498,10 +534,11 @@
         google.script.run
             .withSuccessHandler((res) => {
                 confirmScreen.style.display = 'none';
+                document.getElementById('form-desc').style.display = 'none';
                 const thanks = document.createElement('div');
                 thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
                 thanks.innerHTML = `
-                    お申し込みありがとうございます。<br>内容を受け付けました。<br>
+                    お申込みいただきありがとうございます。<br>内容を受け付けました。<br>
                     <span style="display:inline-block; margin-top:14px; font-size:0.88em; color:#555; background:#f0eaf8; border:1px solid #c9b8e0; border-radius:6px; padding:8px 20px; letter-spacing:0.05em;">
                         受付番号：${receptNo}
                     </span>
