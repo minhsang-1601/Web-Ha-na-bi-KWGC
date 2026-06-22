@@ -46,7 +46,7 @@
         document.querySelector('.btn-send').disabled = false;
         document.querySelector('.btn-send').textContent = '送信する';
       })
-      .sendInvoiceConfirmed(<?= row ?>, '<?= receptNo ?>');
+      .sendInvoiceConfirmed(<?!= row ?>, '<?!= receptNo ?>');
   }
 
   function cancel() {

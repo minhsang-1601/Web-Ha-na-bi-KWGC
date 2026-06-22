@@ -77,6 +77,12 @@ function handleUketsuke(e, sheet, row) {
     return;
   }
 
+  // rowとreceptNoをPropertiesに保存（google.script.run経由の引数が失われる対策）
+  PropertiesService.getScriptProperties().setProperties({
+    'PENDING_ROW':     String(row),
+    'PENDING_RECEPT':  String(receptNo),
+  });
+
   const tpl = HtmlService.createTemplateFromFile('ConfirmInvoiceDialog');
   tpl.receptNo     = receptNo;
   tpl.company_name = data.company_name || '';
@@ -162,16 +168,34 @@ function onOpenEventSheet() {
 // ─── ダイアログからのコールバック ─────────────────────────────────────────────
 
 function sendInvoiceConfirmed(row, receptNo) {
-  const dataSs     = getDataSpreadsheet();
-  const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
-  const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
+  const activeSs   = SpreadsheetApp.getActiveSpreadsheet();
+  const tetsuSheet = activeSs.getSheetByName(DEFAULT_SHEET_NAME2);
+  const mainSheet  = activeSs.getSheetByName(DEFAULT_SHEET_NAME);
+
+  // 引数が失われた場合: rowで手作業シートから直接読む
+  let rowNum = Number(row) || 0;
+  if ((!receptNo || receptNo === 'undefined') && tetsuSheet && rowNum > 2) {
+    receptNo = String(tetsuSheet.getRange(rowNum, COL_RECEPT_NO).getValue()).trim();
+  }
+  // それでも取得できない場合: I列チェック済み・J列空のrowをスキャン
+  if (!receptNo && tetsuSheet) {
+    const vals = tetsuSheet.getDataRange().getValues();
+    for (let i = 2; i < vals.length; i++) {
+      if (vals[i][COL_UKETSUKE - 1] === true && !vals[i][COL_INV_DATE - 1]) {
+        receptNo = String(vals[i][COL_RECEPT_NO - 1]).trim();
+        rowNum   = i + 1;
+        break;
+      }
+    }
+  }
+
   const data = findRowByReceptNo(mainSheet, receptNo);
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 
   const pdf = generateInvoicePdf(data, receptNo);
 
   // 区分を取得して、S/A と B~E で異なるテンプレートで送信
-  const kubun = String(tetsuSheet.getRange(row, 2).getValue()).trim().toUpperCase();
+  const kubun = String(tetsuSheet.getRange(rowNum, 2).getValue()).trim().toUpperCase();
   if (['S', 'A'].includes(kubun)) {
     // S/A: 抽選確定・請求書送付メール + PDF
     sendSaInvoiceEmail(data, receptNo, pdf);
@@ -180,18 +204,19 @@ function sendInvoiceConfirmed(row, receptNo) {
     sendConfirmationEmail(data, receptNo, pdf);
   }
 
-  tetsuSheet.getRange(row, COL_INV_DATE).setValue(nowStr());
+  tetsuSheet.getRange(rowNum, COL_INV_DATE).setValue(nowStr());
 }
 
 function cancelInvoiceSend(row) {
-  const sheet = getDataSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME2);
-  if (sheet) sheet.getRange(row, COL_UKETSUKE).setValue(false);
+  const sheet   = getDataSpreadsheet().getSheetByName(DEFAULT_SHEET_NAME2);
+  const rowNum  = Number(row) || 0;
+  if (sheet && rowNum > 2) sheet.getRange(rowNum, COL_UKETSUKE).setValue(false);
 }
 
 function sendNyukinConfirmed(row, receptNo) {
-  const dataSs     = getDataSpreadsheet();
-  const tetsuSheet = dataSs.getSheetByName(DEFAULT_SHEET_NAME2);
-  const mainSheet  = dataSs.getSheetByName(DEFAULT_SHEET_NAME);
+  const activeSs   = SpreadsheetApp.getActiveSpreadsheet();
+  const tetsuSheet = activeSs.getSheetByName(DEFAULT_SHEET_NAME2);
+  const mainSheet  = activeSs.getSheetByName(DEFAULT_SHEET_NAME);
   const data = findRowByReceptNo(mainSheet, receptNo);
   if (!data) throw new Error('受付番号が見つかりません: ' + receptNo);
 

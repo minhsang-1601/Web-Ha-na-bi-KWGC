@@ -23,7 +23,7 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
   body    = _replaceVars(body,    vars);
 
   const officeEmail = getOfficeEmail();
-  const mailOptions = { to: data.email, subject, body };
+  const mailOptions = { to: data.email, subject, htmlBody: body };
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
@@ -45,7 +45,7 @@ function sendReceiptOnlyEmail(data, receptNo, invoicePdf) {
   body    = _replaceVars(body,    vars);
 
   const officeEmail = getOfficeEmail();
-  const mailOptions = { to: data.email, subject, body };
+  const mailOptions = { to: data.email, subject, htmlBody: body };
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
@@ -125,7 +125,7 @@ function sendSaInvoiceEmail(data, receptNo, invoicePdf) {
   body    = _replaceVars(body,    vars);
 
   const officeEmail = getOfficeEmail();
-  const mailOptions = { to: data.email, subject, body };
+  const mailOptions = { to: data.email, subject, htmlBody: body };
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
@@ -151,32 +151,32 @@ function _buildSaInvoiceVars(data, receptNo) {
 }
 
 function defaultSaInvoiceBody() {
-  return [
-    '{{company_name}}',
-    '{{staff_name}} 様',
-    '',
-    '川口花火大会実行委員会でございます。',
-    '',
-    'このたびは、{{event_name}}の協賛にお申し込みいただき、誠にありがとうございます。',
-    '厳正なる選考（抽選）の結果、このたび貴社（貴団体）の協賛が確定いたしましたので、ご連絡申しあげます。',
-    '',
-    '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
-    'お振込み期限（{{payment_due}}）までにお手続きくださいますようお願い申しあげます。',
-    '',
-    '■ご請求内容',
-    '　・会社名・団体名　：{{company_name}}',
-    '　・ご担当者名　　　：{{staff_name}}',
-    '　・区分　　　　　　：{{category}}',
-    '　・受付番号　　　　：{{receipt_no}}',
-    '　・協賛金額　　　　：{{amount}}円（税込）',
-    '',
-    'ご不明な点がございましたら、お気軽にお問い合わせください。',
-    '何卒よろしくお願い申しあげます。',
-    '',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-    'メールアドレス：{{office_email}}',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-  ].join('\n');
+  return `<div style="font-family:'Meiryo',sans-serif;font-size:14px;line-height:1.9;">
+{{company_name}}<br>
+{{staff_name}} 様<br>
+<br>
+川口花火大会実行委員会でございます。<br>
+<br>
+このたびは、{{event_name}}の協賛にお申し込みいただき、誠にありがとうございます。<br>
+厳正なる選考（抽選）の結果、このたび貴社（貴団体）の協賛が確定いたしましたので、ご連絡申しあげます。<br>
+<br>
+本メールに「申込受理書兼請求書」をPDFにて添付しております。<br>
+お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>
+<br>
+■ご請求内容<br>
+　・会社名・団体名　：{{company_name}}<br>
+　・ご担当者名　　　：{{staff_name}}<br>
+　・区分　　　　　　：{{category}}<br>
+　・受付番号　　　　：{{receipt_no}}<br>
+　・協賛金額　　　　：{{amount}}円（税込）<br>
+<br>
+ご不明な点がございましたら、お気軽にお問い合わせください。<br>
+何卒よろしくお願い申しあげます。<br>
+<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
+メールアドレス：{{office_email}}<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーー
+</div>`;
 }
 
 // ─── お礼状メール ──────────────────────────────────────────────────────────────
@@ -193,7 +193,7 @@ function sendOreijouEmail(data, receptNo) {
 
   const pdf = generateOreijouPdf(data);
   const officeEmail3 = getOfficeEmail();
-  const mailOptions = { to: data.email, subject, body };
+  const mailOptions = { to: data.email, subject, htmlBody: body };
   if (_validEmail(officeEmail3)) { mailOptions.cc = officeEmail3; mailOptions.replyTo = officeEmail3; }
   if (pdf) mailOptions.attachments = [pdf.setName(`お礼状_${data.company_name || ''}.pdf`)];
   MailApp.sendEmail(mailOptions);
@@ -274,70 +274,69 @@ function _replaceVars(str, vars) {
 }
 
 function defaultConfirmBody() {
-  return [
-    '{{company_name}}',
-    '{{staff_name}} 様',
-    '',
-    '川口花火大会実行委員会でございます。',
-    'このたびは、協賛にお申し込みいただき、誠にありがとうございます。',
-    '本メールに「申込受理書兼請求書」をPDFにて添付しております。',
-    'お振込み期限（{{payment_due}}）までに',
-    'お手続きくださいますようお願い申しあげます。',
-    '',
-    '■お申込み内容',
-    '　・会社名・団体名　：{{company_name}}',
-    '　・ご担当者名　　　：{{staff_name}}',
-    '　・区分　　　　　　：{{category}}',
-    '　・お申込み日時　　：{{date}}',
-    '　・受付番号　　　　：{{receipt_no}}',
-    '',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-    'メールアドレス：{{office_email}}',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-  ].join('\n');
+  return `<div style="font-family:'Meiryo',sans-serif;font-size:14px;line-height:1.9;">
+{{company_name}}<br>
+{{staff_name}} 様<br>
+<br>
+川口花火大会実行委員会でございます。<br>
+このたびは、協賛にお申し込みいただき、誠にありがとうございます。<br>
+本メールに「申込受理書兼請求書」をPDFにて添付しております。<br>
+お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>
+<br>
+■お申込み内容<br>
+　・会社名・団体名　：{{company_name}}<br>
+　・ご担当者名　　　：{{staff_name}}<br>
+　・区分　　　　　　：{{category}}<br>
+　・お申込み日時　　：{{date}}<br>
+　・受付番号　　　　：{{receipt_no}}<br>
+<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
+メールアドレス：{{office_email}}<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーー
+</div>`;
 }
 
 function defaultReceiptOnlyBody() {
-  return [
-    '{{company_name}}',
-    '{{staff_name}} 様',
-    '',
-    '川口花火大会実行委員会でございます。',
-    'このたびは、協賛にお申し込みいただき、誠にありがとうございます。',
-    '',
-    'S・A協賛につきましては、募集枠を超えるお申し込みがあった場合、締切後に抽選を実施いたします。',
-    '協賛の可否につきましては、締切後に改めてメールにてご連絡いたします。',
-    '限られた募集枠となり恐縮ですが、何卒ご理解・ご協力のほどよろしくお願い申しあげます。',
-    'ご不明な点がございましたら、お気軽にお問い合わせください。',
-    'よろしくお願い申しあげます。',
-    '',
-    '■ お申込み内容',
-    '　・会社名・団体名　：{{company_name}}',
-    '　・ご担当者名　　　：{{staff_name}}',
-    '　・区分　　　　　　：{{category}}',
-    '　・お申込み日時　　：{{date}}',
-    '　・受付番号　　　　：{{receipt_no}}',
-    '',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-    'メールアドレス：{{office_email}}',
-    'ーーーーーーーーーーーーーーーーーーーーーーーーーー',
-  ].join('\n');
+  return `<div style="font-family:'Meiryo',sans-serif;font-size:14px;line-height:1.9;">
+{{company_name}}<br>
+{{staff_name}} 様<br>
+<br>
+川口花火大会実行委員会でございます。<br>
+このたびは、協賛にお申し込みいただき、誠にありがとうございます。<br>
+<br>
+S・A協賛につきましては、募集枠を超えるお申し込みがあった場合、締切後に抽選を実施いたします。<br>
+協賛の可否につきましては、締切後に改めてメールにてご連絡いたします。<br>
+限られた募集枠となり恐縮ですが、何卒ご理解・ご協力のほどよろしくお願い申しあげます。<br>
+ご不明な点がございましたら、お気軽にお問い合わせください。<br>
+よろしくお願い申しあげます。<br>
+<br>
+■ お申込み内容<br>
+　・会社名・団体名　：{{company_name}}<br>
+　・ご担当者名　　　：{{staff_name}}<br>
+　・区分　　　　　　：{{category}}<br>
+　・お申込み日時　　：{{date}}<br>
+　・受付番号　　　　：{{receipt_no}}<br>
+<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
+メールアドレス：{{office_email}}<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーー
+</div>`;
 }
 
 function defaultOreijouBody() {
-  return [
-    '{{company_name}}',
-    '{{rep_name}} 様',
-    '',
-    '{{event_name}} 実行委員会 事務局でございます。',
-    'このたびはご協賛ならびにご入金いただき、誠にありがとうございます。',
-    '',
-    'なお、お礼状をPDFにて添付しておりますのでご確認ください。',
-    '',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '{{event_name}} 実行委員会 事務局',
-    'E-mail：{{office_email}}',
-    '━━━━━━━━━━━━━━━━━━━━━━━━',
-    '※ このメールは自動送信されています。',
-  ].join('\n');
+  return `<div style="font-family:'Meiryo',sans-serif;font-size:14px;line-height:1.9;">
+{{company_name}}<br>
+{{rep_name}} 様<br>
+<br>
+{{event_name}} 実行委員会 事務局でございます。<br>
+このたびはご協賛ならびにご入金いただき、誠にありがとうございます。<br>
+<br>
+なお、お礼状をPDFにて添付しておりますのでご確認ください。<br>
+<br>
+━━━━━━━━━━━━━━━━━━━━━━━━<br>
+{{event_name}} 実行委員会 事務局<br>
+E-mail：{{office_email}}<br>
+━━━━━━━━━━━━━━━━━━━━━━━━<br>
+※ このメールは自動送信されています。
+</div>`;
 }
