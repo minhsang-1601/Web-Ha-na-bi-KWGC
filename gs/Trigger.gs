@@ -286,25 +286,27 @@ function sendInvoiceEmail(data, receptNo, pdf) {
 }
 
 function findRowByReceptNo(sheet, receptNo) {
-  // 協賛申込み一覧: A=受付番号 B=受付日時 C=個人名 D=個人名ふりがな
-  //                E=役職代表者 F=役職ふりがな G=担当者 H=担当者ふりがな
-  //                I=郵便番号 J=住所 K=電話番号 L=メール M=区分 N=会社HP URL
+  // 協賛申込み一覧: A=受付番号 B=受付日時 C=会社名 D=会社名ふりがな
+  //                E=代表者役職 F=役職ふりがな G=代表者名 H=代表者名ふりがな
+  //                I=担当者名 J=担当者ふりがな K=郵便番号 L=住所 M=電話番号 N=メール O=区分 P=会社HP URL
   const rows = sheet.getDataRange().getValues();
   for (let i = 1; i < rows.length; i++) {
     if (String(rows[i][0]).trim() === String(receptNo).trim()) { // A列: 受付番号
       return {
-        company_name:     rows[i][2],   // C
-        company_furigana: rows[i][3],   // D
-        rep_name:         rows[i][4],   // E
-        rep_furigana:     rows[i][5],   // F
-        staff_name:       rows[i][6],   // G
-        staff_furigana:   rows[i][7],   // H
-        zipcode:          rows[i][8],   // I
-        address:          rows[i][9],   // J
-        phone:            rows[i][10],  // K
-        email:            rows[i][11],  // L
-        category:         rows[i][12],  // M
-        website_url:      rows[i][13],  // N
+        company_name:          rows[i][2],   // C
+        company_furigana:      rows[i][3],   // D
+        rep_position:          rows[i][4],   // E
+        rep_position_furigana: rows[i][5],   // F
+        rep_name:              rows[i][6],   // G
+        rep_furigana:          rows[i][7],   // H
+        staff_name:            rows[i][8],   // I
+        staff_furigana:        rows[i][9],   // J
+        zipcode:               rows[i][10],  // K
+        address:               rows[i][11],  // L
+        phone:                 rows[i][12],  // M
+        email:                 rows[i][13],  // N
+        category:              rows[i][14],  // O
+        website_url:           rows[i][15],  // P
       };
     }
   }

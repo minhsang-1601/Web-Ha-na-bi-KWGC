@@ -26,9 +26,10 @@ function resetTesagyouSheetHeaders() {
   const subheaders = [
     '直接入力',         // A: 受付番号
     'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // B-D
-    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // E-H
-    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // I-K
-    'タイムスタンプ\n自動',                             // L
+    'XLOOKUP\n自動', 'XLOOKUP\n自動',                    // E-F
+    'XLOOKUP\n自動', 'XLOOKUP\n自動',                    // G-H
+    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',  // I-K
+    'タイムスタンプ\n自動',                               // L
   ];
 
   sheet.getRange(2, 1, 1, headerCount)
@@ -67,28 +68,30 @@ function appendRow(data, sheetName) {
 
     // Build row data
     const rowData = [
-      receptNo,                   // A: 受付番号
-      dateStr,                    // B: 受付日時
-      _t(data.company_name),     // C
-      _t(data.company_furigana), // D
-      _t(data.rep_name),         // E
-      _t(data.rep_furigana),     // F
-      _t(data.staff_name),       // G
-      _t(data.staff_furigana),   // H
-      _t(data.zipcode),          // I
-      _t(data.address),          // J
-      _t(data.phone),            // K
-      _t(data.email),            // L
-      _t(data.category),         // M
-      _t(data.website_url),      // N
-      _t(data.alt_name),         // O: 会社名・団体名と異なる名
+      receptNo,                          // A: 受付番号
+      dateStr,                           // B: 受付日時
+      _t(data.company_name),            // C
+      _t(data.company_furigana),        // D
+      _t(data.rep_position),            // E: 代表者役職
+      _t(data.rep_position_furigana),   // F: 代表者役職（フリガナ）
+      _t(data.rep_name),                // G: 代表者名
+      _t(data.rep_furigana),            // H: 代表者名（フリガナ）
+      _t(data.staff_name),              // I
+      _t(data.staff_furigana),          // J
+      _t(data.zipcode),                 // K
+      _t(data.address),                 // L
+      _t(data.phone),                   // M
+      _t(data.email),                   // N
+      _t(data.category),                // O
+      _t(data.website_url),             // P
+      _t(data.alt_name),                // Q: 会社名・団体名と異なる名
     ];
 
     sheet.getRange(newRow, 1, 1, HEADERS.length).setValues([rowData]);
 
     // Set text format for zipcode (I) and phone (K) to preserve leading zeros
-    sheet.getRange(newRow, 9).setNumberFormat('@').setValue(_t(data.zipcode));
-    sheet.getRange(newRow, 11).setNumberFormat('@').setValue(_t(data.phone));
+    sheet.getRange(newRow, 11).setNumberFormat('@').setValue(_t(data.zipcode));
+    sheet.getRange(newRow, 13).setNumberFormat('@').setValue(_t(data.phone));
 
     SpreadsheetApp.flush();
     console.log('DEBUG appendRow success receptNo:', receptNo);
@@ -187,17 +190,18 @@ function _ensureFilter(sheet, headerRow, numCols) {
 }
 
 function applyColumnWidths(sheet) {
-  // A=受付番号 B=受付日時 C=個人名 D=ふりがな E=代表者 F=ふりがな
-  // G=担当者 H=ふりがな I=郵便番号 J=住所 K=電話番号 L=メール M=区分 N=URL O=異なる名
-  [150, 150, 200, 180, 150, 150, 120, 120, 90, 220, 120, 220, 60, 200, 200]
+  // A=受付番号 B=受付日時 C=会社名 D=会社名ふりがな E=代表者役職 F=役職ふりがな
+  // G=代表者名 H=代表者名ふりがな I=担当者名 J=担当者ふりがな
+  // K=郵便番号 L=住所 M=電話番号 N=メール O=区分 P=URL Q=異なる名
+  [150, 150, 200, 180, 150, 150, 130, 130, 120, 120, 90, 220, 120, 220, 60, 200, 200]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 2, HEADERS.length);
 }
 
 function applyTesagyouColumnWidths(sheet) {
-  // A=受付番号 B=区分 C=電話 D=個人名 E=住所 F=代表者 G=メール H=URL
-  // I=受付完了 J=請求書日時 K=入金 L=礼状日時
-  [150, 60, 120, 200, 200, 150, 200, 160, 70, 150, 70, 150]
+  // A=受付番号 B=区分 C=電話 D=会社名 E=住所 F=代表者名
+  // G=メール H=URL I=受付完了 J=請求書日時 K=入金 L=礼状日時
+  [150, 60, 120, 200, 200, 130, 200, 160, 70, 150, 70, 150]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 3, TESAGYOU_HEADERS.length);
 }
