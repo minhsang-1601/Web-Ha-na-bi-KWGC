@@ -162,21 +162,24 @@ button:hover {
 
 /* ─── Responsive ────────────────────────────────────────────────────────────── */
 
-@media (max-width: 640px) {
-    body { padding: 20px 12px; }
-    .form-container { padding: 20px 16px; border-radius: 8px; }
-    h2 { font-size: 1.05em; }
+/* GASのiframe内では @media が端末幅で発火しないため、
+   実機幅で付与される html.scr-sm / html.scr-xs クラスで分岐する。 */
+html.scr-sm body { padding: 0.5cm; }
+html.scr-sm .form-container {
+    max-width: none;
+    width: 100%;
+    margin: 0;
+    padding: 20px 16px;
+    border-radius: 8px;
 }
+html.scr-sm h2 { font-size: 1.05em; }
 
-@media (max-width: 400px) {
-    body { padding: 12px 8px; }
-    .form-container { padding: 16px 12px; border-radius: 6px; }
-    h2 { font-size: 1em; }
-    input[type="text"],
-    input[type="email"] { font-size: 1em; padding: 10px 8px; }
-    button { padding: 13px 15px; font-size: 1em; }
-    .radio-group-container { flex-direction: column; gap: 10px; }
-    .terms-box { height: 180px; }
-    .registration-period { font-size: 0.85em; }
-}
+html.scr-xs .form-container { padding: 16px 12px; border-radius: 6px; }
+html.scr-xs h2 { font-size: 1em; }
+html.scr-xs input[type="text"],
+html.scr-xs input[type="email"] { font-size: 1em; padding: 10px 8px; }
+html.scr-xs button { padding: 13px 15px; font-size: 1em; }
+html.scr-xs .radio-group-container { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
+html.scr-xs .terms-box { height: 180px; }
+html.scr-xs .registration-period { font-size: 0.85em; }
 </style>

@@ -95,6 +95,9 @@ function doGet(e) {
 
   return tpl.evaluate()
     .setTitle(`【${getEventName()}】協賛申込み`)
+    // GASのiframe内では <meta viewport> が効かないため、サーバー側で付与する。
+    // これで端末幅(device-width)でレンダリングされ、文字サイズが適正になる。
+    .addMetaTag('viewport', 'width=device-width, initial-scale=1')
     .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
 }
 

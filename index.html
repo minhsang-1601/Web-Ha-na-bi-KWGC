@@ -4,6 +4,16 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>【<?= getEventName() ?>】協賛申込み</title>
+    <script>
+        // GASのiframe内では viewport metaが効かず、@mediaが端末幅で発火しない。
+        // 実機の画面幅(screen.width)でクラスを付与し、CSSはこのクラスで分岐する。
+        (function () {
+            var w = (window.screen && window.screen.width) || window.innerWidth || 0;
+            var c = document.documentElement.classList;
+            if (w <= 640) c.add('scr-sm');
+            if (w <= 400) c.add('scr-xs');
+        })();
+    </script>
     <?!= include('Stylesheet') ?>
 </head>
 <body>
