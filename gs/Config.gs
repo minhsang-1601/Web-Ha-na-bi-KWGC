@@ -4,6 +4,8 @@ const DEFAULT_SHEET_NAME  = '協賛申込み一覧';
 const DEFAULT_SHEET_NAME2 = '手作業';
 const INFO_SHEET_NAME     = 'Info';
 const CREATELOG_SHEET     = 'CreateLog';
+const AUDIT_SHEET         = '操作ログ';
+const AUDIT_HEADERS       = ['日時', '実行者', 'シート', 'セル', '操作', 'ステータス'];
 
 // ─── 手作業 列番号定数 ──────────────────────────────────────────────────────────
 const COL_RECEPT_NO    =  1; // A: 受付番号

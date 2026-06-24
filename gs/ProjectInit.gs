@@ -76,6 +76,9 @@ function initProject() {
   sheet2.getRange(3, 1, sheet2.getMaxRows() - 2, TESAGYOU_HEADERS.length)
     .setVerticalAlignment('top').setHorizontalAlignment('left');
 
+  // ── 8.5 操作ログ シート（監査ログ）を作成 ───────────────────────────────────
+  _getAuditSheet(newSs);
+
   // ── 9. メールテンプレート保存 ───────────────────────────────────────────────
   setupMailTemplate();
   setupReceiptOnlyTemplate();
@@ -88,8 +91,10 @@ function initProject() {
   // ── 12. トリガー登録 ─────────────────────────────────────────────────────────
   _removeTriggersForFunction('onEditInstallable');
   _removeTriggersForFunction('onOpenEventSheet');
+  _removeTriggersForFunction('onChangeInstallable');
   ScriptApp.newTrigger('onEditInstallable').forSpreadsheet(newSs).onEdit().create();
   ScriptApp.newTrigger('onOpenEventSheet').forSpreadsheet(newSs).onOpen().create();
+  ScriptApp.newTrigger('onChangeInstallable').forSpreadsheet(newSs).onChange().create();
 
   // ── 13. CreateLog に記録 ──────────────────────────────────────────────────────
   _writeCreateLog('initProject', [
@@ -165,10 +170,12 @@ function registerTriggers() {
 
   _removeTriggersForFunction('onEditInstallable');
   _removeTriggersForFunction('onOpenEventSheet');
+  _removeTriggersForFunction('onChangeInstallable');
   ScriptApp.newTrigger('onEditInstallable').forSpreadsheet(dataSs).onEdit().create();
   ScriptApp.newTrigger('onOpenEventSheet').forSpreadsheet(dataSs).onOpen().create();
+  ScriptApp.newTrigger('onChangeInstallable').forSpreadsheet(dataSs).onChange().create();
 
-  ui.alert(`✅ トリガーを再登録しました。\n対象: ${dataSs.getName()}\n\nチェックボックス操作で確認ダイアログが表示されるようになります。`);
+  ui.alert(`✅ トリガーを再登録しました。\n対象: ${dataSs.getName()}\n\n・チェックボックス操作で確認ダイアログが表示されます。\n・全ての編集・行列の挿入削除が「操作ログ」シートに記録されます。`);
 }
 
 /**
@@ -208,5 +215,53 @@ function _removeTriggersForFunction(funcName) {
   ScriptApp.getProjectTriggers()
     .filter(t => t.getHandlerFunction() === funcName)
     .forEach(t => ScriptApp.deleteTrigger(t));
+}
+
+/**
+ * 全シートの保護をすべて解除する（以前の「シート保護」を取り消す用）。
+ * ★ オーナーアカウントで実行すること。
+ * メニュー「⚙️ 初期設定 → シート保護を解除」または GAS エディタから実行。
+ */
+function unprotectAllSheets() {
+  const mainSs = SpreadsheetApp.getActiveSpreadsheet();
+  const dataSs = getDataSpreadsheet();
+  let count = 0;
+
+  [mainSs, dataSs].forEach((ss, idx) => {
+    if (idx === 1 && ss.getId() === mainSs.getId()) return; // 同一ファイルは1回だけ
+    ss.getSheets().forEach(sheet => {
+      sheet.getProtections(SpreadsheetApp.ProtectionType.SHEET)
+        .forEach(p => { try { p.remove(); count++; } catch (_) {} });
+      sheet.getProtections(SpreadsheetApp.ProtectionType.RANGE)
+        .forEach(p => { try { p.remove(); count++; } catch (_) {} });
+    });
+  });
+
+  try {
+    SpreadsheetApp.getUi().alert(`✅ シート保護を解除しました（${count} 件）。\nすべてのシートが編集可能になりました。`);
+  } catch (_) {}
+}
+
+/**
+ * 【重要】ログが二重に記録される / メールが二重送信される場合に実行。
+ * インストール型トリガーはアカウントごとに作成されるため、複数アカウントが
+ * トリガーを持つと、1回の編集で全員のトリガーが発火し重複する。
+ * → デプロイ者「以外」の各アカウントでこの関数を実行し、自分のトリガーを全削除する。
+ *   （トリガーはデプロイ者の1セットだけ残す。デプロイ者のトリガーが
+ *    全員の編集に対して発火するため、他アカウントのトリガーは不要。）
+ * GAS エディタでこの関数を選んで実行 → 実行ログを確認。
+ */
+function removeMyTriggers() {
+  const triggers = ScriptApp.getProjectTriggers();
+  const me = Session.getActiveUser().getEmail() || '(unknown)';
+  triggers.forEach(t => ScriptApp.deleteTrigger(t));
+  console.log(`✅ ${me} のトリガー ${triggers.length} 件を削除しました。`);
+  try {
+    SpreadsheetApp.getUi().alert(
+      `✅ このアカウント（${me}）のトリガーを ${triggers.length} 件削除しました。\n\n` +
+      `※ デプロイ者アカウントでは実行しないでください。\n` +
+      `　 デプロイ者のトリガーが全員の操作に対して動作します。`
+    );
+  } catch (_) {}
 }
 

@@ -175,13 +175,11 @@ function include(filename) {
 /** フォーム背景画像を Base64 データURLで返す（クライアントから呼ぶ） */
 function getBgImageDataUrl() {
   const id = getBgImageId();
-  console.log('DEBUG getBgImageDataUrl id:', id);
   if (!id) return '';
   try {
     const blob = DriveApp.getFileById(id).getBlob();
     const b64  = Utilities.base64Encode(blob.getBytes());
     const mime = blob.getContentType() || 'image/jpeg';
-    console.log('DEBUG getBgImageDataUrl mime:', mime, 'b64 length:', b64.length);
     return `data:${mime};base64,${b64}`;
   } catch (e) {
     console.warn('背景画像の読み込み失敗:', e.message);
@@ -280,7 +278,6 @@ function getConfig() {
  */
 /** JSON文字列形式でデータを受け取る（serialization問題の回避） */
 function submitFormJson(dataJson) {
-  console.log('DEBUG submitFormJson called with dataJson:', dataJson);
   let data;
   try {
     data = JSON.parse(dataJson);
@@ -291,8 +288,6 @@ function submitFormJson(dataJson) {
 }
 
 function submitForm(data) {
-  console.log('DEBUG submitForm called with data:', JSON.stringify(data));
-  console.log('DEBUG data.zipcode:', data.zipcode, 'data.phone:', data.phone);
   // ─── ① メール送信残数チェック（最優先・データ記録より前） ────────────────────
   // 残数不足のままデータを記録すると「申込みは登録されたがメール未送信」になるため、
   // 記録前に拒否する。
@@ -350,36 +345,24 @@ function submitForm(data) {
   const autoSend = AUTO_SEND_KUBUN.includes(kubun);
 
   // ─── スプレッドシート登録 ─────────────────────────────────────────────────
-  console.log('DEBUG about to call appendRow');
   const receptNo = appendRow(data, DEFAULT_SHEET_NAME);
-  console.log('DEBUG appendRow returned receptNo:', receptNo);
   appendToTesagyouSheet(receptNo, DEFAULT_SHEET_NAME2, data);
-  console.log('DEBUG appendToTesagyouSheet completed');
 
   if (data.email) {
-    console.log('DEBUG about to send email, autoSend:', autoSend, 'category:', data.category);
     try {
-      console.log('DEBUG data.email:', data.email);
       if (autoSend) {
-        console.log('DEBUG generating PDF...');
         const pdf = generateInvoicePdf(data, receptNo);
-        console.log('DEBUG PDF generated, sending confirmation email...');
         sendConfirmationEmail(data, receptNo, pdf);
       } else {
-        console.log('DEBUG sending receipt only email...');
         sendReceiptOnlyEmail(data, receptNo);
       }
-      console.log('DEBUG email sent successfully');
     } catch (e) {
-      console.error('DEBUG email send error:', e.message);
-      console.error('DEBUG error stack:', e.stack);
+      console.error('申込確認メール送信失敗:', e.message, e.stack);
     }
-    // _notifyOffice(data, receptNo, autoSend);  // 事務局通知メールを無効化
   } else {
-    console.warn('DEBUG data.email is empty or falsy:', data.email);
+    console.warn('メールアドレスが空のため確認メールを送信しませんでした。');
   }
 
-  console.log('DEBUG submitForm returning success');
   return { result: 'success', receipt_no: receptNo };
 }
 
@@ -391,6 +374,7 @@ function onOpen() {
       .addItem('プロジェクト初期化',      'initProject')
       .addItem('Info シート作成',         'setupInfoSheet')
       .addItem('トリガー再登録',          'registerTriggers')
+      .addItem('シート保護を解除',        'unprotectAllSheets')
     )
     .addSeparator()
     .addItem('メールテンプレ保存',       'setupAllMailTemplates')

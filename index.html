@@ -435,6 +435,18 @@
     })();
 
     window.addEventListener('DOMContentLoaded', () => {
+        // 必須項目のラベル直下に「*必須」（赤・斜体）を表示
+        document.querySelectorAll('.form-group').forEach((g) => {
+            const field = g.querySelector('[required]');
+            const label = g.querySelector('label');
+            if (field && label && !label.querySelector('.required-mark')) {
+                const mark = document.createElement('span');
+                mark.className = 'required-mark';
+                mark.textContent = '（必須）';
+                label.appendChild(mark);
+            }
+        });
+
         google.script.run
             .withSuccessHandler(onConfigLoaded)
             .withFailureHandler(onConfigError)
