@@ -1,6 +1,15 @@
 // ─── Web App エントリーポイント ────────────────────────────────────────────────
 
-function doGet() {
+function doGet(e) {
+  // QRコードページ: ?qr=1 でアクセスすると自分自身のURLをQRで表示
+  if (e && e.parameter && e.parameter.qr === '1') {
+    const tpl = HtmlService.createTemplateFromFile('QR');
+    try { tpl.url = ScriptApp.getService().getUrl(); } catch (_) { tpl.url = ''; }
+    try { tpl.eventName = getEventName(); } catch (_) { tpl.eventName = 'イベント'; }
+    return tpl.evaluate()
+      .setTitle('QRコード')
+      .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+  }
   // ─── MAIN_SS_ID を Script Properties に保存（他コンテキストからの Info 参照用） ──
   try {
     const mainSs = SpreadsheetApp.getActiveSpreadsheet();
