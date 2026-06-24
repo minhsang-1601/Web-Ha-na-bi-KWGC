@@ -96,6 +96,9 @@ function initProject() {
   ScriptApp.newTrigger('onOpenEventSheet').forSpreadsheet(newSs).onOpen().create();
   ScriptApp.newTrigger('onChangeInstallable').forSpreadsheet(newSs).onChange().create();
 
+  // この実行者（＝トリガー所有者＝デプロイ者）を送信者として記録（FROM 固定用）
+  PropertiesService.getScriptProperties().setProperty('SENDER_EMAIL', Session.getEffectiveUser().getEmail());
+
   // ── 13. CreateLog に記録 ──────────────────────────────────────────────────────
   _writeCreateLog('initProject', [
     `パス: ${projectId}/`,
@@ -175,7 +178,12 @@ function registerTriggers() {
   ScriptApp.newTrigger('onOpenEventSheet').forSpreadsheet(dataSs).onOpen().create();
   ScriptApp.newTrigger('onChangeInstallable').forSpreadsheet(dataSs).onChange().create();
 
-  ui.alert(`✅ トリガーを再登録しました。\n対象: ${dataSs.getName()}\n\n・チェックボックス操作で確認ダイアログが表示されます。\n・全ての編集・行列の挿入削除が「操作ログ」シートに記録されます。`);
+  // この実行者（＝トリガー所有者＝デプロイ者）を送信者として記録。
+  // メール送信は必ずこのアカウントのトリガーで行われ、FROM がこの人に固定される。
+  const sender = Session.getEffectiveUser().getEmail();
+  PropertiesService.getScriptProperties().setProperty('SENDER_EMAIL', sender);
+
+  ui.alert(`✅ トリガーを再登録しました。\n対象: ${dataSs.getName()}\n送信者（FROM）: ${sender}\n\n・チェックボックス操作で確認ダイアログが表示されます。\n・全ての編集・行列の挿入削除が「操作ログ」シートに記録されます。`);
 }
 
 /**

@@ -8,6 +8,13 @@
 //   L (12) お礼状送信日時   timestamp 自動  ← _doSendNyukin でセット
 
 function onEditInstallable(e) {
+  // ★ ファイルオーナー（＝デプロイ者）のトリガーだけ処理する。
+  //   メンバーが自分のトリガーを持っていても、その実行は即終了。
+  //   → 送信・ログ・ダイアログはオーナーのトリガーが一括で行い、
+  //     FROM = デプロイ者 に固定され、重複も防げる。
+  //   （ダイアログは編集した本人の画面に表示される）
+  if (!_isOwnerExecution(e)) return;
+
   // すべての編集を操作ログに記録（誰がどのセルを変更/削除したか）
   _logAudit(e);
 
@@ -105,6 +112,7 @@ function handleUketsuke(e, sheet, row) {
   if (res !== ui.Button.YES) { e.range.setValue(false); return; }
 
   const a1 = e.range.getA1Notation();
+  // 送信はトリガー（＝デプロイ者権限）で直接実行 → FROM はデプロイ者に固定
   const r = _doSendInvoice(e.source, row, receptNo);
   if (!r.ok) {
     _logAction(e.source, _auditUser(e), sheet.getName(), a1, '請求書送信', '操作失敗');
@@ -188,6 +196,7 @@ function handleNyukin(e, sheet, row) {
   if (res !== ui.Button.YES) { e.range.setValue(false); return; }
 
   const a1 = e.range.getA1Notation();
+  // 送信はトリガー（＝デプロイ者権限）で直接実行 → FROM はデプロイ者に固定
   const r = _doSendNyukin(e.source, row, receptNo);
   if (!r.ok) {
     _logAction(e.source, _auditUser(e), sheet.getName(), a1, 'お礼状送信', '操作失敗');
@@ -280,6 +289,7 @@ function _logAudit(e) {
 /** 行・列の挿入/削除などの構造変更を記録（onChange イベント） */
 function onChangeInstallable(e) {
   try {
+    if (!_isOwnerExecution(e)) return; // オーナーのトリガーのみ記録（重複防止）
     const ss  = SpreadsheetApp.getActiveSpreadsheet();
     const log = _getAuditSheet(ss);
 
@@ -313,6 +323,34 @@ function onChangeInstallable(e) {
   }
 }
 
+/**
+ * この実行が「指定された送信者（＝デプロイ者）のトリガー」によるものか判定する。
+ * インストール型トリガーは作成者の権限で動くため、Session.getEffectiveUser() が
+ * トリガー作成者になる。これが Script Properties の SENDER_EMAIL と一致する場合だけ true。
+ * SENDER_EMAIL は registerTriggers / initProject 実行時（＝デプロイ者）に保存される。
+ * （判定不能・未設定の場合は従来通り動かすため true を返す）
+ */
+function _isOwnerExecution(e) {
+  try {
+    let me = '';
+    try { me = Session.getEffectiveUser().getEmail(); } catch (_) {}
+    if (!me) return true;
+
+    const sender = PropertiesService.getScriptProperties().getProperty('SENDER_EMAIL');
+    if (sender) return me === sender;
+
+    // フォールバック: SENDER_EMAIL 未設定ならファイルオーナーと比較
+    try {
+      const ss = (e && e.source) || SpreadsheetApp.getActiveSpreadsheet();
+      const owner = ss.getOwner() && ss.getOwner().getEmail();
+      if (owner) return me === owner;
+    } catch (_) {}
+    return true;
+  } catch (_) {
+    return true;
+  }
+}
+
 /** 操作者のメールアドレスを取得（取得できなければ unknown） */
 function _auditUser(e) {
   try {
@@ -333,9 +371,8 @@ function onOpenEventSheet() {
 }
 
 // ─── 送信実処理（installable トリガー＝デプロイ者権限で実行される） ───────────────
-// handleUketsuke / handleNyukin（onEditInstallable 経由）から呼ばれる。
-// トリガーはトリガー作成者（デプロイ者）の権限で動くため、誰が操作しても
-// MailApp の FROM はデプロイ者に固定される。UrlFetch 等の追加権限は不要。
+// handleUketsuke / handleNyukin から呼ばれる。トリガーはトリガー作成者（デプロイ者）の
+// 権限で動くため、誰が操作しても MailApp の FROM はデプロイ者に固定される。
 
 /** I列チェック → 請求書（B〜E）/ 抽選確定請求書（S・A）を送信 */
 function _doSendInvoice(ss, row, receptNo) {

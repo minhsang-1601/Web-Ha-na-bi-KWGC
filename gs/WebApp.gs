@@ -374,13 +374,10 @@ function onOpen() {
       .addItem('プロジェクト初期化',      'initProject')
       .addItem('Info シート作成',         'setupInfoSheet')
       .addItem('トリガー再登録',          'registerTriggers')
-      .addItem('シート保護を解除',        'unprotectAllSheets')
     )
     .addSeparator()
     .addItem('メールテンプレ保存',       'setupAllMailTemplates')
     .addItem('Info設定をキャッシュ更新', 'syncInfoToScriptProperties')
-    .addItem('列名を最新に更新',         'renameHeaders')
-    .addItem('手作業シート列をリセット', 'resetTesagyouSheetHeaders')
     .addToUi();
 }
 
