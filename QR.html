@@ -78,17 +78,19 @@
   <div class="card">
     <h1>【<?= eventName ?>】<br>協賛申込みフォーム</h1>
     <p class="subtitle">QRコードからフォームにアクセスできます</p>
-    <div id="qrcode"></div>
+    <div id="qrcode" data-url="<?= url ?>"></div>
     <button class="btn-print" onclick="window.print()">印刷する</button>
   </div>
   <script>
-    new QRCode(document.getElementById('qrcode'), {
-      text: <?= JSON.stringify(url) ?>,
-      width: 220,
-      height: 220,
-      colorDark: '#222222',
+    var qrEl = document.getElementById('qrcode');
+    var qrUrl = qrEl.getAttribute('data-url');
+    new QRCode(qrEl, {
+      text: qrUrl,
+      width: 240,
+      height: 240,
+      colorDark: '#000000',
       colorLight: '#ffffff',
-      correctLevel: QRCode.CorrectLevel.M,
+      correctLevel: QRCode.CorrectLevel.L,
     });
   </script>
 </body>
