@@ -124,6 +124,11 @@ function getKubunSaEnd()       { return getConfigVal('KUBUN_SA_END',       '9999
 function getKubunBcdeStart()   { return getConfigVal('KUBUN_BCDE_START',   '9999-99-99T99:99:99');            }
 function getKubunBcdeEnd()     { return getConfigVal('KUBUN_BCDE_END',     '9999-99-99T99:99:99');            }
 
+/** 申込み期間ボックスを表示するか（Info の SHOW_PERIOD。OFF 以外は表示） */
+function getShowPeriod() {
+  return String(getConfigVal('SHOW_PERIOD', 'ON')).trim().toUpperCase() !== 'OFF';
+}
+
 /** メール送信残数の最低ライン（Info の MIN_MAIL_QUOTA。5未満は5に切り上げ） */
 function getMinMailQuota() {
   const v = Number(getConfigVal('MIN_MAIL_QUOTA', MIN_MAIL_QUOTA_DEFAULT));

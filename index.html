@@ -351,11 +351,16 @@
         const maintenance   = document.getElementById('maintenance-message');
         const periodDisplay = document.getElementById('period-display');
 
-        // 申込み期間を区分ごとに表示（※ 期間によるフォーム制御は行わない＝常に表示）
-        periodDisplay.innerHTML =
-            '<div style="font-weight:bold; margin-bottom:6px;">申込み期間</div>' +
-            '<div><span style="display:inline-block; min-width:8em;">区分 S/A</span>：' + formatDateDisplay(config.kubunSaStart) + ' ～ ' + formatDateDisplay(config.kubunSaEnd) + '</div>' +
-            '<div><span style="display:inline-block; min-width:8em;">区分 B/C/D/E</span>：' + formatDateDisplay(config.kubunBcdeStart) + ' ～ ' + formatDateDisplay(config.kubunBcdeEnd) + '</div>';
+        // 申込み期間ボックス: Info の SHOW_PERIOD が OFF なら非表示
+        if (config.showPeriod === false) {
+            periodDisplay.style.display = 'none';
+        } else {
+            periodDisplay.style.display = '';
+            periodDisplay.innerHTML =
+                '<div style="font-weight:bold; margin-bottom:6px;">申込み期間</div>' +
+                '<div class="period-line"><span class="period-label">区分 S/A</span><span class="period-sep">：</span><span class="period-date">' + formatDateDisplay(config.kubunSaStart) + ' ～ ' + formatDateDisplay(config.kubunSaEnd) + '</span></div>' +
+                '<div class="period-line"><span class="period-label">区分 B/C/D/E</span><span class="period-sep">：</span><span class="period-date">' + formatDateDisplay(config.kubunBcdeStart) + ' ～ ' + formatDateDisplay(config.kubunBcdeEnd) + '</span></div>';
+        }
 
         // 初期状態: すべて非表示
         form.style.display          = 'none';
@@ -498,7 +503,9 @@
         confirmScreen.style.display = 'none';
         form.style.display          = 'block';
         document.getElementById('form-desc').style.display = '';
-        document.getElementById('period-display').style.display = '';
+        // SHOW_PERIOD が OFF のときは戻っても表示しない
+        document.getElementById('period-display').style.display =
+            (appConfig.showPeriod === false) ? 'none' : '';
     });
 
     // ─── 送信 → google.script.run.submitForm() ──────────────────────────────────

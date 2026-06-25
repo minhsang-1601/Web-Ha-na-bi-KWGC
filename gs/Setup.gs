@@ -17,14 +17,11 @@ function setupInfoSheet() {
   const rows = [
     ['キー', '値', '必須', '説明'],
     ['EVENT_NAME',        '第5回川口花火大会',              O, 'イベント名'],
-    ['EVENT_DATE',        '2026-09-20',                     O, '開催日'],
     ['PAYMENT_DUE',       '9月18日（金）',                  O, '入金期限'],
     ['OFFICE_EMAIL',      OFFICE_EMAIL_DEFAULT,              O, '事務局メールアドレス'],
     ['HANKO_FILE_ID',     HANKO_FILE_ID_DEFAULT,             O, '印影PNG の Google Drive ファイルID'],
     ['BG_IMAGE_ID',      '',                                O,  'フォーム背景画像の Google Drive ファイルID｜Drive でファイルを右クリック→「リンクをコピー」→ URLの「/d/〇〇/view」の〇〇部分を入力'],
     ['ROOT_FOLDER_ID',    '',                                O, 'プロジェクト作成先のフォルダID（Drive）'],
-    ['START_DATE',        '2025-01-01T00:00:00',             O, 'フォーム受付開始日時'],
-    ['END_DATE',          '2026-10-01T23:59:59',             O, 'フォーム受付終了日時'],
     ['PRICE_S',           2000000,                           O, 'S協賛 金額（円）'],
     ['PRICE_A',           1000000,                           O, 'A協賛 金額（円）'],
     ['PRICE_B',           500000,                            O, 'B協賛 金額（円）'],
@@ -51,6 +48,7 @@ function setupInfoSheet() {
     ['KUBUN_SA_END',     '2026-07-07T23:59:59',                O, 'S・A 区分 申込み受付終了日時'],
     ['KUBUN_BCDE_START', '2026-06-01T00:00:00',                O, 'B〜E 区分 申込み受付開始日時'],
     ['KUBUN_BCDE_END',   '2026-09-04T23:59:59',                O, 'B〜E 区分 申込み受付終了日時'],
+    ['SHOW_PERIOD',      'ON',                                 O, '申込み期間ボックスの表示（ON＝表示／OFF＝非表示）'],
   ];
 
   sheet.getRange(1, 1, rows.length, 4).setValues(rows);

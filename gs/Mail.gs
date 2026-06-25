@@ -182,7 +182,7 @@ function defaultSaInvoiceBody() {
 {{org_name}}でございます。<br>
 <br>
 このたびは、{{event_name}}の協賛にお申込みいただき、誠にありがとうございます。<br>
-<strong>{{KUBUN_SA_END}}</strong>の申込み締め切りをもちまして、（宛名と同じ会社名）様の{{category}}協賛枠が確定いたしましたので、ご連絡申しあげます。<br>
+<strong>{{KUBUN_SA_END}}</strong>の申込み締め切りをもちまして、{{staff_name}}様の{{category}}協賛枠が確定いたしましたので、ご連絡申しあげます。<br>
 <br>
 本メールに「請求書」をPDFにて添付しております。<br>
 お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>

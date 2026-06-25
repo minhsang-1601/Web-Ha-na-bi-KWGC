@@ -51,6 +51,15 @@ h2 {
     color: #4a3b68;
 }
 
+.period-label {
+    display: inline-block;
+    min-width: 8em;
+}
+
+.period-line {
+    white-space: nowrap;
+}
+
 /* ─── Form fields ───────────────────────────────────────────────────────────── */
 
 .form-group {
@@ -192,6 +201,12 @@ html.scr-sm .form-container {
     border-radius: 8px;
 }
 html.scr-sm h2 { font-size: 1.2em; }
+/* モバイル: 申込み期間は「区分名」の下に「期間」を改行表示する */
+html.scr-sm .registration-period { font-size: 0.85em; }
+html.scr-sm .period-line   { margin-bottom: 8px; }
+html.scr-sm .period-label  { min-width: 0; display: block; }
+html.scr-sm .period-sep    { display: none; }
+html.scr-sm .period-date   { display: block; padding-left: 1em; }
 
 html.scr-xs .form-container { padding: 16px 12px; border-radius: 6px; }
 html.scr-xs h2 { font-size: 1.1em; }
@@ -200,5 +215,14 @@ html.scr-xs input[type="email"] { font-size: 1em; padding: 10px 8px; }
 html.scr-xs button { padding: 13px 15px; font-size: 1em; }
 html.scr-xs .radio-group-container { grid-template-columns: 1fr 1fr; gap: 10px 16px; }
 html.scr-xs .terms-box { height: 180px; }
-html.scr-xs .registration-period { font-size: 0.85em; }
+html.scr-xs .registration-period { font-size: 0.82em; }
+
+/* 申込み期間: モバイルでは「期間」を改行表示（@media版・端末／DevTools両対応） */
+@media (max-width: 640px) {
+    .registration-period { font-size: 0.85em; }
+    .period-line  { margin-bottom: 8px; }
+    .period-label { min-width: 0; display: block; }
+    .period-sep   { display: none; }
+    .period-date  { display: block; padding-left: 1em; }
+}
 </style>

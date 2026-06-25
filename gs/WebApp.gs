@@ -106,8 +106,6 @@ function _checkRequiredInfoKeys() {
   const REQUIRED = [
     'EVENT_NAME',
     'OFFICE_EMAIL',
-    'START_DATE',
-    'END_DATE',
     'PAYMENT_DUE',
     'ORG_NAME',
     'ORG_REP',
@@ -259,8 +257,6 @@ function getConfig() {
   if (!mailQuotaOk) _notifyLowQuota(quota);
 
   return {
-    startDate:  String(getConfigVal('START_DATE',  '2025-01-01T00:00:00')),
-    endDate:    String(getConfigVal('END_DATE',     '2026-10-01T23:59:59')),
     sheetName1: DEFAULT_SHEET_NAME,
     sheetName2: DEFAULT_SHEET_NAME2,
     eventName:        getEventName(),
@@ -270,6 +266,7 @@ function getConfig() {
     kubunSaEnd:     String(getKubunSaEnd()),
     kubunBcdeStart: String(getKubunBcdeStart()),
     kubunBcdeEnd:   String(getKubunBcdeEnd()),
+    showPeriod:     getShowPeriod(),
   };
 }
 
