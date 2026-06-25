@@ -137,11 +137,11 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
     sheet.getRange(newRow, Number(col)).setFormula(formula);
   });
 
-  // I: 受付完了 checkbox — B〜E は申込時に自動完了
+  // I: 受付完了 checkbox — B〜E は申込み時に自動完了
   sheet.getRange(newRow, COL_UKETSUKE).insertCheckboxes();
   if (autoSend) sheet.getRange(newRow, COL_UKETSUKE).setValue(true);
 
-  // J: 請求書送信日時 — B〜E は申込時に自動送信済みのため現在日時
+  // J: 請求書送信日時 — B〜E は申込み時に自動送信済みのため現在日時
   if (autoSend) sheet.getRange(newRow, COL_INV_DATE).setValue(nowStr());
 
   // K: 入金完了 checkbox

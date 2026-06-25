@@ -294,7 +294,7 @@ function submitForm(data) {
   const _quota = _getMailQuotaSafe();
   if (_quota < getMinMailQuota()) {
     _notifyLowQuota(_quota);
-    throw new Error('ただいまお申し込みを受け付けできません。時間をおいて再度お試しください。');
+    throw new Error('ただいまお申込みを受け付けできません。時間をおいて再度お試しください。');
   }
 
   // ─── Info シート 存在確認（必須） ────────────────────────────────────────────
@@ -310,7 +310,7 @@ function submitForm(data) {
           '',
           `　会社名　：${data.company_name || '（不明）'}`,
           `　メール　：${data.email || '（不明）'}`,
-          `　申込日時：${nowStr()}`,
+          `　申込み日時：${nowStr()}`,
           '',
           '━━━━━━━━━━━━━━━━━━━━━━━━',
           '【対応をお願いします】',
@@ -357,7 +357,7 @@ function submitForm(data) {
         sendReceiptOnlyEmail(data, receptNo);
       }
     } catch (e) {
-      console.error('申込確認メール送信失敗:', e.message, e.stack);
+      console.error('申込み確認メール送信失敗:', e.message, e.stack);
     }
   } else {
     console.warn('メールアドレスが空のため確認メールを送信しませんでした。');
@@ -384,7 +384,7 @@ function onOpen() {
 // ─── 内部ユーティリティ ────────────────────────────────────────────────────────
 
 function _notifyOffice(data, receptNo, autoSent) {
-  const subject = `【協賛申込】${data.company_name || ''} (${data.category || ''}) 受付番号:${receptNo}`;
+  const subject = `【協賛申込み】${data.company_name || ''} (${data.category || ''}) 受付番号:${receptNo}`;
   const body = [
     '新規協賛申込みがありました。',
     '',

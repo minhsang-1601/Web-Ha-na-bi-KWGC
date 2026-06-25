@@ -9,7 +9,7 @@ function checkMailQuota() {
   return remaining;
 }
 
-// ─── 申込確認メール ────────────────────────────────────────────────────────────
+// ─── 申込み確認メール ────────────────────────────────────────────────────────────
 
 /** B〜E: 受付確認 + 請求書PDF 添付 */
 function sendConfirmationEmail(data, receptNo, invoicePdf) {
@@ -27,7 +27,7 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
-      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
+      invoicePdf.setName(`申込み受理書兼請求書_${data.company_name || receptNo}.pdf`)
     ];
   }
   MailApp.sendEmail(mailOptions);
@@ -49,7 +49,7 @@ function sendReceiptOnlyEmail(data, receptNo, invoicePdf) {
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
-      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
+      invoicePdf.setName(`申込み受理書兼請求書_${data.company_name || receptNo}.pdf`)
     ];
   }
   MailApp.sendEmail(mailOptions);
@@ -129,7 +129,7 @@ function sendSaInvoiceEmail(data, receptNo, invoicePdf) {
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
-      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
+      invoicePdf.setName(`申込み受理書兼請求書_${data.company_name || receptNo}.pdf`)
     ];
   }
   MailApp.sendEmail(mailOptions);
@@ -146,8 +146,32 @@ function _buildSaInvoiceVars(data, receptNo) {
     event_name:   getEventName(),
     payment_due:  getPaymentDue(),
     office_email: getOfficeEmail(),
-    amount:       totalPrice > 0 ? totalPrice.toLocaleString() : '―',
+    office_hours: getOfficeHours(),
+    amount:       totalPrice > 0 ? Math.round(totalPrice / 10000) + '万' : '―',
+    // 組織・振込先情報
+    org_name:       getOrgName(),
+    org_rep:        getOrgRep(),
+    org_location:   getOrgLocation(),
+    org_tel:        getOrgTel(),
+    org_fax:        getOrgFax(),
+    invoice_reg_no: getInvoiceRegNo(),
+    bank_name:      getBankName(),
+    bank_no:        getBankNo(),
+    bank_holder:    getBankHolder(),
+    bank_rep:       getBankRep(),
+    // 区分別 申込み期間（テンプレートで使用）
+    KUBUN_SA_END:     _fmtDateJa(getKubunSaEnd()),
+    KUBUN_SA_START:   _fmtDateJa(getKubunSaStart()),
+    KUBUN_BCDE_END:   _fmtDateJa(getKubunBcdeEnd()),
+    KUBUN_BCDE_START: _fmtDateJa(getKubunBcdeStart()),
   };
+}
+
+/** ISO日時文字列を「yyyy年M月d日」に整形（変換できなければ元の文字列） */
+function _fmtDateJa(iso) {
+  const d = new Date(iso);
+  if (isNaN(d.getTime())) return String(iso || '');
+  return Utilities.formatDate(d, 'Asia/Tokyo', 'yyyy年M月d日');
 }
 
 function defaultSaInvoiceBody() {
@@ -155,27 +179,31 @@ function defaultSaInvoiceBody() {
 {{company_name}}<br>
 {{staff_name}} 様<br>
 <br>
-川口花火大会実行委員会でございます。<br>
+{{org_name}}でございます。<br>
 <br>
-このたびは、{{event_name}}の協賛にお申し込みいただき、誠にありがとうございます。<br>
-厳正なる選考（抽選）の結果、このたび貴社（貴団体）の協賛が確定いたしましたので、ご連絡申しあげます。<br>
+このたびは、{{event_name}}の協賛にお申込みいただき、誠にありがとうございます。<br>
+<strong>{{KUBUN_SA_END}}</strong>の申込み締め切りをもちまして、（宛名と同じ会社名）様の{{category}}協賛枠が確定いたしましたので、ご連絡申しあげます。<br>
 <br>
-本メールに「申込受理書兼請求書」をPDFにて添付しております。<br>
+本メールに「請求書」をPDFにて添付しております。<br>
 お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>
 <br>
 ■ご請求内容<br>
 　・会社名・団体名　：{{company_name}}<br>
-　・ご担当者名　　　：{{staff_name}}<br>
+　・担当者名　　　　：{{staff_name}}<br>
 　・区分　　　　　　：{{category}}<br>
-　・受付番号　　　　：{{receipt_no}}<br>
 　・協賛金額　　　　：{{amount}}円（税込）<br>
+　・受付番号　　　　：{{receipt_no}}<br>
 <br>
 ご不明な点がございましたら、お気軽にお問い合わせください。<br>
 何卒よろしくお願い申しあげます。<br>
 <br>
-ーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
-メールアドレス：{{office_email}}<br>
-ーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
+※このメールは自動送信メールです。本メールへの返信はできませんのでご了承ください。<br>
+なお、お心当たりのない場合やお申込み内容に誤りがある場合は、下記までご連絡ください。<br>
+【お問い合わせ先】<br>
+{{org_name}}{{org_location}}<br>
+{{office_email}}<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 </div>`;
 }
 
@@ -252,6 +280,8 @@ function _validEmail(email) {
 }
 
 function _buildVars(data, receptNo) {
+  const cat        = String(data.category || '').trim().toUpperCase();
+  const totalPrice = getCategoryPrice(cat);
   return {
     company_name: data.company_name || '',
     rep_name:     data.rep_name     || '',
@@ -263,6 +293,18 @@ function _buildVars(data, receptNo) {
     payment_due:  getPaymentDue(),
     office_email: getOfficeEmail(),
     office_hours: getOfficeHours(),
+    amount:       totalPrice > 0 ? Math.round(totalPrice / 10000) + '万' : '―',
+    // 組織・振込先情報（テンプレートで使用される場合に置換）
+    org_name:       getOrgName(),
+    org_rep:        getOrgRep(),
+    org_location:   getOrgLocation(),
+    org_tel:        getOrgTel(),
+    org_fax:        getOrgFax(),
+    invoice_reg_no: getInvoiceRegNo(),
+    bank_name:      getBankName(),
+    bank_no:        getBankNo(),
+    bank_holder:    getBankHolder(),
+    bank_rep:       getBankRep(),
   };
 }
 
@@ -278,21 +320,26 @@ function defaultConfirmBody() {
 {{company_name}}<br>
 {{staff_name}} 様<br>
 <br>
-川口花火大会実行委員会でございます。<br>
-このたびは、協賛にお申し込みいただき、誠にありがとうございます。<br>
-本メールに「申込受理書兼請求書」をPDFにて添付しております。<br>
+{{org_name}}でございます。<br>
+このたびは、{{event_name}}の協賛にお申込みいただき、誠にありがとうございます。<br>
+本メールに「請求書」をPDFにて添付しております。<br>
 お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>
 <br>
 ■お申込み内容<br>
 　・会社名・団体名　：{{company_name}}<br>
-　・ご担当者名　　　：{{staff_name}}<br>
+　・担当者名　　　　：{{staff_name}}<br>
 　・区分　　　　　　：{{category}}<br>
+　・協賛金額　　　　：{{amount}}円（税込）<br>
 　・お申込み日時　　：{{date}}<br>
 　・受付番号　　　　：{{receipt_no}}<br>
 <br>
-ーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
-メールアドレス：{{office_email}}<br>
-ーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
+※このメールは自動送信メールです。本メールへの返信はできませんのでご了承ください。<br>
+なお、お心当たりのない場合やお申込み内容に誤りがある場合は、下記までご連絡ください。<br>
+【お問い合わせ先】<br>
+{{org_name}}{{org_location}}<br>
+{{office_email}}<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 </div>`;
 }
 
@@ -301,10 +348,10 @@ function defaultReceiptOnlyBody() {
 {{company_name}}<br>
 {{staff_name}} 様<br>
 <br>
-川口花火大会実行委員会でございます。<br>
-このたびは、協賛にお申し込みいただき、誠にありがとうございます。<br>
+{{org_name}}でございます。<br>
+このたびは、協賛にお申込みいただき、誠にありがとうございます。<br>
 <br>
-S・A協賛につきましては、募集枠を超えるお申し込みがあった場合、締切後に抽選を実施いたします。<br>
+S・A協賛につきましては、募集枠を超えるお申込みがあった場合、締切後に抽選を実施いたします。<br>
 協賛の可否につきましては、締切後に改めてメールにてご連絡いたします。<br>
 限られた募集枠となり恐縮ですが、何卒ご理解・ご協力のほどよろしくお願い申しあげます。<br>
 ご不明な点がございましたら、お気軽にお問い合わせください。<br>
@@ -312,14 +359,19 @@ S・A協賛につきましては、募集枠を超えるお申し込みがあっ
 <br>
 ■ お申込み内容<br>
 　・会社名・団体名　：{{company_name}}<br>
-　・ご担当者名　　　：{{staff_name}}<br>
+　・担当者名　　　　：{{staff_name}}<br>
 　・区分　　　　　　：{{category}}<br>
+　・協賛金額　　　　：{{amount}}円（税込）<br>
 　・お申込み日時　　：{{date}}<br>
 　・受付番号　　　　：{{receipt_no}}<br>
 <br>
-ーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
-メールアドレス：{{office_email}}<br>
-ーーーーーーーーーーーーーーーーーーーーーーーーーー
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー<br>
+※このメールは自動送信メールです。本メールへの返信はできませんのでご了承ください。<br>
+なお、お心当たりのない場合やお申込み内容に誤りがある場合は、下記までご連絡ください。<br>
+【お問い合わせ先】<br>
+{{org_name}}{{org_location}}<br>
+{{office_email}}<br>
+ーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーーー
 </div>`;
 }
 
@@ -330,18 +382,15 @@ function defaultOreijouBody() {
 <br>
 平素より大変お世話になっております。<br>
 <br>
-川口花火大会 実行委員会 事務局でございます。<br>
-このたびは、ご多忙の折にもかかわらず、<br>
-ご協賛およびご入金を賜りまして、誠にありがとうございます。<br>
+{{org_name}}でございます。<br>
+ご協賛金のご入金を確認いたしましたので、ご連絡申しあげます。<br>
 皆様のあたたかいご支援は、大会の開催に向けた大きな力となっております。<br>
 <br>
 心より厚く御礼申し上げます。<br>
-つきましては、感謝の気持ちを込めまして、<br>
-お礼状をPDFファイルにて添付させていただきましたので、<br>
-ご確認いただけますと幸いでございます。<br>
+なお、協賛企業決定通知書をPDFファイルにて添付いたしましたので、ご確認ください。<br>
 <br>
 今後とも、川口花火大会へのご支援・ご協力を賜りますよう、<br>
-何卒よろしくお願い申し上げます。<br>
+何卒よろしくお願い申しあげます。<br>
 <br>
 </div>`;
 }

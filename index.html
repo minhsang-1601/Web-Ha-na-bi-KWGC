@@ -31,7 +31,7 @@
     <div id="maintenance-message" style="display:none; text-align:center; padding:40px 30px; color:#c0392b;">
         <div style="font-size:1.3em; font-weight:bold; margin-bottom:12px;">⚠️ システムメンテナンス中</div>
         <div style="color:#555; line-height:1.7;">
-            ただいまお申し込みを受け付けできません。<br>
+            ただいまお申込みを受け付けできません。<br>
             恐れ入りますが、時間をおいて再度お試しください。
         </div>
     </div>
@@ -69,7 +69,7 @@
                 <p style="margin-left:1em;">・暴力団・暴力団関係者（反社会的勢力）に該当する者</p>
                 <p style="margin-left:1em;">・法令または公序良俗に反する行為を行った者</p>
                 <p style="margin-left:1em;">・その他、運営に著しい支障があると実行委員会が判断した者</p>
-                <p>２. 申込後であっても、上記のいずれかに該当すると判明した場合、実行委員会より協賛を取り消されることがあることを理解し、異議を申し立てません。</p>
+                <p>２. 申込み後であっても、上記のいずれかに該当すると判明した場合、実行委員会より協賛を取り消されることがあることを理解し、異議を申し立てません。</p>
                 <p>３. 協賛者側から協賛辞退の申し出を行った場合も、協賛金は返金されないことに同意します。</p>
                 <p>４. 大会の中止・延期・内容変更、または協賛特典の未実施があった場合も、協賛金の返金は一切行われないことに同意します。</p>
                 <p style="text-align:center; color:#d9534f; font-weight:bold; margin-top:15px;">
@@ -118,13 +118,13 @@
 
             <div class="form-group">
                 <label>代表者役職</label>
-                <input type="text" name="rep_position" placeholder="副社長" required>
+                <input type="text" name="rep_position" placeholder="代表職役" required>
             </div>
 
             <div class="form-group">
                 <label class="furigana">代表者役職（フリガナ）</label>
                 <input type="text" id="rep_position_furigana" name="rep_position_furigana"
-                       placeholder="フクシャチョウ"
+                       placeholder="ダイヒョウショクヤク"
                        pattern="^[ァ-ヶー\s　]+$"
                        title="全角カタカナで入力してください。" required>
             </div>
@@ -340,7 +340,7 @@
         const periodDisplay = document.getElementById('period-display');
 
         periodDisplay.innerText =
-            `申し込み時間：${formatDateDisplay(config.startDate)} ~ ${formatDateDisplay(config.endDate)}`;
+            `申込み期間：${formatDateDisplay(config.startDate)} ~ ${formatDateDisplay(config.endDate)}`;
 
         const now       = new Date();
         const startDate = new Date(config.startDate);
@@ -409,7 +409,7 @@
     }
 
     function onConfigError(err) {
-        document.getElementById('period-display').innerText = '申し込み時間：設定エラー';
+        document.getElementById('period-display').innerText = '申込み時間：設定エラー';
         document.getElementById('form-closed-message').style.display = 'block';
         document.getElementById('form-desc').style.display = 'none';
         console.error('getConfig error:', err);

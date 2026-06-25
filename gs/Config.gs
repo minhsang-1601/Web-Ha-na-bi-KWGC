@@ -17,7 +17,7 @@ const COL_OREIJOU_DATE = 12; // L: お礼状送信日時    timestamp 自動
 // ─── デフォルト価格（Info シートの PRICE_X で上書き可） ────────────────────────
 const DEFAULT_PRICES = { S: 2000000, A: 1000000, B: 500000, C: 300000, D: 200000, E: 100000 };
 
-// B〜E は申込時に自動で請求書送信
+// B〜E は申込み時に自動で請求書送信
 const AUTO_SEND_KUBUN = ['B', 'C', 'D', 'E'];
 
 // フォールバック定数（Info シートで上書き可）
