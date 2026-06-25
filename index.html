@@ -19,10 +19,11 @@
 <body>
 
 <div class="form-container">
-    <h2 id="form-title">【<?= getEventName() ?>】協賛申込みフォーム</h2>
-    <p id="form-desc" style="display:none;">下記の内容をご記入ください。</p>
+    <h2 id="form-title">【<?= getEventName() ?>】協賛申込み</h2>
 
     <div id="period-display" class="registration-period">Loading...</div>
+
+    <p id="form-desc" style="display:none;">下記の内容をご記入ください。</p>
 
     <div id="form-closed-message" style="display:none; text-align:center; padding:30px; color:#d9534f; font-weight:bold;">
         ただいまの期間は、協賛申込みの受付時間外となっております。
@@ -206,6 +207,9 @@
 </div>
 
 <script>
+    // 受付中の区分が1つでもあるか（_updateConfirmBtn より前に宣言する必要あり）
+    let anyKubunOpen = false;
+
     // ─── Validation messages ────────────────────────────────────────────────────
 
     const validationMessages = {
@@ -273,6 +277,14 @@
 
     // 同意チェック → ボタンの有効・無効を切り替え
     function _updateConfirmBtn() {
+        // 受付中の区分が1つもなければボタン自体を非表示
+        if (!anyKubunOpen) {
+            btnConfirm.style.display     = 'none';
+            agreementWarn.style.display  = 'none';
+            return;
+        }
+        btnConfirm.style.display = '';
+
         if (checkbox.checked) {
             btnConfirm.disabled          = false;
             btnConfirm.style.background  = '#007BFF';
@@ -339,12 +351,11 @@
         const maintenance   = document.getElementById('maintenance-message');
         const periodDisplay = document.getElementById('period-display');
 
-        periodDisplay.innerText =
-            `申込み期間：${formatDateDisplay(config.startDate)} ~ ${formatDateDisplay(config.endDate)}`;
-
-        const now       = new Date();
-        const startDate = new Date(config.startDate);
-        const endDate   = new Date(config.endDate);
+        // 申込み期間を区分ごとに表示（※ 期間によるフォーム制御は行わない＝常に表示）
+        periodDisplay.innerHTML =
+            '<div style="font-weight:bold; margin-bottom:6px;">申込み期間</div>' +
+            '<div><span style="display:inline-block; min-width:8em;">区分 S/A</span>：' + formatDateDisplay(config.kubunSaStart) + ' ～ ' + formatDateDisplay(config.kubunSaEnd) + '</div>' +
+            '<div><span style="display:inline-block; min-width:8em;">区分 B/C/D/E</span>：' + formatDateDisplay(config.kubunBcdeStart) + ' ～ ' + formatDateDisplay(config.kubunBcdeEnd) + '</div>';
 
         // 初期状態: すべて非表示
         form.style.display          = 'none';
@@ -352,60 +363,40 @@
         maintenance.style.display   = 'none';
         document.getElementById('form-desc').style.display = 'none';
 
-        if (now < startDate || now > endDate) {
-            // ① 受付期間外 → 受付時間外メッセージ
-            closedMessage.style.display = 'block';
-        } else if (config.mailQuotaOk === false) {
-            // ② 期間内だがメール残数不足 → メンテナンス表示
+        // 申込み期間チェックは廃止 → 常にフォームを表示
+        // （メール残数が不足しているときのみメンテナンス表示）
+        if (config.mailQuotaOk === false) {
             maintenance.style.display = 'block';
         } else {
-            // ③ 期間内 & 残数OK → フォーム表示
             form.style.display = 'block';
             document.getElementById('form-desc').style.display = '';
-            _applyKubunPeriod(config, now);
+            _applyKubunPeriod(config);
         }
     }
 
-    function _applyKubunPeriod(config, now) {
-        const saStart   = new Date(config.kubunSaStart);
-        const saEnd     = new Date(config.kubunSaEnd);
-        const bcdeStart = new Date(config.kubunBcdeStart);
-        const bcdeEnd   = new Date(config.kubunBcdeEnd);
+    // 受付期間外の区分を「淡色＋取り消し線＋無効化」にする。
+    // 受付中の区分が1つもなければ「入力内容を確認する」ボタンを非表示にする。
+    function _applyKubunPeriod(config) {
+        const now      = new Date();
+        const saOpen   = now >= new Date(config.kubunSaStart)   && now <= new Date(config.kubunSaEnd);
+        const bcdeOpen = now >= new Date(config.kubunBcdeStart) && now <= new Date(config.kubunBcdeEnd);
+        const openMap  = { S: saOpen, A: saOpen, B: bcdeOpen, C: bcdeOpen, D: bcdeOpen, E: bcdeOpen };
 
-        const saOpen   = now >= saStart   && now <= saEnd;
-        const bcdeOpen = now >= bcdeStart && now <= bcdeEnd;
-
-        // S・A の表示制御
-        ['S', 'A'].forEach(v => {
-            const el = document.getElementById(`kubun-label-${v}`);
-            if (el) el.style.display = saOpen ? '' : 'none';
-        });
-
-        // B〜E の表示制御
-        ['B', 'C', 'D', 'E'].forEach(v => {
-            const el = document.getElementById(`kubun-label-${v}`);
-            if (el) el.style.display = bcdeOpen ? '' : 'none';
-        });
-
-        // どの区分も受付中でない場合はメッセージ表示
-        const closedMsg = document.getElementById('kubun-closed-msg');
-        if (!saOpen && !bcdeOpen) {
-            closedMsg.style.display = 'block';
-            closedMsg.textContent   = 'ただいまいずれの区分も受付期間外です。';
-        } else {
-            const lines = [];
-            if (!saOpen) lines.push(`S・A 区分は受付期間外です（受付：${_fmt(config.kubunSaStart)} 〜 ${_fmt(config.kubunSaEnd)}）`);
-            if (!bcdeOpen) lines.push(`B〜E 区分は受付期間外です（受付：${_fmt(config.kubunBcdeStart)} 〜 ${_fmt(config.kubunBcdeEnd)}）`);
-            if (lines.length > 0) {
-                closedMsg.style.display = 'block';
-                closedMsg.textContent   = lines.join(' / ');
+        Object.keys(openMap).forEach((v) => {
+            const label = document.getElementById('kubun-label-' + v);
+            if (!label) return;
+            const radio = label.querySelector('input');
+            if (openMap[v]) {
+                label.classList.remove('kubun-off');
+                if (radio) radio.disabled = false;
+            } else {
+                label.classList.add('kubun-off');
+                if (radio) { radio.checked = false; radio.disabled = true; }
             }
-        }
-    }
+        });
 
-    function _fmt(dateStr) {
-        const d = new Date(dateStr);
-        return `${d.getFullYear()}/${d.getMonth()+1}/${d.getDate()}`;
+        anyKubunOpen = saOpen || bcdeOpen;
+        if (typeof _updateConfirmBtn === 'function') _updateConfirmBtn();
     }
 
     function onConfigError(err) {
@@ -500,12 +491,14 @@
         form.style.display          = 'none';
         confirmScreen.style.display = 'block';
         document.getElementById('form-desc').style.display = 'none';
+        document.getElementById('period-display').style.display = 'none';
     });
 
     document.getElementById('btn-back').addEventListener('click', () => {
         confirmScreen.style.display = 'none';
         form.style.display          = 'block';
         document.getElementById('form-desc').style.display = '';
+        document.getElementById('period-display').style.display = '';
     });
 
     // ─── 送信 → google.script.run.submitForm() ──────────────────────────────────
@@ -557,6 +550,7 @@
             .withSuccessHandler((res) => {
                 confirmScreen.style.display = 'none';
                 document.getElementById('form-desc').style.display = 'none';
+                document.getElementById('period-display').style.display = 'none';
                 const thanks = document.createElement('div');
                 thanks.style.cssText = 'text-align:center; padding:40px; color:#4a3b68; font-weight:bold; font-size:1.1em;';
                 thanks.innerHTML = `

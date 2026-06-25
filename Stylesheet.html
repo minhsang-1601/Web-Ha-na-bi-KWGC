@@ -31,7 +31,8 @@ body {
 }
 
 h2 {
-    font-size: 1.2em;
+    font-size: 1.4em;
+    text-align: center;
     margin-top: 0;
     padding-bottom: 5px;
     border-bottom: 2px solid #333;
@@ -120,6 +121,16 @@ input[type="email"] {
     cursor: pointer;
 }
 
+/* 受付期間外の区分: 淡色＋無効化 */
+.radio-label.kubun-off {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.radio-label.kubun-off input[type="radio"] {
+    cursor: not-allowed;
+}
+
 /* ─── Terms and conditions scroll box ──────────────────────────────────────── */
 
 .terms-box {
@@ -180,10 +191,10 @@ html.scr-sm .form-container {
     padding: 20px 16px;
     border-radius: 8px;
 }
-html.scr-sm h2 { font-size: 1.05em; }
+html.scr-sm h2 { font-size: 1.2em; }
 
 html.scr-xs .form-container { padding: 16px 12px; border-radius: 6px; }
-html.scr-xs h2 { font-size: 1em; }
+html.scr-xs h2 { font-size: 1.1em; }
 html.scr-xs input[type="text"],
 html.scr-xs input[type="email"] { font-size: 1em; padding: 10px 8px; }
 html.scr-xs button { padding: 13px 15px; font-size: 1em; }
