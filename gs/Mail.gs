@@ -183,7 +183,7 @@ function defaultSaInvoiceBody() {
 {{org_name}}でございます。<br>
 <br>
 このたびは、{{event_name}}の協賛にお申込みいただき、誠にありがとうございます。<br>
-<strong>{{KUBUN_SA_END}}</strong>の申込み締め切りをもちまして、{{staff_name}}様の{{category}}協賛枠が確定いたしましたので、ご連絡申しあげます。<br>
+<strong>{{KUBUN_SA_END}}</strong>の申込み締め切りをもちまして、{{company_name}}様の{{category}}協賛枠が確定いたしましたので、ご連絡申しあげます。<br>
 <br>
 本メールに「請求書」をPDFにて添付しております。<br>
 お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>
@@ -379,15 +379,13 @@ S・A協賛につきましては、募集枠を超えるお申込みがあった
 function defaultOreijouBody() {
   return `<div style="font-family:'Meiryo',sans-serif;font-size:14px;line-height:1.9;">
 {{company_name}}<br>
-{{rep_name}} 様<br>
-<br>
-平素より大変お世話になっております。<br>
+{{staff_name}} 様<br>
 <br>
 {{org_name}}でございます。<br>
 ご協賛金のご入金を確認いたしましたので、ご連絡申しあげます。<br>
 皆様のあたたかいご支援は、大会の開催に向けた大きな力となっております。<br>
 <br>
-心より厚く御礼申し上げます。<br>
+心より厚く御礼申しあげます。<br>
 なお、協賛企業決定通知書をPDFファイルにて添付いたしましたので、ご確認ください。<br>
 <br>
 今後とも、川口花火大会へのご支援・ご協力を賜りますよう、<br>
