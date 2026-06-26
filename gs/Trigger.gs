@@ -105,7 +105,7 @@ function handleUketsuke(e, sheet, row) {
   const ui  = SpreadsheetApp.getUi();
   const res = ui.alert(
     '請求書送信の確認',
-    `以下の宛先に「申込み受理書兼請求書」を送信します。よろしいですか？\n\n` +
+    `以下の宛先に「申込受理書兼請求書」を送信します。よろしいですか？\n\n` +
     `　受付番号：${receptNo}\n　会社名　：${data.company_name || ''}\n　送信先　：${data.email}`,
     ui.ButtonSet.YES_NO
   );

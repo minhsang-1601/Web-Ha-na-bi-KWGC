@@ -27,7 +27,7 @@ function sendConfirmationEmail(data, receptNo, invoicePdf) {
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
-      invoicePdf.setName(`申込み受理書兼請求書_${data.company_name || receptNo}.pdf`)
+      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
     ];
   }
   MailApp.sendEmail(mailOptions);
@@ -49,7 +49,7 @@ function sendReceiptOnlyEmail(data, receptNo, invoicePdf) {
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
-      invoicePdf.setName(`申込み受理書兼請求書_${data.company_name || receptNo}.pdf`)
+      invoicePdf.setName(`申込受理書兼請求書_${data.company_name || receptNo}.pdf`)
     ];
   }
   MailApp.sendEmail(mailOptions);
@@ -81,6 +81,7 @@ function generateInvoicePdf(data, receptNo) {
   }
 
   const replacements = {
+    '{{title}}':         (category === 'S' || category === 'A') ? '請求書' : '申込受理書兼請求書', 
     '{{company_name}}':  data.company_name || '',
     '{{issue_date}}':    issueDate,
     '{{receipt_no}}':    receptNo,
@@ -129,7 +130,7 @@ function sendSaInvoiceEmail(data, receptNo, invoicePdf) {
   if (_validEmail(officeEmail)) { mailOptions.cc = officeEmail; mailOptions.replyTo = officeEmail; }
   if (invoicePdf) {
     mailOptions.attachments = [
-      invoicePdf.setName(`申込み受理書兼請求書_${data.company_name || receptNo}.pdf`)
+      invoicePdf.setName(`請求書_${data.company_name || receptNo}.pdf`)
     ];
   }
   MailApp.sendEmail(mailOptions);
@@ -322,7 +323,7 @@ function defaultConfirmBody() {
 <br>
 {{org_name}}でございます。<br>
 このたびは、{{event_name}}の協賛にお申込みいただき、誠にありがとうございます。<br>
-本メールに「請求書」をPDFにて添付しております。<br>
+本メールに「申込受理書兼請求書」をPDFにて添付しております。<br>
 お振込み期限<strong>【{{payment_due}}】</strong>までにお手続きくださいますようお願い申しあげます。<br>
 <br>
 ■お申込み内容<br>
