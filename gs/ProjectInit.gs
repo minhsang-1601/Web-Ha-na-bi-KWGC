@@ -146,7 +146,7 @@ function _writeCreateLog(action, detail) {
   }
 
   const now  = Utilities.formatDate(new Date(), 'Asia/Tokyo', 'yyyy/MM/dd HH:mm:ss');
-  const user = Session.getActiveUser().getEmail() || '(unknown)';
+  const user = Session.getActiveUser().getEmail() || '外部ユーザー/別ドメイン';
   sheet.appendRow([now, action, detail, user]);
 }
 

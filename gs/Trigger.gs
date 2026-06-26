@@ -360,7 +360,7 @@ function _auditUser(e) {
     const u = Session.getActiveUser().getEmail();
     if (u) return u;
   } catch (_) {}
-  return '(unknown)';
+  return '外部ユーザー/別ドメイン';
 }
 
 /** データ用スプレッドシートにも同じメニューを表示（onOpen trigger として登録） */
