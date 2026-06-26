@@ -23,17 +23,8 @@ function resetTesagyouSheetHeaders() {
     .setFontWeight('bold').setBackground('#fce8b2');
 
   // サブヘッダー（2行目）を再設定
-  const subheaders = [
-    '直接入力',         // A: 受付番号
-    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // B-D
-    'XLOOKUP\n自動', 'XLOOKUP\n自動',                    // E-F
-    'XLOOKUP\n自動', 'XLOOKUP\n自動',                    // G-H
-    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',  // I-K
-    'タイムスタンプ\n自動',                               // L
-  ];
-
   sheet.getRange(2, 1, 1, headerCount)
-    .setValues([subheaders])
+    .setValues([TESAGYOU_SUBHEADERS])
     .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
 
   sheet.setRowHeight(2, 36);
@@ -108,13 +99,7 @@ function appendToTesagyouSheet(receptNo, sheetName2, data) {
     sheet.getRange(1, 1, 1, TESAGYOU_HEADERS.length)
       .setFontWeight('bold').setBackground('#fce8b2');
     // 2行目: サブヘッダー（操作種別メモ）
-    sheet.appendRow([
-      '直接入力',         // A: 受付番号
-      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',  // B-D
-      'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', // E-H
-      'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',           // I-K
-      'タイムスタンプ\n自動',                             // L
-    ]);
+    sheet.appendRow(TESAGYOU_SUBHEADERS);
     sheet.getRange(2, 1, 1, TESAGYOU_HEADERS.length)
       .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);
     sheet.setRowHeight(2, 36);
@@ -195,9 +180,9 @@ function applyColumnWidths(sheet) {
 }
 
 function applyTesagyouColumnWidths(sheet) {
-  // A=受付番号 B=区分 C=電話 D=会社名 E=住所 F=代表者名
-  // G=メール H=URL I=受付完了 J=請求書日時 K=入金 L=礼状日時
-  [150, 60, 120, 200, 200, 130, 200, 160, 70, 150, 70, 150]
+  // A=受付番号 B=区分 C=電話 D=会社名 E=住所 F=代表者名 G=担当者
+  // H=メール I=URL J=受付完了 K=請求書日時 L=入金 M=礼状日時
+  [150, 60, 120, 200, 200, 130, 130, 200, 160, 70, 150, 70, 150]
     .forEach((w, i) => sheet.setColumnWidth(i + 1, w));
   _applyAlignment(sheet, 3, TESAGYOU_HEADERS.length);
 }

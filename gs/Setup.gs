@@ -167,14 +167,8 @@ function _applyTesagyouHeaders(sheet) {
   sheet.getRange(1, 1, 1, TESAGYOU_HEADERS.length)
     .setFontWeight('bold').setBackground('#fce8b2');
 
-  // 行2: サブヘッダー（12列）
-  const sub = [
-    '直接入力',                                                                    // A
-    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',                            // B,C,D
-    'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',           // E,F,G,H
-    'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',                    // I,J,K
-    'タイムスタンプ\n自動',                                                        // L
-  ];
+  // 行2: サブヘッダー（TESAGYOU_SUBHEADERS と同期）
+  const sub = TESAGYOU_SUBHEADERS;
   sheet.getRange(2, 1, 1, sub.length).setValues([sub]);
   sheet.getRange(2, 1, 1, sub.length)
     .setFontSize(8).setFontColor('#888888').setBackground('#fffbf0').setWrap(true);

@@ -9,10 +9,10 @@ const AUDIT_HEADERS       = ['日時', '実行者', 'シート', 'セル', '操�
 
 // ─── 手作業 列番号定数 ──────────────────────────────────────────────────────────
 const COL_RECEPT_NO    =  1; // A: 受付番号
-const COL_UKETSUKE     =  9; // I: 受付完了         checkbox  手動
-const COL_INV_DATE     = 10; // J: 請求書送信日時    timestamp 自動
-const COL_NYUKIN       = 11; // K: 入金完了          checkbox  手動
-const COL_OREIJOU_DATE = 12; // L: お礼状送信日時    timestamp 自動
+const COL_UKETSUKE     = 10; // J: 受付完了         checkbox  手動
+const COL_INV_DATE     = 11; // K: 請求書送信日時    timestamp 自動
+const COL_NYUKIN       = 12; // L: 入金完了          checkbox  手動
+const COL_OREIJOU_DATE = 13; // M: お礼状送信日時    timestamp 自動
 
 // ─── デフォルト価格（Info シートの PRICE_X で上書き可） ────────────────────────
 const DEFAULT_PRICES = { S: 2000000, A: 1000000, B: 500000, C: 300000, D: 200000, E: 100000 };
@@ -46,12 +46,23 @@ const TESAGYOU_HEADERS = [
   '会社名・団体名',         // D (4)  XLOOKUP
   '住所',                   // E (5)  XLOOKUP
   '代表者名',               // F (6)  XLOOKUP
-  'メールアドレス',         // G (7)  XLOOKUP
-  '会社HP URL',             // H (8)  XLOOKUP
-  '受付完了',               // I (9)  checkbox 手動
-  '請求書送信日時',         // J (10) timestamp 自動
-  '入金完了',               // K (11) checkbox 手動
-  'お礼状送信日時',         // L (12) timestamp 自動
+  '担当者',                 // G (7)  XLOOKUP
+  'メールアドレス',         // H (8)  XLOOKUP
+  '会社HP URL',             // I (9)  XLOOKUP
+  '受付完了',               // J (10) checkbox 手動
+  '請求書送信日時',         // K (11) timestamp 自動
+  '入金完了',               // L (12) checkbox 手動
+  'お礼状送信日時',         // M (13) timestamp 自動
+];
+
+// 手作業 2行目（サブヘッダー: 操作種別メモ）。TESAGYOU_HEADERS と必ず同じ列数にする。
+const TESAGYOU_SUBHEADERS = [
+  '直接入力',                                                    // A: 受付番号
+  'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',            // B,C,D
+  'XLOOKUP\n自動', 'XLOOKUP\n自動', 'XLOOKUP\n自動',            // E,F,G(担当者)
+  'XLOOKUP\n自動', 'XLOOKUP\n自動',                            // H,I
+  'checkbox\n手動', 'タイムスタンプ\n自動', 'checkbox\n手動',    // J,K,L
+  'タイムスタンプ\n自動',                                        // M
 ];
 
 // 手作業の列番号 → 協賛申込み一覧の列アルファベット（XLOOKUP）
@@ -64,8 +75,9 @@ const TESAGYOU_LOOKUP_COLS = {
   4:  'C',  // 会社名・団体名
   5:  'L',  // 住所
   6:  'G',  // 代表者名
-  7:  'N',  // メールアドレス
-  8:  'P',  // 会社HP URL
+  7:  'I',  // 担当者（担当者名）
+  8:  'N',  // メールアドレス
+  9:  'P',  // 会社HP URL
 };
 
 // ─── Info シート読み込み ────────────────────────────────────────────────────────
